@@ -1,17 +1,19 @@
-FROM dart:3.9
+# Dockerfile para Flutter Web/Server
+FROM cirrusci/flutter:stable
 
 WORKDIR /app
 
 # Copiar pubspec para instalar dependencias
 COPY pubspec.* /app/
 
-RUN dart pub get
+# Instalar dependencias usando flutter
+RUN flutter pub get
 
 # Copiar todo el código
 COPY . /app/
 
-# Compilar tu proyecto (ajusta según tu entrypoint)
-RUN dart compile exe bin/proyecto_web.dart -o bin/proyecto_web.exe
+# Construir tu proyecto web
+RUN flutter build web --release -t lib/main.dart
 
-# Comando por defecto
-CMD ["./bin/proyecto_web.exe"]
+# Servir con un servidor web simple (puedes usar nginx o `webdev serve` si es servidor Dart)
+CMD ["flutter", "run", "-d", "web-server", "--web-port", "8080", "--web-hostname", "0.0.0.0"]
