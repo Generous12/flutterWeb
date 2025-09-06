@@ -5,11 +5,7 @@ const cors = require('cors');
 
 const app = express();
 app.use(express.json());
-app.use(cors()); // Permite peticiones desde Flutter Web en otro dominio
-
-// ------------------------------
-// Conexión a Railway
-// ------------------------------
+app.use(cors()); 
 const connection = mysql.createPool({
   host: 'switchback.proxy.rlwy.net',
   port: 40357,
@@ -21,9 +17,6 @@ const connection = mysql.createPool({
   queueLimit: 0
 });
 
-// ------------------------------
-// ENDPOINTS: TIPO_COMPONENTE
-// ------------------------------
 app.get('/tipo-componentes', (req, res) => {
   connection.query('CALL sp_list_tipo_componentes()', (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -56,9 +49,6 @@ app.delete('/tipo-componente/:id', (req, res) => {
   });
 });
 
-// ------------------------------
-// ENDPOINTS: COMPONENTE
-// ------------------------------
 app.get('/componentes', (req, res) => {
   connection.query('SELECT * FROM Componente', (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -100,9 +90,6 @@ app.get('/componente/:id/atributos', (req, res) => {
   });
 });
 
-// ------------------------------
-// ENDPOINTS: VALOR_ATRIBUTO
-// ------------------------------
 app.post('/valor-atributo', (req, res) => {
   const { id_componente, id_atributo, valor } = req.body;
   const sql = 'CALL sp_upsert_valor_atributo(?, ?, ?, @out_id, @out_accion); SELECT @out_id AS id, @out_accion AS accion;';
@@ -128,9 +115,6 @@ app.delete('/valor-atributo/:id', (req, res) => {
   });
 });
 
-// ------------------------------
-// ENDPOINTS: AREA y CASE
-// ------------------------------
 app.get('/areas', (req, res) => {
   connection.query('CALL sp_list_areas()', (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -169,9 +153,5 @@ app.get('/cases/:id_area', (req, res) => {
     res.json(results[0]);
   });
 });
-
-// ------------------------------
-// START SERVER
-// ------------------------------
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
