@@ -1,12 +1,12 @@
-# Dockerfile para Flutter Web/Server con Dart 3.x
-FROM cirrusci/flutter:3.13.0
+# Usa una imagen con Flutter y Dart preinstalados
+FROM ghcr.io/cirruslabs/flutter:stable
 
 WORKDIR /app
 
 # Copiar pubspec para instalar dependencias
 COPY pubspec.* /app/
 
-# Instalar dependencias usando flutter
+# Instalar dependencias usando Flutter
 RUN flutter pub get
 
 # Copiar todo el código
