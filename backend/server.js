@@ -5,7 +5,8 @@ const cors = require('cors');
 
 const app = express();
 app.use(express.json());
-app.use(cors()); 
+app.use(cors());
+
 const connection = mysql.createPool({
   host: 'switchback.proxy.rlwy.net',
   port: 40357,
@@ -15,12 +16,10 @@ const connection = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  multipleStatements: true,
+  multipleStatements: true, // solo necesario si ejecutas varias queries manualmente
 });
 
-// -------------------- ENDPOINTS --------------------
-
-// Tipo componentes
+// ------------------------ TIPOS DE COMPONENTE ------------------------
 app.get('/tipo-componentes', (req, res) => {
   connection.query('CALL sp_list_tipo_componentes()', (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -30,9 +29,9 @@ app.get('/tipo-componentes', (req, res) => {
 
 app.post('/tipo-componente', (req, res) => {
   const { nombre } = req.body;
-  connection.query('CALL sp_insert_tipo_componente(?, @out_id); SELECT @out_id AS id;', [nombre], (err, results) => {
+  connection.query('CALL sp_insert_tipo_componente(?)', [nombre], (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json({ id: results[1][0].id });
+    res.json({ id: results[0][0].id });
   });
 });
 
@@ -53,7 +52,7 @@ app.delete('/tipo-componente/:id', (req, res) => {
   });
 });
 
-// Componentes
+// ------------------------ COMPONENTES ------------------------
 app.get('/componentes', (req, res) => {
   connection.query('SELECT * FROM Componente', (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -63,10 +62,10 @@ app.get('/componentes', (req, res) => {
 
 app.post('/componente', (req, res) => {
   const { id_tipo, codigo_inventario, cantidad } = req.body;
-  const sql = 'CALL sp_upsert_componente(?, ?, ?, @out_id, @out_accion); SELECT @out_id AS id, @out_accion AS accion;';
-  connection.query(sql, [id_tipo, codigo_inventario, cantidad], (err, results) => {
+  connection.query('CALL sp_upsert_componente(?, ?, ?, @out_id, @out_accion)', [id_tipo, codigo_inventario, cantidad], (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json(results[1][0]);
+    // SP debe devolver SELECT out_id, out_accion al final
+    res.json(results[0][0]);
   });
 });
 
@@ -95,13 +94,12 @@ app.get('/componente/:id/atributos', (req, res) => {
   });
 });
 
-// Valores atributos
+// ------------------------ VALORES DE ATRIBUTO ------------------------
 app.post('/valor-atributo', (req, res) => {
   const { id_componente, id_atributo, valor } = req.body;
-  const sql = 'CALL sp_upsert_valor_atributo(?, ?, ?, @out_id, @out_accion); SELECT @out_id AS id, @out_accion AS accion;';
-  connection.query(sql, [id_componente, id_atributo, valor], (err, results) => {
+  connection.query('CALL sp_upsert_valor_atributo(?, ?, ?, @out_id, @out_accion)', [id_componente, id_atributo, valor], (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json(results[1][0]);
+    res.json(results[0][0]);
   });
 });
 
@@ -121,7 +119,7 @@ app.delete('/valor-atributo/:id', (req, res) => {
   });
 });
 
-// Áreas
+// ------------------------ ÁREAS ------------------------
 app.get('/areas', (req, res) => {
   connection.query('CALL sp_list_areas()', (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -131,18 +129,18 @@ app.get('/areas', (req, res) => {
 
 app.post('/area', (req, res) => {
   const { nombre_area } = req.body;
-  connection.query('CALL sp_insert_area(?, @out_id); SELECT @out_id AS id;', [nombre_area], (err, results) => {
+  connection.query('CALL sp_insert_area(?)', [nombre_area], (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json({ id: results[1][0].id });
+    res.json({ id: results[0][0].id });
   });
 });
 
-// Cases
+// ------------------------ CASES ------------------------
 app.post('/assign-case', (req, res) => {
   const { id_componente_case, id_area, fecha_asignacion } = req.body;
-  connection.query('CALL sp_add_component_to_case(?, ?, 1, ?, @out_id); SELECT @out_id AS id;', [id_componente_case, id_area, fecha_asignacion], (err, results) => {
+  connection.query('CALL sp_add_component_to_case(?, ?, ?, @out_id)', [id_componente_case, id_area, fecha_asignacion], (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json(results[1][0]);
+    res.json(results[0][0]);
   });
 });
 
@@ -162,5 +160,6 @@ app.get('/cases/:id_area', (req, res) => {
   });
 });
 
+// ------------------------ PUERTO ------------------------
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => console.log(`Servidor corriendo en el puerto ${PORT}`));
