@@ -14,9 +14,13 @@ const connection = mysql.createPool({
   database: 'railway',
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  multipleStatements: true,
 });
 
+// -------------------- ENDPOINTS --------------------
+
+// Tipo componentes
 app.get('/tipo-componentes', (req, res) => {
   connection.query('CALL sp_list_tipo_componentes()', (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -49,6 +53,7 @@ app.delete('/tipo-componente/:id', (req, res) => {
   });
 });
 
+// Componentes
 app.get('/componentes', (req, res) => {
   connection.query('SELECT * FROM Componente', (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -90,6 +95,7 @@ app.get('/componente/:id/atributos', (req, res) => {
   });
 });
 
+// Valores atributos
 app.post('/valor-atributo', (req, res) => {
   const { id_componente, id_atributo, valor } = req.body;
   const sql = 'CALL sp_upsert_valor_atributo(?, ?, ?, @out_id, @out_accion); SELECT @out_id AS id, @out_accion AS accion;';
@@ -115,6 +121,7 @@ app.delete('/valor-atributo/:id', (req, res) => {
   });
 });
 
+// Áreas
 app.get('/areas', (req, res) => {
   connection.query('CALL sp_list_areas()', (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -130,6 +137,7 @@ app.post('/area', (req, res) => {
   });
 });
 
+// Cases
 app.post('/assign-case', (req, res) => {
   const { id_componente_case, id_area, fecha_asignacion } = req.body;
   connection.query('CALL sp_add_component_to_case(?, ?, 1, ?, @out_id); SELECT @out_id AS id;', [id_componente_case, id_area, fecha_asignacion], (err, results) => {
@@ -153,5 +161,6 @@ app.get('/cases/:id_area', (req, res) => {
     res.json(results[0]);
   });
 });
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Servidor corriendo en el puerto ${PORT}`));

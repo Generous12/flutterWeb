@@ -1,16 +1,12 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:proyecto_web/Clases/providerClases.dart';
-import 'package:proyecto_web/Controlador/mysql/conexion.dart';
 
 class ComponentService extends ChangeNotifier {
   TipoComponente? tipoSeleccionado;
   final List<Atributo> atributos = [];
   Componente? componenteCreado;
   final Map<int, String> valoresAtributos = {};
-  //CONEXION MYSQL---------------------------------------------------------------
+  /*CONEXION MYSQL---------------------------------------------------------------
 
   final String baseUrl = "https://flutterweb-production.up.railway.app";
 
@@ -82,7 +78,7 @@ class ComponentService extends ChangeNotifier {
     }
   }
 
-  //CONEXION MYSQL---------------------------------------------------------------
+  //CONEXION MYSQL---------------------------------------------------------------*/
 
   // Crear Tipo de Componente REGITRAR 1
   void crearTipoComponente(String nombre) {

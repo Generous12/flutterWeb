@@ -1,19 +1,26 @@
-# Usa una imagen con Flutter y Dart preinstalados
-FROM ghcr.io/cirruslabs/flutter:stable
+# Etapa 1: Build
+FROM ghcr.io/cirruslabs/flutter:stable AS build
 
 WORKDIR /app
 
-# Copiar pubspec para instalar dependencias
+# Copiar solo pubspec para cache de dependencias
 COPY pubspec.* /app/
-
-# Instalar dependencias usando Flutter
 RUN flutter pub get
 
 # Copiar todo el código
 COPY . /app/
 
-# Construir tu proyecto web
+# Construir la web en modo release
 RUN flutter build web --release -t lib/main.dart
 
-# Servir con un servidor web simple
-CMD ["flutter", "run", "-d", "web-server", "--web-port", "8080", "--web-hostname", "0.0.0.0"]
+# Etapa 2: Servir los archivos construidos con un servidor ligero (nginx)
+FROM nginx:alpine
+
+# Copiar los archivos web build al directorio de nginx
+COPY --from=build /app/build/web /usr/share/nginx/html
+
+# Exponer el puerto
+EXPOSE 80
+
+# Iniciar nginx
+CMD ["nginx", "-g", "daemon off;"]
