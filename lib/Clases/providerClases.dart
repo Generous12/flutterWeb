@@ -21,7 +21,7 @@ class Atributo {
 
 class Componente {
   final int? id;
-  final int idTipo;
+  int idTipo;
   final String codigoInventario;
   final int cantidad;
 

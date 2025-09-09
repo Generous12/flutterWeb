@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Provider/componentService.dart';
+import 'package:proyecto_web/Controlador/mysql/conexion.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
@@ -602,9 +606,9 @@ class _ValorAtributoFormState extends State<ValorAtributoForm> {
   void initState() {
     super.initState();
     final provider = Provider.of<ComponentService>(context, listen: false);
-    for (var attr in provider.atributos) {
-      controllers[attr.id!] = TextEditingController();
-      controllers[attr.id!]!.addListener(_validate);
+    for (var i = 0; i < provider.atributos.length; i++) {
+      controllers[i] = TextEditingController();
+      controllers[i]!.addListener(_validate);
     }
   }
 
@@ -615,10 +619,11 @@ class _ValorAtributoFormState extends State<ValorAtributoForm> {
   }
 
   void guardar(ComponentService provider) {
-    controllers.forEach((id, controller) {
+    controllers.forEach((index, controller) {
       final valor = controller.text.trim();
       if (valor.isNotEmpty) {
-        provider.setValorAtributo(id, valor);
+        provider.setValorAtributo(index, valor);
+        // Ahora se guarda con index
       }
     });
   }
@@ -651,9 +656,10 @@ class _ValorAtributoFormState extends State<ValorAtributoForm> {
                 children: provider.atributos.asMap().entries.map((entry) {
                   final index = entry.key;
                   final attr = entry.value;
-                  final controller = controllers[attr.id!]!;
+                  final controller = controllers[index]!;
+
                   return CustomTextField(
-                    key: ValueKey("attr_${attr.id}_$index"),
+                    key: ValueKey("attr_${index}"),
                     controller: controller,
                     hintText: "Ingresar el valor",
                     label: "Valor de ${attr.nombre}",
@@ -734,9 +740,12 @@ class VisualizarComponenteScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    ...provider.atributos.map((attr) {
+                    ...provider.atributos.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final attr = entry.value;
                       final valor =
-                          provider.valoresAtributos[attr.id] ?? "(Sin valor)";
+                          provider.valoresAtributos[index] ?? "(Sin valor)";
+
                       return _AttributeCard(
                         icon: LucideIcons.settings,
                         nombre: attr.nombre,
@@ -763,7 +772,71 @@ class VisualizarComponenteScreen extends StatelessWidget {
                 cancelButtonText: "No",
               );
 
-              if (confirmado == true) {}
+              if (confirmado == true) {
+                try {
+                  final api = ComponenteApiService();
+
+                  // 1. Registrar Tipo de Componente
+                  final tipo = provider
+                      .tipoSeleccionado; // asumimos que lo tienes en provider
+                  final tipoId = await api.registrarTipoComponente(tipo!);
+
+                  // 2. Registrar los Atributos asociados
+                  final atributos = provider.atributos;
+                  final Map<int, int> mapaAtributoIds = {};
+
+                  for (final atributo in atributos) {
+                    final res = await http.post(
+                      Uri.parse("${api.baseUrl}/atributo"),
+                      headers: {"Content-Type": "application/json"},
+                      body: jsonEncode({
+                        "id_tipo": tipoId,
+                        "nombre_atributo": atributo.nombre,
+                        "tipo_dato": atributo.tipoDato,
+                      }),
+                    );
+                    if (res.statusCode != 200) {
+                      throw Exception(
+                        "Error creando atributo: ${atributo.nombre}",
+                      );
+                    }
+
+                    final attrId = jsonDecode(res.body)["id"];
+                    mapaAtributoIds[atributo.id!] = attrId;
+                  }
+
+                  // 3. Registrar el Componente
+                  final componente = provider.componenteCreado!
+                    ..idTipo = tipoId;
+                  final compId = await api.registrarComponente(componente);
+
+                  // 4. Registrar los valores de atributos
+                  for (final entry in provider.valoresAtributos.entries) {
+                    final idAtributoLocal = entry.key; // id del atributo local
+                    final valor = entry.value; // valor escrito por el usuario
+                    final idAtributoReal = mapaAtributoIds[idAtributoLocal];
+
+                    if (idAtributoReal == null) continue;
+
+                    await api.registrarValorAtributo(
+                      idComponente: compId,
+                      idAtributo: idAtributoReal,
+                      valor: valor,
+                    );
+                  }
+
+                  // ✅ Listo
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Componente registrado con éxito"),
+                    ),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text("Error: $e")));
+                }
+              }
             },
           ),
         ),
