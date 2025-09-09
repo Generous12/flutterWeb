@@ -15,6 +15,7 @@ class CustomTextField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final bool showCounter;
   final bool enabled;
+  final String? initialValue; // 🔹 Nuevo parámetro opcional
 
   const CustomTextField({
     Key? key,
@@ -31,6 +32,7 @@ class CustomTextField extends StatefulWidget {
     this.onChanged,
     this.focusNode,
     this.showCounter = false,
+    this.initialValue, // 🔹 agregado al constructor
   }) : super(key: key);
 
   @override
@@ -44,6 +46,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
   void initState() {
     super.initState();
     _obscureText = widget.obscureText;
+    if (widget.initialValue != null && widget.controller.text.isEmpty) {
+      widget.controller.text = widget.initialValue!;
+    }
   }
 
   @override
@@ -57,12 +62,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
       data: theme.copyWith(
         textSelectionTheme: TextSelectionThemeData(
           selectionColor: colorScheme.primary,
-          cursorColor: colorScheme.onBackground,
+          cursorColor: colorScheme.onSurface,
           selectionHandleColor: colorScheme.primary,
         ),
       ),
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 0),
+        margin: const EdgeInsets.symmetric(vertical: 8),
         child: TextField(
           controller: widget.controller,
           keyboardType: widget.isNumeric
@@ -75,6 +80,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           onChanged: widget.onChanged,
           focusNode: widget.focusNode,
           cursorColor: colorScheme.onBackground,
+          enabled: widget.enabled,
           style: TextStyle(fontSize: 12, color: colorScheme.onBackground),
           decoration: InputDecoration(
             labelText: widget.label,

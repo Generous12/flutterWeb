@@ -63,4 +63,11 @@ class ComponentService extends ChangeNotifier {
     valoresAtributos.clear();
     notifyListeners();
   }
+
+  String generarCodigoInventario() {
+    if (tipoSeleccionado == null) return "";
+    // Ejemplo: usar las primeras 3 letras del nombre + timestamp
+    final base = tipoSeleccionado!.nombre.substring(0, 3).toUpperCase();
+    return "$base-${DateTime.now().millisecondsSinceEpoch}";
+  }
 }
