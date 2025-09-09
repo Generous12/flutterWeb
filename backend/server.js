@@ -6,17 +6,16 @@ const cors = require('cors');
 const app = express();
 app.use(express.json());
 app.use(cors());
-
 const connection = mysql.createPool({
-  host: 'switchback.proxy.rlwy.net',
-  port: 40357,
-  user: 'root',
-  password: 'kqpBGGnsxhIrKmyUFLwFYTTKdhFnQVhr',
-  database: 'railway',
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT || '3306'),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  multipleStatements: true, // solo necesario si ejecutas varias queries manualmente
+  multipleStatements: true,
 });
 
 // ------------------------ TIPOS DE COMPONENTE ------------------------

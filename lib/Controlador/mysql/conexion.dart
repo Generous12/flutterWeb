@@ -4,6 +4,7 @@ import 'package:proyecto_web/Clases/providerClases.dart';
 
 class ComponenteApiService {
   final String baseUrl = "https://flutterweb-production.up.railway.app";
+
   final Map<String, String> headers = {"Content-Type": "application/json"};
 
   // ------------------ TIPOS DE COMPONENTE ------------------
