@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:proyecto_web/Vista/app/principal/inicio.dart';
+import 'package:proyecto_web/Widgets/navegator.dart';
 
 class LoginScreenApp extends StatefulWidget {
   const LoginScreenApp({super.key});
@@ -20,6 +22,7 @@ class _LoginScreenAppState extends State<LoginScreenApp> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Email: $email\nPassword: $password')),
       );
+      navegarConSlideDerecha(context, InicioScreen());
 
       _emailController.clear();
       _passwordController.clear();
@@ -116,11 +119,14 @@ class _LoginScreenAppState extends State<LoginScreenApp> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          backgroundColor: Colors.deepPurpleAccent,
+                          backgroundColor: const Color(0xFF7C4DFF),
                         ),
                         child: const Text(
                           "Iniciar sesión",
-                          style: TextStyle(fontSize: 18),
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Color.fromARGB(255, 255, 255, 255),
+                          ),
                         ),
                       ),
                     ),
