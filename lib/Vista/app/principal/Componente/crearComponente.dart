@@ -1,9 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
+import 'package:proyecto_web/Clases/providerClases.dart';
 import 'package:proyecto_web/Controlador/Provider/componentService.dart';
 import 'package:proyecto_web/Controlador/mysql/conexion.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
@@ -776,44 +774,35 @@ class VisualizarComponenteScreen extends StatelessWidget {
                 try {
                   final api = ComponenteApiService();
 
-                  // 1. Registrar Tipo de Componente
-                  final tipo = provider
-                      .tipoSeleccionado; // asumimos que lo tienes en provider
-                  final tipoId = await api.registrarTipoComponente(tipo!);
+                  // 1️⃣ Registrar Tipo de Componente
+                  final tipo = provider.tipoSeleccionado!;
+                  final tipoId = await api.registrarTipoComponente(tipo);
 
-                  // 2. Registrar los Atributos asociados
+                  // 2️⃣ Registrar Atributos asociados
                   final atributos = provider.atributos;
-                  final Map<int, int> mapaAtributoIds = {};
+                  final Map<int, int> mapaAtributoIds =
+                      {}; // mapa de id local -> id real
 
                   for (final atributo in atributos) {
-                    final res = await http.post(
-                      Uri.parse("${api.baseUrl}/atributo"),
-                      headers: {"Content-Type": "application/json"},
-                      body: jsonEncode({
-                        "id_tipo": tipoId,
-                        "nombre_atributo": atributo.nombre,
-                        "tipo_dato": atributo.tipoDato,
-                      }),
+                    final attrId = await api.registrarAtributo(
+                      Atributo(
+                        idTipo: tipoId,
+                        nombre: atributo.nombre,
+                        tipoDato: atributo.tipoDato,
+                      ),
                     );
-                    if (res.statusCode != 200) {
-                      throw Exception(
-                        "Error creando atributo: ${atributo.nombre}",
-                      );
-                    }
-
-                    final attrId = jsonDecode(res.body)["id"];
                     mapaAtributoIds[atributo.id!] = attrId;
                   }
 
-                  // 3. Registrar el Componente
+                  // 3️⃣ Registrar el Componente
                   final componente = provider.componenteCreado!
                     ..idTipo = tipoId;
                   final compId = await api.registrarComponente(componente);
 
-                  // 4. Registrar los valores de atributos
+                  // 4️⃣ Registrar los valores de atributos
                   for (final entry in provider.valoresAtributos.entries) {
-                    final idAtributoLocal = entry.key; // id del atributo local
-                    final valor = entry.value; // valor escrito por el usuario
+                    final idAtributoLocal = entry.key;
+                    final valor = entry.value;
                     final idAtributoReal = mapaAtributoIds[idAtributoLocal];
 
                     if (idAtributoReal == null) continue;
@@ -825,7 +814,7 @@ class VisualizarComponenteScreen extends StatelessWidget {
                     );
                   }
 
-                  // ✅ Listo
+                  // ✅ Éxito
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text("Componente registrado con éxito"),
