@@ -39,6 +39,7 @@ dependencies:
   lucide_icons: ^0.257.0
   dropdown_button2: ^2.3.9
   provider: ^6.1.4
+  mysql1: ^0.20.0
 
 dev_dependencies:
   flutter_test:

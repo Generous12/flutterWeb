@@ -1,4 +1,4 @@
-// server.js
+require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
@@ -6,17 +6,23 @@ const cors = require('cors');
 const app = express();
 app.use(express.json());
 app.use(cors());
-const connection = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '3306'),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  multipleStatements: true,
-});
+
+// ------------------------ CONEXIÓN MYSQL ------------------------
+let connection;
+
+try {
+  connection = mysql.createPool(process.env.MYSQL_URL);
+  connection.getConnection((err, conn) => {
+    if (err) {
+      console.error("❌ Error conectando a MySQL:", err.message);
+    } else {
+      console.log("✅ Conexión a MySQL establecida");
+      conn.release();
+    }
+  });
+} catch (err) {
+  console.error("❌ Error inicializando la conexión:", err.message);
+}
 
 // ------------------------ TIPOS DE COMPONENTE ------------------------
 app.get('/tipo-componentes', (req, res) => {
@@ -63,7 +69,6 @@ app.post('/componente', (req, res) => {
   const { id_tipo, codigo_inventario, cantidad } = req.body;
   connection.query('CALL sp_upsert_componente(?, ?, ?, @out_id, @out_accion)', [id_tipo, codigo_inventario, cantidad], (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
-    // SP debe devolver SELECT out_id, out_accion al final
     res.json(results[0][0]);
   });
 });
@@ -161,4 +166,4 @@ app.get('/cases/:id_area', (req, res) => {
 
 // ------------------------ PUERTO ------------------------
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => console.log(`Servidor corriendo en el puerto ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Servidor corriendo en puerto ${PORT}`));
