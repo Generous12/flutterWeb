@@ -3,6 +3,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Clases/plantillasComponente.dart';
 import 'package:proyecto_web/Controlador/Provider/componentService.dart';
+import 'package:proyecto_web/Vista/app/principal/inicio.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
@@ -102,6 +103,7 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
       appBar: AppBar(
         title: const Text("Crear Componente"),
         backgroundColor: Colors.black,
+        toolbarHeight: 48,
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft),
@@ -155,9 +157,9 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
                         indicator: Container(
                           decoration: BoxDecoration(
                             color: index < pasoActual
-                                ? Colors.blue
+                                ? const Color(0xFF2196F3)
                                 : index == pasoActual
-                                ? Colors.blueAccent
+                                ? const Color(0xFF448AFF)
                                 : Colors.grey.shade300,
                             shape: BoxShape.circle,
                           ),
@@ -472,7 +474,7 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
             hintText: "Ingresa el nombre del componente",
             label: "Nombre de componente",
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           const Text(
             "Atributos del componente",
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -519,8 +521,8 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
                 child: const Icon(Icons.delete, color: Colors.white),
               ),
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                padding: const EdgeInsets.all(3),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                padding: const EdgeInsets.all(1),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -765,19 +767,17 @@ class _ValorAtributoFormState extends State<ValorAtributoForm> {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: provider.atributos.map((attr) {
-                  final controller = controllers[attr.id!]!;
-                  return CustomTextField(
-                    key: ValueKey("attr_${attr.id}"),
-                    controller: controller,
-                    hintText: "Ingresar el valor",
-                    label: "Valor de ${attr.nombre}",
-                  );
-                }).toList(),
-              ),
+          SingleChildScrollView(
+            child: Column(
+              children: provider.atributos.map((attr) {
+                final controller = controllers[attr.id!]!;
+                return CustomTextField(
+                  key: ValueKey("attr_${attr.id}"),
+                  controller: controller,
+                  hintText: "Ingresar el valor",
+                  label: "Valor de ${attr.nombre}",
+                );
+              }).toList(),
             ),
           ),
         ],
@@ -896,6 +896,7 @@ class VisualizarComponenteScreen extends StatelessWidget {
             enabled: true,
             onPressedLogic: () async {
               print("🖱️ Botón presionado, mostrando diálogo de confirmación");
+
               final confirmado = await showCustomDialog(
                 context: context,
                 title: "Confirmar",
@@ -912,12 +913,36 @@ class VisualizarComponenteScreen extends StatelessWidget {
                 ).guardarEnBackendB();
 
                 if (exito) {
-                  showCustomDialog(
+                  final continuar = await showCustomDialog(
                     context: context,
                     title: "Éxito",
-                    message: "Componente guardado correctamente",
-                    confirmButtonText: "Cerrar",
+                    message:
+                        "Componente guardado correctamente.\n\n¿Deseas registrar otro?",
+                    confirmButtonText: "Sí",
+                    cancelButtonText: "No",
                   );
+
+                  if (continuar == true) {
+                    print("🔄 Usuario quiere seguir registrando");
+                    Provider.of<ComponentService>(
+                      context,
+                      listen: false,
+                    ).reset();
+                    navegarYRemoverConSlideIzquierda(
+                      context,
+                      const FlujoCrearComponente(),
+                    );
+                  } else {
+                    print("🏠 Usuario quiere volver al inicio");
+                    Provider.of<ComponentService>(
+                      context,
+                      listen: false,
+                    ).reset();
+                    navegarYRemoverConSlideIzquierda(
+                      context,
+                      const InicioScreen(),
+                    );
+                  }
                 } else {
                   showCustomDialog(
                     context: context,

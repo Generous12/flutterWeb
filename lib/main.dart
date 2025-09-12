@@ -32,19 +32,25 @@ class MyApp extends StatelessWidget {
         ),
 
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
+          seedColor: const Color.fromARGB(255, 0, 68, 255),
           background: Colors.white,
           surface: Colors.white,
         ),
 
         cardTheme: const CardThemeData(
-          color: Colors.white, // color de todas las cartas
+          color: Colors.white,
           elevation: 4,
           shadowColor: Colors.black26,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(12)),
           ),
-          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16), // opcional
+          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        ),
+
+        textSelectionTheme: const TextSelectionThemeData(
+          cursorColor: Colors.black,
+          selectionColor: Color(0xFF448AFF),
+          selectionHandleColor: Color(0xFF448AFF),
         ),
 
         useMaterial3: true,

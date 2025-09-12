@@ -20,7 +20,31 @@ void navegarYRemoverConSlideDerecha(BuildContext context, Widget pantalla) {
       transitionDuration: const Duration(milliseconds: 300),
       reverseTransitionDuration: const Duration(milliseconds: 300),
     ),
-    (route) => false, // Elimina todas las rutas anteriores
+    (route) => false,
+  );
+}
+
+void navegarYRemoverConSlideIzquierda(BuildContext context, Widget pantalla) {
+  Navigator.pushAndRemoveUntil(
+    context,
+    PageRouteBuilder(
+      pageBuilder: (_, __, ___) => pantalla,
+      transitionsBuilder: (_, animation, __, child) {
+        return SlideTransition(
+          position:
+              Tween<Offset>(
+                begin: const Offset(-1.0, 0.0),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+              ),
+          child: child,
+        );
+      },
+      transitionDuration: const Duration(milliseconds: 300),
+      reverseTransitionDuration: const Duration(milliseconds: 300),
+    ),
+    (route) => false,
   );
 }
 
@@ -56,7 +80,7 @@ void navegarConSlideIzquierda(BuildContext context, Widget pantalla) {
       transitionDuration: Duration(milliseconds: 200),
       reverseTransitionDuration: Duration(milliseconds: 200),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(-1.0, 0.0); // ← entra desde la izquierda
+        const begin = Offset(-1.0, 0.0);
         const end = Offset.zero;
         const curve = Curves.easeInOut;
 

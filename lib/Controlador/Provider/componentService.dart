@@ -80,32 +80,6 @@ class ComponentService extends ChangeNotifier {
   }
 
   int? getDbIdAtributo(int tempId) => atributoIdDBMap[tempId];
-  Future<void> verificarConexion() async {
-    try {
-      final url = Uri.parse(
-        "http://192.168.18.23/proyecto_web/backend/mysqlConexion.php",
-      );
-
-      print("Intentando conectar a $url");
-
-      final response = await http.get(url);
-
-      print("Status code: ${response.statusCode}");
-      print("Body: ${response.body}");
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        conectado = data["conectado"] ?? false;
-      } else {
-        conectado = false;
-      }
-    } catch (e) {
-      print("Error al conectar: $e");
-      conectado = false;
-    }
-
-    notifyListeners();
-  }
 
   Future<bool> guardarEnBackendB() async {
     if (tipoSeleccionado == null || componenteCreado == null) {
@@ -114,7 +88,7 @@ class ComponentService extends ChangeNotifier {
     }
 
     final url = Uri.parse(
-      "http://192.168.18.23/proyecto_web/backend/procedimientoAlm/registrar_componente.php",
+      "http://192.168.18.20/proyecto_web/backend/procedimientoAlm/registrar_componente.php",
     );
 
     final List<Map<String, dynamic>> atributosJson = atributos.map((attr) {
