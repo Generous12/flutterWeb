@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
+import 'package:proyecto_web/Clases/plantillasComponente.dart';
 import 'package:proyecto_web/Controlador/Provider/componentService.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
@@ -135,14 +136,14 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
         child: Column(
           children: [
             SizedBox(
-              height: 80,
+              height: 60,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 shrinkWrap: true,
                 itemCount: pasosWidgets.length,
                 itemBuilder: (context, index) {
                   return SizedBox(
-                    width: 100, // ancho fijo para que las líneas se conecten
+                    width: 100,
                     child: TimelineTile(
                       axis: TimelineAxis.horizontal,
                       alignment: TimelineAlign.center,
@@ -179,9 +180,11 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
               ),
             ),
 
-            Expanded(child: pasosWidgets[pasoActual]),
+            Expanded(
+              child: SingleChildScrollView(child: pasosWidgets[pasoActual]),
+            ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(10.0),
               child: Row(
                 children: [
                   if (pasoActual > 0)
@@ -238,6 +241,76 @@ class TipoYAtributoForm extends StatefulWidget {
 }
 
 class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
+  final List<Plantilla> plantillas = [
+    Plantilla(
+      nombre: "Periféricos",
+      atributos: [
+        {"nombre": "Marca", "tipo": "Texto"},
+        {"nombre": "Modelo", "tipo": "Texto"},
+        {"nombre": "Tipo de conexión", "tipo": "Texto"}, // USB, Bluetooth, etc.
+        {"nombre": "Color", "tipo": "Texto"},
+        {"nombre": "Dimensiones", "tipo": "Texto"},
+        {"nombre": "Peso", "tipo": "Número"},
+      ],
+    ),
+    Plantilla(
+      nombre: "RAM",
+      atributos: [
+        {"nombre": "Capacidad", "tipo": "Número"}, // GB
+        {"nombre": "Velocidad", "tipo": "Número"}, // MHz
+        {"nombre": "Tipo", "tipo": "Texto"}, // DDR4, DDR5, etc.
+        {"nombre": "Latencia", "tipo": "Número"}, // CL
+        {"nombre": "Voltaje", "tipo": "Número"}, // V
+      ],
+    ),
+    Plantilla(
+      nombre: "Procesador",
+      atributos: [
+        {"nombre": "Marca", "tipo": "Texto"}, // Intel, AMD
+        {"nombre": "Modelo", "tipo": "Texto"},
+        {"nombre": "Número de núcleos", "tipo": "Número"},
+        {"nombre": "Número de hilos", "tipo": "Número"},
+        {"nombre": "Frecuencia base", "tipo": "Número"}, // GHz
+        {"nombre": "Frecuencia turbo", "tipo": "Número"}, // GHz
+        {"nombre": "Litografía", "tipo": "Número"}, // nm
+      ],
+    ),
+    Plantilla(
+      nombre: "Disco duro / SSD",
+      atributos: [
+        {"nombre": "Capacidad", "tipo": "Número"}, // GB/TB
+        {"nombre": "Tipo", "tipo": "Texto"}, // SSD, HDD
+        {"nombre": "Interfaz", "tipo": "Texto"}, // SATA, NVMe
+        {"nombre": "Velocidad de lectura", "tipo": "Número"}, // MB/s
+        {"nombre": "Velocidad de escritura", "tipo": "Número"}, // MB/s
+        {"nombre": "Formato", "tipo": "Texto"}, // 2.5", M.2, etc.
+      ],
+    ),
+    Plantilla(
+      nombre: "Tarjeta de video",
+      atributos: [
+        {"nombre": "Marca", "tipo": "Texto"}, // Nvidia, AMD
+        {"nombre": "Modelo", "tipo": "Texto"},
+        {"nombre": "Memoria", "tipo": "Número"}, // GB
+        {"nombre": "Tipo de memoria", "tipo": "Texto"}, // GDDR6, etc.
+        {"nombre": "Frecuencia del núcleo", "tipo": "Número"}, // MHz
+        {"nombre": "Consumo energético", "tipo": "Número"}, // W
+      ],
+    ),
+    Plantilla(
+      nombre: "Placa base",
+      atributos: [
+        {"nombre": "Marca", "tipo": "Texto"},
+        {"nombre": "Modelo", "tipo": "Texto"},
+        {"nombre": "Socket", "tipo": "Texto"}, // LGA1700, AM5, etc.
+        {"nombre": "Chipset", "tipo": "Texto"},
+        {"nombre": "Memoria máxima", "tipo": "Número"}, // GB
+        {"nombre": "Ranuras RAM", "tipo": "Número"},
+        {"nombre": "Formato", "tipo": "Texto"}, // ATX, Micro-ATX
+      ],
+    ),
+  ];
+
   // Tipo de componente
   final TextEditingController nombreController = TextEditingController();
 
@@ -254,13 +327,14 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
   void initState() {
     super.initState();
     nombreController.addListener(_validate);
-    _addAtributo();
   }
 
   void _validate() {
     final bool isValid =
         nombreController.text.trim().isNotEmpty &&
+        atributos.isNotEmpty &&
         atributos.any((attr) => attr["controller"].text.trim().isNotEmpty);
+
     widget.onValidChange(isValid);
   }
 
@@ -331,6 +405,45 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
       provider.reset();
       Navigator.pop(context);
     }
+  }
+
+  Future<Plantilla?> mostrarDialogoPlantilla(BuildContext context) async {
+    final Map<String, IconData> iconosPlantilla = {
+      "Periféricos": LucideIcons.mouse,
+      "RAM": LucideIcons.cpu,
+      "Procesador": LucideIcons.cpu,
+      "Disco duro / SSD": LucideIcons.hardDrive,
+      "Tarjeta de video": LucideIcons.monitor,
+    };
+
+    return showDialog<Plantilla>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Selecciona una plantilla"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: plantillas.map((p) {
+            return ListTile(
+              leading: Icon(
+                iconosPlantilla[p.nombre] ?? LucideIcons.box,
+                color: Colors.blue,
+              ),
+              title: Text(p.nombre),
+              onTap: () => Navigator.pop(context, p),
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              "Cancelar",
+              style: TextStyle(color: Colors.black),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -448,7 +561,44 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
               ),
             );
           }).toList(),
+
           const SizedBox(height: 10),
+
+          // Botón de plantillas agregado justo arriba del botón "Añadir atributo"
+          TextButton.icon(
+            onPressed: () async {
+              final seleccion = await mostrarDialogoPlantilla(context);
+              if (seleccion != null) {
+                // Limpiar atributos actuales antes de agregar los de la plantilla
+                for (var attr in atributos) {
+                  (attr["controller"] as TextEditingController).dispose();
+                }
+                atributos.clear();
+
+                for (var attr in seleccion.atributos) {
+                  final controller = TextEditingController(
+                    text: attr["nombre"],
+                  );
+                  controller.addListener(_validate);
+                  atributos.add({
+                    "controller": controller,
+                    "tipo": attr["tipo"],
+                  });
+                }
+
+                setState(() {});
+                _validate();
+              }
+            },
+            icon: const Icon(Icons.list, color: Colors.black),
+            label: const Text(
+              "Usar plantilla",
+              style: TextStyle(color: Colors.black),
+            ),
+          ),
+          const SizedBox(height: 5),
+
+          // Botón para añadir atributo manualmente
           TextButton.icon(
             onPressed: _addAtributo,
             icon: const Icon(Icons.add, color: Color.fromARGB(255, 0, 0, 0)),

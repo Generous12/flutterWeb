@@ -14,7 +14,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
 
   void _guardarArea() {
     String nombre = _nombreController.text.trim();
-    String descripcion = _descripcionController.text.trim();
+    _descripcionController.text.trim();
 
     if (nombre.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
