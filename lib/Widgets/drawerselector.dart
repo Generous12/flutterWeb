@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:proyecto_web/Vista/app/principal/Areas/crearAreas.dart';
-import 'package:proyecto_web/Vista/app/principal/Componente/crearComponente.dart';
+import 'package:proyecto_web/Vista/app/principal/Componente/menu.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -47,7 +47,7 @@ class CustomDrawer extends StatelessWidget {
               ),
               onTap: () {
                 Navigator.pop(context);
-                navegarConSlideDerecha(context, FlujoCrearComponente());
+                navegarConSlideDerecha(context, MenuComponentesScreen());
               },
             ),
             ListTile(

@@ -33,6 +33,7 @@ class _InicioScreenState extends State<InicioScreen> {
         title: const Text("Inicio"),
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
+        toolbarHeight: 48,
         elevation: 0,
       ),
       drawer: const CustomDrawer(),

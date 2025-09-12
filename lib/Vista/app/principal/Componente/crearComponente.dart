@@ -125,10 +125,11 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
 
               if (salir == true) {
                 provider.reset();
-                Navigator.pop(context);
+                navegarYRemoverConSlideIzquierda(context, const InicioScreen());
               }
             } else {
-              Navigator.pop(context);
+              provider.reset();
+              navegarYRemoverConSlideIzquierda(context, const InicioScreen());
             }
           },
         ),
@@ -344,7 +345,7 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
     final controller = TextEditingController();
     controller.addListener(_validate);
     atributos.add({"controller": controller, "tipo": tipos[0]});
-    setState(() {});
+    setState(() => _validate()); // 👈 actualiza después de añadir
   }
 
   Future<void> _seleccionarTipo(Map<String, dynamic> attr) async {
@@ -563,20 +564,15 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
               ),
             );
           }).toList(),
-
           const SizedBox(height: 10),
-
-          // Botón de plantillas agregado justo arriba del botón "Añadir atributo"
           TextButton.icon(
             onPressed: () async {
               final seleccion = await mostrarDialogoPlantilla(context);
               if (seleccion != null) {
-                // Limpiar atributos actuales antes de agregar los de la plantilla
                 for (var attr in atributos) {
                   (attr["controller"] as TextEditingController).dispose();
                 }
                 atributos.clear();
-
                 for (var attr in seleccion.atributos) {
                   final controller = TextEditingController(
                     text: attr["nombre"],
@@ -599,8 +595,6 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
             ),
           ),
           const SizedBox(height: 5),
-
-          // Botón para añadir atributo manualmente
           TextButton.icon(
             onPressed: _addAtributo,
             icon: const Icon(Icons.add, color: Color.fromARGB(255, 0, 0, 0)),
@@ -719,10 +713,7 @@ class _ValorAtributoFormState extends State<ValorAtributoForm> {
   void initState() {
     super.initState();
     final provider = Provider.of<ComponentService>(context, listen: false);
-
-    // Inicializamos los controllers usando los IDs únicos de los atributos
     for (var attr in provider.atributos) {
-      // Todos los atributos deben tener un ID único asignado previamente
       controllers[attr.id!] = TextEditingController(
         text: provider.valoresAtributos[attr.id!] ?? '',
       );
@@ -796,6 +787,7 @@ class VisualizarComponenteScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        toolbarHeight: 48,
         title: const Text("Crear Componente"),
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
@@ -819,7 +811,8 @@ class VisualizarComponenteScreen extends StatelessWidget {
 
               if (salir == true) {
                 provider.reset();
-                Navigator.pop(context);
+                Provider.of<ComponentService>(context, listen: false).reset();
+                navegarYRemoverConSlideIzquierda(context, const InicioScreen());
               }
             } else {
               Navigator.pop(context);
@@ -872,7 +865,6 @@ class VisualizarComponenteScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    // Mostramos los valores usando el ID real del atributo
                     ...provider.atributos.map((attr) {
                       final valor =
                           provider.valoresAtributos[attr.id!] ?? "(Sin valor)";
