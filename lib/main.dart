@@ -23,24 +23,33 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: 'FunnelDisplay',
 
-        // 🔹 Fondo global blanco
         scaffoldBackgroundColor: Colors.white,
 
-        // 🔹 AppBar blanco
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
-          foregroundColor: Colors.black, // color de texto e íconos
-          elevation: 0, // opcional: sin sombra
+          foregroundColor: Colors.black,
+          elevation: 0,
         ),
 
-        // 🔹 Color scheme basado en blanco
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.deepPurple,
-          background: Colors.white, // Fondo general
-          surface: Colors.white, // Fondos de cards, dialogs, etc.
+          background: Colors.white,
+          surface: Colors.white,
         ),
+
+        cardTheme: const CardThemeData(
+          color: Colors.white, // color de todas las cartas
+          elevation: 4,
+          shadowColor: Colors.black26,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+          ),
+          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16), // opcional
+        ),
+
         useMaterial3: true,
       ),
+
       home: const ResponsiveWrapper(),
     );
   }
@@ -54,10 +63,8 @@ class ResponsiveWrapper extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth > 800) {
-          // Pantallas grandes → web
           return const LoginScreenWeb();
         } else {
-          // Pantallas pequeñas → app/móvil
           return const InicioScreen();
         }
       },

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
-import 'package:proyecto_web/Clases/providerClases.dart';
 import 'package:proyecto_web/Controlador/Provider/componentService.dart';
-import 'package:proyecto_web/Controlador/mysql/conexion.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
@@ -21,8 +19,8 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
   int pasoActual = 0;
   bool puedeContinuar = false;
 
-  final tipoComponenteKey = GlobalKey<_TipoComponenteFormState>();
-  final atributoFormKey = GlobalKey<_AtributoFormState>();
+  final tipoComponenteKey = GlobalKey<_TipoYAtributoFormState>();
+
   final componenteFormKey = GlobalKey<_ComponenteFormState>();
   final valorAtributoFormKey = GlobalKey<_ValorAtributoFormState>();
 
@@ -32,14 +30,11 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
   void initState() {
     super.initState();
     pasosWidgets = [
-      TipoComponenteForm(
+      TipoYAtributoForm(
         key: tipoComponenteKey,
         onValidChange: (isValid) => setState(() => puedeContinuar = isValid),
       ),
-      AtributoForm(
-        key: atributoFormKey,
-        onValidChange: (isValid) => setState(() => puedeContinuar = isValid),
-      ),
+
       ComponenteForm(
         key: componenteFormKey,
         onValidChange: (isValid) => setState(() => puedeContinuar = isValid),
@@ -92,12 +87,9 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
         await tipoComponenteKey.currentState?.guardar(provider);
         break;
       case 1:
-        atributoFormKey.currentState?.guardar(provider);
-        break;
-      case 2:
         componenteFormKey.currentState?.guardar(provider);
         break;
-      case 3:
+      case 2:
         valorAtributoFormKey.currentState?.guardar(provider);
         break;
     }
@@ -143,36 +135,40 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
         child: Column(
           children: [
             SizedBox(
-              height: 70,
+              height: 80,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
+                shrinkWrap: true,
                 itemCount: pasosWidgets.length,
                 itemBuilder: (context, index) {
-                  return TimelineTile(
-                    axis: TimelineAxis.horizontal,
-                    alignment: TimelineAlign.center,
-                    isFirst: index == 0,
-                    isLast: index == pasosWidgets.length - 1,
-                    indicatorStyle: IndicatorStyle(
-                      width: 30,
-                      height: 30,
-                      indicator: Container(
-                        decoration: BoxDecoration(
-                          color: index < pasoActual
-                              ? Colors.blue
-                              : index == pasoActual
-                              ? Colors.blueAccent
-                              : Colors.grey.shade300,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            "${index + 1}",
-                            style: TextStyle(
-                              color: index <= pasoActual
-                                  ? Colors.white
-                                  : Colors.black,
-                              fontWeight: FontWeight.bold,
+                  return SizedBox(
+                    width: 100, // ancho fijo para que las líneas se conecten
+                    child: TimelineTile(
+                      axis: TimelineAxis.horizontal,
+                      alignment: TimelineAlign.center,
+                      isFirst: index == 0,
+                      isLast: index == pasosWidgets.length - 1,
+                      indicatorStyle: IndicatorStyle(
+                        width: 30,
+                        height: 30,
+                        indicator: Container(
+                          decoration: BoxDecoration(
+                            color: index < pasoActual
+                                ? Colors.blue
+                                : index == pasoActual
+                                ? Colors.blueAccent
+                                : Colors.grey.shade300,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              "${index + 1}",
+                              style: TextStyle(
+                                color: index <= pasoActual
+                                    ? Colors.white
+                                    : Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
@@ -182,6 +178,7 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
                 },
               ),
             ),
+
             Expanded(child: pasosWidgets[pasoActual]),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -230,98 +227,21 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
   }
 }
 
-//PASO 1 ASIGNAMOS NOMBRE DEL COMPONENTE
-class TipoComponenteForm extends StatefulWidget {
+//PASO 1 y 2  ASIGNAMOS NOMBRE DEL COMPONENTE Y CREAMS ATRIBUTOS
+class TipoYAtributoForm extends StatefulWidget {
   final ValueChanged<bool> onValidChange;
 
-  TipoComponenteForm({super.key, required this.onValidChange});
+  const TipoYAtributoForm({super.key, required this.onValidChange});
 
   @override
-  State<TipoComponenteForm> createState() => _TipoComponenteFormState();
+  State<TipoYAtributoForm> createState() => _TipoYAtributoFormState();
 }
 
-class _TipoComponenteFormState extends State<TipoComponenteForm> {
+class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
+  // Tipo de componente
   final TextEditingController nombreController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    nombreController.addListener(_validate);
-  }
-
-  void _validate() {
-    widget.onValidChange(nombreController.text.trim().isNotEmpty);
-  }
-
-  Future<void> guardar(ComponentService provider) async {
-    final nombre = nombreController.text.trim();
-    if (nombre.isEmpty) return;
-
-    final confirmado = await showCustomDialog(
-      context: context,
-      title: "Confirmar",
-      message: "¿Deseas crear el tipo de componente '$nombre'?",
-      confirmButtonText: "Sí",
-      cancelButtonText: "No",
-    );
-
-    if (confirmado == true) {
-      provider.crearTipoComponente(nombre);
-      await showCustomDialog(
-        context: context,
-        title: "¡Listo!",
-        message: "El tipo de componente '$nombre' se creó correctamente.",
-        confirmButtonText: "Aceptar",
-      );
-    }
-  }
-
-  @override
-  void dispose() {
-    nombreController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Registrar componente",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                CustomTextField(
-                  controller: nombreController,
-                  hintText: "Ingresa el nombre del componente",
-                  label: "Nombre de componente",
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-//PASO 2 CREAMOS LOS ATRIBUTOS PAR EL COMOPONENTE
-class AtributoForm extends StatefulWidget {
-  final ValueChanged<bool> onValidChange;
-
-  const AtributoForm({super.key, required this.onValidChange});
-
-  @override
-  State<AtributoForm> createState() => _AtributoFormState();
-}
-
-class _AtributoFormState extends State<AtributoForm> {
+  // Atributos
   final List<Map<String, dynamic>> atributos = [];
   final List<String> tipos = ["Texto", "Número", "Fecha"];
   final Map<String, String> abreviaturas = {
@@ -333,7 +253,15 @@ class _AtributoFormState extends State<AtributoForm> {
   @override
   void initState() {
     super.initState();
+    nombreController.addListener(_validate);
     _addAtributo();
+  }
+
+  void _validate() {
+    final bool isValid =
+        nombreController.text.trim().isNotEmpty &&
+        atributos.any((attr) => attr["controller"].text.trim().isNotEmpty);
+    widget.onValidChange(isValid);
   }
 
   void _addAtributo() {
@@ -341,22 +269,6 @@ class _AtributoFormState extends State<AtributoForm> {
     controller.addListener(_validate);
     atributos.add({"controller": controller, "tipo": tipos[0]});
     setState(() {});
-  }
-
-  void _validate() {
-    widget.onValidChange(
-      atributos.any((attr) => attr["controller"].text.trim().isNotEmpty),
-    );
-  }
-
-  void guardar(ComponentService provider) {
-    for (var attr in atributos) {
-      final nombre = attr["controller"].text.trim();
-      final tipo = attr["tipo"];
-      if (nombre.isNotEmpty) {
-        provider.agregarAtributo(nombre, tipo);
-      }
-    }
   }
 
   Future<void> _seleccionarTipo(Map<String, dynamic> attr) async {
@@ -380,11 +292,50 @@ class _AtributoFormState extends State<AtributoForm> {
 
     if (seleccionado != null) {
       setState(() => attr["tipo"] = seleccionado);
+      _validate();
+    }
+  }
+
+  Future<void> guardar(ComponentService provider) async {
+    final nombre = nombreController.text.trim();
+    if (nombre.isEmpty) return;
+
+    final confirmado = await showCustomDialog(
+      context: context,
+      title: "Confirmar",
+      message: "¿Deseas crear el tipo de componente '$nombre'?",
+      confirmButtonText: "Sí",
+      cancelButtonText: "No",
+    );
+
+    if (confirmado == true) {
+      provider.crearTipoComponente(nombre);
+
+      for (var attr in atributos) {
+        final nombreAttr = attr["controller"].text.trim();
+        final tipo = attr["tipo"];
+        if (nombreAttr.isNotEmpty) {
+          provider.agregarAtributo(nombreAttr, tipo);
+        }
+      }
+
+      await showCustomDialog(
+        context: context,
+        title: "¡Listo!",
+        message:
+            "El tipo de componente '$nombre' y sus atributos se crearon correctamente.",
+        confirmButtonText: "Aceptar",
+      );
+    } else {
+      // Si da "No", frena la navegación y sale de la pantalla
+      provider.reset();
+      Navigator.pop(context);
     }
   }
 
   @override
   void dispose() {
+    nombreController.dispose();
     for (var attr in atributos) {
       (attr["controller"] as TextEditingController).dispose();
     }
@@ -394,15 +345,26 @@ class _AtributoFormState extends State<AtributoForm> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Creacion de los atributos",
+            "Registrar componente y atributos",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 0),
+          const SizedBox(height: 10),
+          CustomTextField(
+            controller: nombreController,
+            hintText: "Ingresa el nombre del componente",
+            label: "Nombre de componente",
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            "Atributos del componente",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
           ...atributos.asMap().entries.map((entry) {
             final index = entry.key;
             final attr = entry.value;
@@ -412,16 +374,14 @@ class _AtributoFormState extends State<AtributoForm> {
               direction: DismissDirection.endToStart,
               onDismissed: (_) {
                 final eliminado = attr;
-
                 setState(() {
                   atributos.removeAt(index);
                   _validate();
                 });
-
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: const Text("Atributo eliminado"),
-                    duration: const Duration(seconds: 8),
+                    duration: const Duration(seconds: 1),
                     action: SnackBarAction(
                       label: "Deshacer",
                       textColor: Colors.blue,
@@ -446,7 +406,7 @@ class _AtributoFormState extends State<AtributoForm> {
                 child: const Icon(Icons.delete, color: Colors.white),
               ),
               child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 0, horizontal: 4),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -458,8 +418,8 @@ class _AtributoFormState extends State<AtributoForm> {
                       flex: 2,
                       child: CustomTextField(
                         controller: attr["controller"],
-                        hintText: "Ingresar los atributos del componente",
-                        label: "Nombre Atributo",
+                        hintText: "Nombre del atributo",
+                        label: "Atributo",
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -488,11 +448,14 @@ class _AtributoFormState extends State<AtributoForm> {
               ),
             );
           }).toList(),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           TextButton.icon(
             onPressed: _addAtributo,
-            icon: const Icon(Icons.add),
-            label: const Text("Añadir atributo"),
+            icon: const Icon(Icons.add, color: Color.fromARGB(255, 0, 0, 0)),
+            label: const Text(
+              "Añadir atributo",
+              style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+            ),
           ),
         ],
       ),
@@ -555,7 +518,7 @@ class _ComponenteFormState extends State<ComponenteForm> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -604,9 +567,14 @@ class _ValorAtributoFormState extends State<ValorAtributoForm> {
   void initState() {
     super.initState();
     final provider = Provider.of<ComponentService>(context, listen: false);
-    for (var i = 0; i < provider.atributos.length; i++) {
-      controllers[i] = TextEditingController();
-      controllers[i]!.addListener(_validate);
+
+    // Inicializamos los controllers usando los IDs únicos de los atributos
+    for (var attr in provider.atributos) {
+      // Todos los atributos deben tener un ID único asignado previamente
+      controllers[attr.id!] = TextEditingController(
+        text: provider.valoresAtributos[attr.id!] ?? '',
+      );
+      controllers[attr.id!]!.addListener(_validate);
     }
   }
 
@@ -617,11 +585,10 @@ class _ValorAtributoFormState extends State<ValorAtributoForm> {
   }
 
   void guardar(ComponentService provider) {
-    controllers.forEach((index, controller) {
+    controllers.forEach((attrId, controller) {
       final valor = controller.text.trim();
       if (valor.isNotEmpty) {
-        provider.setValorAtributo(index, valor);
-        // Ahora se guarda con index
+        provider.setValorAtributo(attrId, valor);
       }
     });
   }
@@ -651,13 +618,10 @@ class _ValorAtributoFormState extends State<ValorAtributoForm> {
           Expanded(
             child: SingleChildScrollView(
               child: Column(
-                children: provider.atributos.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final attr = entry.value;
-                  final controller = controllers[index]!;
-
+                children: provider.atributos.map((attr) {
+                  final controller = controllers[attr.id!]!;
                   return CustomTextField(
-                    key: ValueKey("attr_${index}"),
+                    key: ValueKey("attr_${attr.id}"),
                     controller: controller,
                     hintText: "Ingresar el valor",
                     label: "Valor de ${attr.nombre}",
@@ -672,8 +636,6 @@ class _ValorAtributoFormState extends State<ValorAtributoForm> {
   }
 }
 
-//VISUALIZACION DE LOS CAMBIOSimport
-
 class VisualizarComponenteScreen extends StatelessWidget {
   const VisualizarComponenteScreen({super.key});
 
@@ -684,14 +646,36 @@ class VisualizarComponenteScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
-          "Visualizar Componente",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: const Text("Crear Componente"),
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
-        centerTitle: true,
-        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(LucideIcons.arrowLeft),
+          onPressed: () async {
+            final provider = Provider.of<ComponentService>(
+              context,
+              listen: false,
+            );
+
+            if (provider.tipoSeleccionado != null) {
+              final salir = await showCustomDialog(
+                context: context,
+                title: "Confirmar salida",
+                message:
+                    "Hay un tipo de componente en proceso: '${provider.tipoSeleccionado!.nombre}'. ¿Deseas salir y perder los cambios?",
+                confirmButtonText: "Sí",
+                cancelButtonText: "No",
+              );
+
+              if (salir == true) {
+                provider.reset();
+                Navigator.pop(context);
+              }
+            } else {
+              Navigator.pop(context);
+            }
+          },
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -738,11 +722,10 @@ class VisualizarComponenteScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    ...provider.atributos.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final attr = entry.value;
+                    // Mostramos los valores usando el ID real del atributo
+                    ...provider.atributos.map((attr) {
                       final valor =
-                          provider.valoresAtributos[index] ?? "(Sin valor)";
+                          provider.valoresAtributos[attr.id!] ?? "(Sin valor)";
 
                       return _AttributeCard(
                         icon: LucideIcons.settings,
@@ -762,6 +745,7 @@ class VisualizarComponenteScreen extends StatelessWidget {
             text: "Registrar",
             enabled: true,
             onPressedLogic: () async {
+              print("🖱️ Botón presionado, mostrando diálogo de confirmación");
               final confirmado = await showCustomDialog(
                 context: context,
                 title: "Confirmar",
@@ -770,61 +754,32 @@ class VisualizarComponenteScreen extends StatelessWidget {
                 cancelButtonText: "No",
               );
 
+              print("💬 Resultado del diálogo: $confirmado");
+
               if (confirmado == true) {
-                try {
-                  final api = ComponenteApiService();
+                print("➡️ Usuario confirmó, intentando guardar en backend");
+                final exito = await Provider.of<ComponentService>(
+                  context,
+                  listen: false,
+                ).guardarEnBackendB();
 
-                  // 1️⃣ Registrar Tipo de Componente
-                  final tipo = provider.tipoSeleccionado!;
-                  final tipoId = await api.registrarTipoComponente(tipo);
-
-                  // 2️⃣ Registrar Atributos asociados
-                  final atributos = provider.atributos;
-                  final Map<int, int> mapaAtributoIds =
-                      {}; // mapa de id local -> id real
-
-                  for (final atributo in atributos) {
-                    final attrId = await api.registrarAtributo(
-                      Atributo(
-                        idTipo: tipoId,
-                        nombre: atributo.nombre,
-                        tipoDato: atributo.tipoDato,
-                      ),
-                    );
-                    mapaAtributoIds[atributo.id!] = attrId;
-                  }
-
-                  // 3️⃣ Registrar el Componente
-                  final componente = provider.componenteCreado!
-                    ..idTipo = tipoId;
-                  final compId = await api.registrarComponente(componente);
-
-                  // 4️⃣ Registrar los valores de atributos
-                  for (final entry in provider.valoresAtributos.entries) {
-                    final idAtributoLocal = entry.key;
-                    final valor = entry.value;
-                    final idAtributoReal = mapaAtributoIds[idAtributoLocal];
-
-                    if (idAtributoReal == null) continue;
-
-                    await api.registrarValorAtributo(
-                      idComponente: compId,
-                      idAtributo: idAtributoReal,
-                      valor: valor,
-                    );
-                  }
-
-                  // ✅ Éxito
+                if (exito) {
+                  print("✅ Guardado exitoso");
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text("Componente registrado con éxito"),
                     ),
                   );
-                } catch (e) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text("Error: $e")));
+                } else {
+                  print("❌ Error al guardar el componente");
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Error al guardar el componente"),
+                    ),
+                  );
                 }
+              } else {
+                print("⏹️ Usuario canceló la acción");
               }
             },
           ),

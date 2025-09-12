@@ -40,6 +40,8 @@ dependencies:
   dropdown_button2: ^2.3.9
   provider: ^6.1.4
   mysql1: ^0.20.0
+  iconsax: ^0.0.8
+  searchbar_animation: ^0.0.4
 
 dev_dependencies:
   flutter_test:

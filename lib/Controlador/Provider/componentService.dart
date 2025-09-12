@@ -1,100 +1,32 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:proyecto_web/Clases/providerClases.dart';
 
 class ComponentService extends ChangeNotifier {
   TipoComponente? tipoSeleccionado;
   final List<Atributo> atributos = [];
   Componente? componenteCreado;
+  bool? conectado;
   final Map<int, String> valoresAtributos = {};
-  /*CONEXION MYSQL---------------------------------------------------------------
+  final Map<int, int> atributoIdDBMap = {};
+  int _tempIdCounter = 0;
 
-  final String baseUrl = "https://flutterweb-production.up.railway.app";
-
-  Future<void> guardarEnBackend() async {
-    if (tipoSeleccionado == null || componenteCreado == null) {
-      throw Exception("❌ Tipo de componente o componente vacío");
-    }
-
-    final api = ComponenteApiService();
-
-    try {
-      // 1. Registrar Tipo
-      final tipoId = await api.registrarTipoComponente(tipoSeleccionado!);
-      await Future.delayed(const Duration(milliseconds: 300));
-
-      // 2. Registrar Atributos
-      final Map<int, int> mapaAtributoIds = {};
-      // clave = atributo.id local, valor = atributo.id real BD
-      for (final atributo in atributos) {
-        final res = await http.post(
-          Uri.parse("${api.baseUrl}/atributo"),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({
-            "id_tipo": tipoId,
-            "nombre_atributo": atributo.nombre,
-            "tipo_dato": atributo.tipoDato,
-          }),
-        );
-        if (res.statusCode != 200) {
-          throw Exception("Error creando atributo: ${atributo.nombre}");
-        }
-        final attrId = jsonDecode(res.body)["id"];
-        mapaAtributoIds[atributo.id!] = attrId;
-
-        await Future.delayed(const Duration(milliseconds: 200));
-      }
-
-      // 3. Registrar Componente
-      final compId = await api.registrarComponente(
-        Componente(
-          id: componenteCreado!.id,
-          idTipo: tipoId,
-          codigoInventario: componenteCreado!.codigoInventario,
-          cantidad: componenteCreado!.cantidad,
-        ),
-      );
-      await Future.delayed(const Duration(milliseconds: 300));
-
-      // 4. Registrar valores de atributos
-      for (final atributo in atributos) {
-        final val = valoresAtributos[atributo.id];
-        if (val == null) continue;
-
-        final idAtributoBD = mapaAtributoIds[atributo.id];
-        if (idAtributoBD == null) continue;
-
-        await api.registrarValorAtributo(
-          idComponente: compId,
-          idAtributo: idAtributoBD,
-          valor: val,
-        );
-        await Future.delayed(const Duration(milliseconds: 200));
-      }
-
-      print("✅ Guardado en backend completado");
-    } catch (e) {
-      print("❌ Error en guardarEnBackend: $e");
-      rethrow;
-    }
-  }
-
-  //CONEXION MYSQL---------------------------------------------------------------*/
-
-  // Crear Tipo de Componente REGITRAR 1
   void crearTipoComponente(String nombre) {
     tipoSeleccionado = TipoComponente(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: _tempIdCounter++, // ID único
       nombre: nombre,
     );
     notifyListeners();
   }
 
-  // Agregar Atributo REGITRAR 2
   void agregarAtributo(String nombre, String tipoDato) {
     if (tipoSeleccionado == null) return;
+    final tempId = _tempIdCounter++;
     atributos.add(
       Atributo(
-        id: DateTime.now().millisecondsSinceEpoch,
+        id: tempId,
         idTipo: tipoSeleccionado!.id!,
         nombre: nombre,
         tipoDato: tipoDato,
@@ -103,18 +35,17 @@ class ComponentService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Eliminar Atributo
   void eliminarAtributo(int idAtributo) {
     atributos.removeWhere((a) => a.id == idAtributo);
     valoresAtributos.remove(idAtributo);
+    atributoIdDBMap.remove(idAtributo);
     notifyListeners();
   }
 
-  // Crear Componente REGITRAR 3
   void crearComponente(String codigo, int cantidad) {
     if (tipoSeleccionado == null) return;
     componenteCreado = Componente(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: _tempIdCounter++, // ID único
       idTipo: tipoSeleccionado!.id!,
       codigoInventario: codigo,
       cantidad: cantidad,
@@ -122,25 +53,133 @@ class ComponentService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Guardar valor de atributo REGITRAR 4
-  void setValorAtributo(int index, String valor) {
-    valoresAtributos[index] = valor;
+  void setValorAtributo(int idAtributo, String valor) {
+    valoresAtributos[idAtributo] = valor;
     notifyListeners();
   }
 
-  // Limpiar todo
   void reset() {
     tipoSeleccionado = null;
     atributos.clear();
     componenteCreado = null;
     valoresAtributos.clear();
+    atributoIdDBMap.clear();
+    _tempIdCounter = 0;
     notifyListeners();
   }
 
   String generarCodigoInventario() {
     if (tipoSeleccionado == null) return "";
-    // Ejemplo: usar las primeras 3 letras del nombre + timestamp
     final base = tipoSeleccionado!.nombre.substring(0, 3).toUpperCase();
-    return "$base-${DateTime.now().millisecondsSinceEpoch}";
+    return "$base-${_tempIdCounter++}";
+  }
+
+  void mapAtributoDBId(int tempId, int dbId) {
+    atributoIdDBMap[tempId] = dbId;
+    notifyListeners();
+  }
+
+  int? getDbIdAtributo(int tempId) => atributoIdDBMap[tempId];
+  Future<void> verificarConexion() async {
+    try {
+      final url = Uri.parse(
+        "http://192.168.18.23/proyecto_web/backend/mysqlConexion.php",
+      );
+
+      print("Intentando conectar a $url");
+
+      final response = await http.get(url);
+
+      print("Status code: ${response.statusCode}");
+      print("Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        conectado = data["conectado"] ?? false;
+      } else {
+        conectado = false;
+      }
+    } catch (e) {
+      print("Error al conectar: $e");
+      conectado = false;
+    }
+
+    notifyListeners();
+  }
+
+  Future<bool> guardarEnBackendB() async {
+    if (tipoSeleccionado == null || componenteCreado == null) {
+      print("❌ Error: tipoSeleccionadoB o componenteCreadoB es null");
+      return false;
+    }
+
+    final url = Uri.parse(
+      "http://192.168.18.23/proyecto_web/backend/procedimientoAlm/registrar_componente.php",
+    );
+
+    final List<Map<String, dynamic>> atributosJson = atributos.map((attr) {
+      return {
+        "nombre": attr.nombre,
+        "tipo_dato": attr.tipoDato,
+        "valor": valoresAtributos[attr.id!] ?? "",
+      };
+    }).toList();
+
+    final body = jsonEncode({
+      "nombre_tipo": tipoSeleccionado!.nombre,
+      "codigo_inventario": componenteCreado!.codigoInventario,
+      "cantidad": componenteCreado!.cantidad,
+      "atributos": atributosJson,
+    });
+
+    print("🚀 Datos enviados al backend: $body");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: body,
+      );
+
+      print("📶 Status code: ${response.statusCode}");
+
+      final data = jsonDecode(response.body);
+
+      print("📦 Respuesta del backend: $data");
+
+      if (data['success'] == true) {
+        print("✅ Componente registrado correctamente");
+        tipoSeleccionado = TipoComponente(
+          id: int.parse(data['id_tipo'].toString()),
+          nombre: tipoSeleccionado!.nombre,
+        );
+
+        componenteCreado = Componente(
+          id: int.parse(data['id_componente'].toString()),
+          idTipo: tipoSeleccionado!.id!,
+          codigoInventario: componenteCreado!.codigoInventario,
+          cantidad: componenteCreado!.cantidad,
+        );
+
+        for (var i = 0; i < atributos.length; i++) {
+          final dbId = data['atributos'][i]['id_atributo'] != null
+              ? int.tryParse(data['atributos'][i]['id_atributo'].toString())
+              : null;
+          if (dbId != null) {
+            atributoIdDBMap[atributos[i].id!] = dbId;
+            print("🔹 Atributo ${atributos[i].nombre} asignado ID: $dbId");
+          }
+        }
+
+        return true;
+      } else {
+        print("❌ Error backend: ${data['message']}");
+        return false;
+      }
+    } catch (e, stacktrace) {
+      print("💥 Excepción al guardar en backend: $e");
+      print("📝 Stacktrace: $stacktrace");
+      return false;
+    }
   }
 }

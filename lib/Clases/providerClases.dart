@@ -1,13 +1,13 @@
 class TipoComponente {
-  final int? id;
+  final int? id; // ID temporal en memoria
   final String nombre;
 
   TipoComponente({this.id, required this.nombre});
 }
 
 class Atributo {
-  final int? id;
-  final int idTipo;
+  final int? id; // ID temporal en memoria
+  final int idTipo; // ID del TipoComponente al que pertenece
   final String nombre;
   final String tipoDato;
 
@@ -20,8 +20,8 @@ class Atributo {
 }
 
 class Componente {
-  final int? id;
-  int idTipo;
+  final int? id; // ID temporal en memoria
+  final int idTipo; // ID del TipoComponente
   final String codigoInventario;
   final int cantidad;
 
@@ -30,19 +30,5 @@ class Componente {
     required this.idTipo,
     required this.codigoInventario,
     required this.cantidad,
-  });
-}
-
-class ValorAtributo {
-  final int? id;
-  final int idComponente;
-  final int idAtributo;
-  final String valor;
-
-  ValorAtributo({
-    this.id,
-    required this.idComponente,
-    required this.idAtributo,
-    required this.valor,
   });
 }
