@@ -754,8 +754,6 @@ class VisualizarComponenteScreen extends StatelessWidget {
                 cancelButtonText: "No",
               );
 
-              print("💬 Resultado del diálogo: $confirmado");
-
               if (confirmado == true) {
                 print("➡️ Usuario confirmó, intentando guardar en backend");
                 final exito = await Provider.of<ComponentService>(
@@ -764,18 +762,18 @@ class VisualizarComponenteScreen extends StatelessWidget {
                 ).guardarEnBackendB();
 
                 if (exito) {
-                  print("✅ Guardado exitoso");
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Componente registrado con éxito"),
-                    ),
+                  showCustomDialog(
+                    context: context,
+                    title: "Éxito",
+                    message: "Componente guardado correctamente",
+                    confirmButtonText: "Cerrar",
                   );
                 } else {
-                  print("❌ Error al guardar el componente");
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Error al guardar el componente"),
-                    ),
+                  showCustomDialog(
+                    context: context,
+                    title: "Error",
+                    message: "Componente no guardado",
+                    confirmButtonText: "Cerrar",
                   );
                 }
               } else {

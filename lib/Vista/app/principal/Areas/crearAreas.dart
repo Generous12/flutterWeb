@@ -107,7 +107,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black, // Botón negro
+                  backgroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -119,9 +119,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  // Aquí podrías abrir diálogo para crear subárea
-                },
+                onPressed: () {},
                 icon: const Icon(Iconsax.add_circle, color: Colors.white),
                 label: const Text(
                   "Crear Subárea",
