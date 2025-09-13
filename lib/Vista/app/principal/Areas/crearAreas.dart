@@ -1,9 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:iconsax/iconsax.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:proyecto_web/Controlador/areasService.dart';
+import 'package:proyecto_web/Widgets/boton.dart';
+import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
 
@@ -19,28 +19,23 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
   List<TextEditingController> _subareaControllers = [];
 
   int? _idAreaPadreSeleccionada;
-  List<Map<String, dynamic>> _areasPadres = [];
 
   @override
   void initState() {
     super.initState();
-    _cargarAreasPadres();
   }
 
-  Future<void> _cargarAreasPadres() async {
-    try {
-      final response = await http.get(
-        Uri.parse("http://localhost/api/areas_padres.php"),
-      );
-      if (response.statusCode == 200) {
-        final List data = jsonDecode(response.body);
-        setState(() {
-          _areasPadres = data.cast<Map<String, dynamic>>();
-        });
+  void _limpiarCampos() {
+    setState(() {
+      _nombreController.clear();
+
+      for (var controller in _subareaControllers) {
+        controller.dispose();
       }
-    } catch (e) {
-      print("❌ Error cargando áreas: $e");
-    }
+      _subareaControllers.clear();
+
+      _idAreaPadreSeleccionada = null;
+    });
   }
 
   void _agregarSubarea() {
@@ -82,7 +77,10 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                 title: Text(area["nombre_area"]),
                 onTap: () {
                   setState(() {
-                    _idAreaPadreSeleccionada = area["id_area"];
+                    _idAreaPadreSeleccionada = int.parse(
+                      area["id_area"].toString(),
+                    );
+                    _nombreController.text = area["nombre_area"] ?? "";
                   });
                   Navigator.pop(context);
                 },
@@ -98,7 +96,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Crear Área"),
+        title: const Text("Crear Área", style: TextStyle(fontSize: 19)),
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         actions: [
@@ -109,20 +107,13 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
           ),
         ],
       ),
-
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
           child: ListView(
             children: [
-              // Campo Área padre
-              CustomTextField(
-                controller: _nombreController,
-                hintText: "Agregar el Área",
-                label: "Nombre del Área",
-                prefixIcon: Iconsax.building,
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 5),
+
               ListTile(
                 leading: const Icon(Iconsax.building),
                 title: Text(
@@ -133,60 +124,175 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                 trailing: const Icon(Iconsax.arrow_down_1),
                 onTap: _mostrarAreasPadres,
               ),
-              const SizedBox(height: 20),
-              ..._subareaControllers.asMap().entries.map((entry) {
-                int index = entry.key;
-                TextEditingController controller = entry.value;
-
-                return Dismissible(
-                  key: UniqueKey(),
-                  direction: DismissDirection.startToEnd,
-                  onDismissed: (_) {
-                    final eliminado = controller.text;
-
-                    _eliminarSubarea(index, controller);
-
-                    SnackBarUtil.mostrarSnackBarPersonalizado(
-                      context: context,
-                      mensaje: "Subárea eliminada",
-                      icono: Icons.delete,
-                      colorFondo: const Color.fromARGB(255, 0, 0, 0),
-                      textoAccion: "Deshacer",
-                      onAccion: () {
-                        print("El usuario deshizo la acción");
-                      },
-                    );
-                  },
-                  background: Container(
-                    color: Colors.red.shade600,
-                    padding: const EdgeInsets.only(left: 16),
-                    alignment: Alignment.centerLeft,
-                    child: const Icon(Icons.delete, color: Colors.white),
-                  ),
-                  child: CustomTextField(
-                    controller: controller,
-                    label: "Subárea ${index + 1}",
-                    hintText: "Escribir subárea",
-                    prefixIcon: Iconsax.diagram,
-                  ),
-                );
-              }),
-
-              const SizedBox(height: 20),
-
-              ElevatedButton.icon(
-                onPressed: null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                icon: const Icon(Iconsax.tick_circle, color: Colors.white),
-                label: const Text(
-                  "Guardar Área",
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
+              CustomTextField(
+                controller: _nombreController,
+                hintText: "Agregar el Área",
+                label: "Nombre del Área",
+                prefixIcon: Iconsax.building,
               ),
+              const SizedBox(height: 16),
+              Row(
+                children: const [
+                  Text(
+                    "Crear o Asignar Subáreas",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(child: Divider(color: Colors.grey, thickness: 1)),
+                  SizedBox(width: 8),
+                ],
+              ),
+
+              _subareaControllers.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 20.0,
+                        horizontal: 16,
+                      ),
+                      child: Row(
+                        children: const [
+                          Icon(
+                            Icons.info_outline,
+                            color: Colors.grey,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            "No hay ninguna subárea creada",
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Column(
+                      children: _subareaControllers.asMap().entries.map((
+                        entry,
+                      ) {
+                        int index = entry.key;
+                        TextEditingController controller = entry.value;
+
+                        return CustomTextField(
+                          controller: controller,
+                          label: "Subárea ${index + 1}",
+                          hintText: "Escribir subárea",
+                          prefixIcon: Iconsax.diagram,
+                          suffixIcon: IconButton(
+                            icon: const Icon(Iconsax.trash, color: Colors.red),
+                            onPressed: () {
+                              final eliminado = controller.text;
+                              _eliminarSubarea(index, controller);
+
+                              SnackBarUtil.mostrarSnackBarPersonalizado(
+                                context: context,
+                                mensaje: "Subárea eliminada",
+                                icono: Icons.delete,
+                                colorFondo: Colors.black,
+                                textoAccion: "Deshacer",
+                                onAccion: () {
+                                  setState(() {
+                                    _subareaControllers.insert(
+                                      index,
+                                      TextEditingController(text: eliminado),
+                                    );
+                                  });
+                                },
+                              );
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    ),
             ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 5, 16, 5),
+          child: LoadingOverlayButtonHabilitar(
+            text: "Guardar Área",
+            enabled: true,
+            onPressedLogic: () async {
+              print("🖱️ Botón presionado, mostrando diálogo de confirmación");
+
+              final confirmado = await showCustomDialog(
+                context: context,
+                title: "Confirmar",
+                message: "¿Deseas guardar el área?",
+                confirmButtonText: "Sí",
+                cancelButtonText: "No",
+              );
+
+              if (!confirmado) {
+                print("⏹️ Usuario canceló la acción");
+                return;
+              }
+
+              try {
+                final areaService = AreaService();
+                int idAreaPadre;
+                if (_idAreaPadreSeleccionada != null) {
+                  idAreaPadre = _idAreaPadreSeleccionada!;
+                  print(
+                    "🟢 Reusando área padre existente con ID: $idAreaPadre",
+                  );
+                } else {
+                  final respPadre = await areaService.crearAreaPadre(
+                    _nombreController.text.trim(),
+                  );
+
+                  if (respPadre["success"] != true) {
+                    showCustomDialog(
+                      context: context,
+                      title: "Error",
+                      message:
+                          respPadre["message"] ??
+                          "No se pudo crear el área padre",
+                      confirmButtonText: "Cerrar",
+                    );
+                    return;
+                  }
+
+                  idAreaPadre = int.parse(respPadre["id_area"].toString());
+                  print("✅ Área padre creada con ID: $idAreaPadre");
+                }
+
+                // 🔹 Crear subáreas
+                for (final controller in _subareaControllers) {
+                  final nombreSub = controller.text.trim();
+                  if (nombreSub.isNotEmpty) {
+                    final respSub = await areaService.crearSubArea(
+                      nombreSub,
+                      idAreaPadre,
+                    );
+                    if (respSub["success"] == true) {
+                      print("   ↳ Subárea creada: $nombreSub ✅");
+                    } else {
+                      print(
+                        "   ⚠️ Error al crear subárea: ${respSub["message"]}",
+                      );
+                    }
+                  }
+                }
+                _limpiarCampos();
+                showCustomDialog(
+                  context: context,
+                  title: "Éxito",
+                  message: "Se registró correctamente",
+                  confirmButtonText: "Cerrar",
+                );
+              } catch (e) {
+                showCustomDialog(
+                  context: context,
+                  title: "Error",
+                  message: "Excepción: $e",
+                  confirmButtonText: "Cerrar",
+                );
+              }
+            },
           ),
         ),
       ),

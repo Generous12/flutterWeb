@@ -5,22 +5,19 @@ class SnackBarUtil {
     required BuildContext context,
     required String mensaje,
     IconData icono = Icons.info,
-    Color? colorFondo, // opcional
-    Duration duracion = const Duration(seconds: 2),
-    String? textoAccion, // Ejemplo: "Deshacer"
-    VoidCallback? onAccion, // Callback si el usuario presiona el botón
+    Color? colorFondo,
+    Duration duracion = const Duration(seconds: 1),
+    String? textoAccion,
+    VoidCallback? onAccion,
   }) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
         backgroundColor:
             colorFondo ??
-            (isDark
-                ? const Color(0xFF2C2C2C)
-                : const Color(0xFF444444)), // gris oscuro por defecto
+            (isDark ? const Color(0xFF2C2C2C) : const Color(0xFF444444)),
         elevation: 6,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
