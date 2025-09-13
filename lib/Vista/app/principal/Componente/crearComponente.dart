@@ -414,25 +414,44 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
   Future<void> guardar(ComponentService provider) async {
     final nombre = nombreController.text.trim();
 
-    // Comparamos con el valor actual en el provider
     final nombreOriginal = provider.tipoSeleccionado?.nombre ?? '';
     final cambiosEnNombre = nombre != nombreOriginal;
 
-    // Comparamos atributos
-    bool cambiosEnAtributos = false;
-    for (int i = 0; i < atributos.length; i++) {
-      final nombreAttr = atributos[i]["controller"].text.trim();
-      final tipoAttr = atributos[i]["tipo"];
+    final atributosUI = atributos
+        .map(
+          (attr) => {
+            "nombre": attr["controller"].text.trim(),
+            "tipo": attr["tipo"],
+          },
+        )
+        .toList();
 
-      if (i >= provider.atributos.length ||
-          nombreAttr != provider.atributos[i].nombre ||
-          tipoAttr != provider.atributos[i].tipoDato) {
-        cambiosEnAtributos = true;
-        break;
+    final atributosAEliminar = provider.atributos.where((a) {
+      return !atributosUI.any(
+        (uiAttr) =>
+            uiAttr["nombre"] == a.nombre && uiAttr["tipo"] == a.tipoDato,
+      );
+    }).toList();
+
+    for (var eliminado in atributosAEliminar) {
+      provider.eliminarAtributo(eliminado.id!);
+    }
+
+    bool cambiosEnAtributos = atributosAEliminar.isNotEmpty;
+    if (!cambiosEnAtributos) {
+      for (int i = 0; i < atributos.length; i++) {
+        final nombreAttr = atributos[i]["controller"].text.trim();
+        final tipoAttr = atributos[i]["tipo"];
+
+        if (i >= provider.atributos.length ||
+            nombreAttr != provider.atributos[i].nombre ||
+            tipoAttr != provider.atributos[i].tipoDato) {
+          cambiosEnAtributos = true;
+          break;
+        }
       }
     }
 
-    // Si hubo cambios, actualizamos
     if (cambiosEnNombre || cambiosEnAtributos) {
       provider.crearTipoComponente(nombre, reemplazar: true);
 

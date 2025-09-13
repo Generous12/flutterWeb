@@ -16,8 +16,7 @@ class CustomTextField extends StatefulWidget {
   final bool showCounter;
   final bool enabled;
   final String? initialValue;
-  final Widget? suffixIcon; // 🔹 Nuevo parámetro para ícono personalizado
-
+  final Widget? suffixIcon;
   const CustomTextField({
     Key? key,
     this.enabled = true,
@@ -34,7 +33,7 @@ class CustomTextField extends StatefulWidget {
     this.focusNode,
     this.showCounter = false,
     this.initialValue,
-    this.suffixIcon, // 🔹 agregado al constructor
+    this.suffixIcon,
   }) : super(key: key);
 
   @override
@@ -83,7 +82,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           focusNode: widget.focusNode,
           cursorColor: colorScheme.onBackground,
           enabled: widget.enabled,
-          style: TextStyle(fontSize: 12, color: colorScheme.onBackground),
+          style: TextStyle(fontSize: 14, color: colorScheme.onBackground),
           decoration: InputDecoration(
             labelText: widget.label,
             labelStyle: TextStyle(
@@ -135,7 +134,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
               ),
             ),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            // 🔹 Aquí priorizamos el suffixIcon externo
             suffixIcon:
                 widget.suffixIcon ??
                 (widget.obscureText
