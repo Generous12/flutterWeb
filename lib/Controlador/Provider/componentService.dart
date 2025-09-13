@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:proyecto_web/Clases/providerClases.dart';
@@ -14,10 +14,7 @@ class ComponentService extends ChangeNotifier {
   int _tempIdCounter = 0;
 
   void crearTipoComponente(String nombre) {
-    tipoSeleccionado = TipoComponente(
-      id: _tempIdCounter++, // ID único
-      nombre: nombre,
-    );
+    tipoSeleccionado = TipoComponente(id: _tempIdCounter++, nombre: nombre);
     notifyListeners();
   }
 
@@ -42,13 +39,14 @@ class ComponentService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void crearComponente(String codigo, int cantidad) {
+  void crearComponente(String codigo, int cantidad, {List<File>? imagenes}) {
     if (tipoSeleccionado == null) return;
     componenteCreado = Componente(
-      id: _tempIdCounter++, // ID único
+      id: _tempIdCounter++,
       idTipo: tipoSeleccionado!.id!,
       codigoInventario: codigo,
       cantidad: cantidad,
+      imagenes: imagenes ?? [],
     );
     notifyListeners();
   }
@@ -82,8 +80,10 @@ class ComponentService extends ChangeNotifier {
   int? getDbIdAtributo(int tempId) => atributoIdDBMap[tempId];
 
   Future<bool> guardarEnBackendB() async {
+    print("🔹 Iniciando guardarEnBackendB()");
+
     if (tipoSeleccionado == null || componenteCreado == null) {
-      print("❌ Error: tipoSeleccionadoB o componenteCreadoB es null");
+      print("❌ Error: tipoSeleccionado o componenteCreado es null");
       return false;
     }
 
@@ -91,22 +91,43 @@ class ComponentService extends ChangeNotifier {
       "http://192.168.18.20/proyecto_web/backend/procedimientoAlm/registrar_componente.php",
     );
 
-    final List<Map<String, dynamic>> atributosJson = atributos.map((attr) {
+    // Convertir atributos a JSON
+    final atributosJson = atributos.map((attr) {
+      final valor = valoresAtributos[attr.id!] ?? "";
+      print("   Atributo a enviar -> ${attr.nombre}: $valor");
       return {
         "nombre": attr.nombre,
         "tipo_dato": attr.tipoDato,
-        "valor": valoresAtributos[attr.id!] ?? "",
+        "valor": valor,
       };
     }).toList();
+
+    // Convertir imágenes a Base64
+    final imagenesBase64 = componenteCreado!.imagenes!
+        .map((file) {
+          try {
+            final base64Str = base64Encode(file.readAsBytesSync());
+            print("   Imagen codificada: ${file.path}");
+            return base64Str;
+          } catch (e) {
+            print("❌ Error codificando imagen ${file.path}: $e");
+            return null;
+          }
+        })
+        .whereType<String>()
+        .toList(); // eliminar nulls
+
+    print("🔹 Número de imágenes a enviar: ${imagenesBase64.length}");
 
     final body = jsonEncode({
       "nombre_tipo": tipoSeleccionado!.nombre,
       "codigo_inventario": componenteCreado!.codigoInventario,
       "cantidad": componenteCreado!.cantidad,
       "atributos": atributosJson,
+      "imagenes": imagenesBase64,
     });
 
-    print("🚀 Datos enviados al backend: $body");
+    print("🚀 Body enviado al backend: $body");
 
     try {
       final response = await http.post(
@@ -116,13 +137,15 @@ class ComponentService extends ChangeNotifier {
       );
 
       print("📶 Status code: ${response.statusCode}");
+      print("📦 Respuesta raw: ${response.body}");
 
       final data = jsonDecode(response.body);
-
-      print("📦 Respuesta del backend: $data");
+      print("📦 Respuesta parseada: $data");
 
       if (data['success'] == true) {
         print("✅ Componente registrado correctamente");
+
+        // Actualizar IDs del backend
         tipoSeleccionado = TipoComponente(
           id: int.parse(data['id_tipo'].toString()),
           nombre: tipoSeleccionado!.nombre,
@@ -133,6 +156,7 @@ class ComponentService extends ChangeNotifier {
           idTipo: tipoSeleccionado!.id!,
           codigoInventario: componenteCreado!.codigoInventario,
           cantidad: componenteCreado!.cantidad,
+          imagenes: componenteCreado!.imagenes,
         );
 
         for (var i = 0; i < atributos.length; i++) {
@@ -141,15 +165,15 @@ class ComponentService extends ChangeNotifier {
               : null;
           if (dbId != null) {
             atributoIdDBMap[atributos[i].id!] = dbId;
-            print("🔹 Atributo ${atributos[i].nombre} asignado ID: $dbId");
+            print("   Atributo ${atributos[i].nombre} asignado ID: $dbId");
           }
         }
 
         return true;
-      } else {
-        print("❌ Error backend: ${data['message']}");
-        return false;
       }
+
+      print("❌ Error backend: ${data['message'] ?? 'sin mensaje'}");
+      return false;
     } catch (e, stacktrace) {
       print("💥 Excepción al guardar en backend: $e");
       print("📝 Stacktrace: $stacktrace");

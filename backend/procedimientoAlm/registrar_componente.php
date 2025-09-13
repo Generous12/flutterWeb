@@ -38,7 +38,7 @@ try {
     $conn->begin_transaction();
     error_log("➡️ Iniciando transacción para crear componente");
 
-    // 1️⃣ Crear Tipo_Componente
+    // 1️ Crear Tipo_Componente
     error_log("➡️ Creando Tipo_Componente: $nombre_tipo");
     $stmt = $conn->prepare("CALL sp_crearTipoComponente(?, @id_tipo)");
     if (!$stmt) { error_log("❌ Error prepare Tipo_Componente: ".$conn->error); }
@@ -49,7 +49,7 @@ try {
     $id_tipo = $result->fetch_assoc()['id_tipo'];
     error_log("✅ Tipo_Componente creado con id: $id_tipo");
 
-    // 2️⃣ Crear Atributos
+    // 2 Crear Atributos
     $atributos_db = [];
     foreach ($atributos as $attr) {
         $nombre_attr = $attr['nombre'];
@@ -73,19 +73,24 @@ try {
             'valor' => $attr['valor'] ?? ''
         ];
     }
+    $imagenes_json = !empty($data['imagenes']) ? json_encode($data['imagenes']) : '';
 
-    // 3️⃣ Crear Componente
-    error_log("➡️ Creando Componente: $codigo_inventario, cantidad: $cantidad");
-    $stmt = $conn->prepare("CALL sp_crearComponenteInCan(?, ?, ?, @id_componente)");
+
+    // 3️ Crear Componente
+    $stmt = $conn->prepare("CALL sp_crearComponenteInCan(?, ?, ?, ?, @id_componente)");
     if (!$stmt) { error_log("❌ Error prepare Componente: ".$conn->error); }
-    $stmt->bind_param("isi", $id_tipo, $codigo_inventario, $cantidad);
+
+    // Tipos: i = INT, s = STRING
+    // id_tipo -> i, codigo_inventario -> s, cantidad -> i, imagenes_json -> s
+    $stmt->bind_param("isis", $id_tipo, $codigo_inventario, $cantidad, $imagenes_json);
+
     $stmt->execute();
     $stmt->close();
+
     $result = $conn->query("SELECT @id_componente as id_componente");
     $id_componente = $result->fetch_assoc()['id_componente'];
-    error_log("✅ Componente creado con id: $id_componente");
 
-    // 4️⃣ Crear Valores de Atributos
+    // 4️ Crear Valores de Atributos
     foreach ($atributos_db as $attr) {
         if (!empty($attr['valor'])) {
             error_log("➡️ Agregando valor para atributo {$attr['id_atributo']}: {$attr['valor']}");
@@ -99,7 +104,6 @@ try {
 
     $conn->commit();
     error_log("✅ Transacción completada correctamente");
-
     echo json_encode([
         "success" => true,
         "id_tipo" => $id_tipo,

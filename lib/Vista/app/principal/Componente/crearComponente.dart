@@ -1,10 +1,17 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:iconsax/iconsax.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Clases/plantillasComponente.dart';
 import 'package:proyecto_web/Controlador/Provider/componentService.dart';
 import 'package:proyecto_web/Vista/app/principal/inicio.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
+import 'package:proyecto_web/Widgets/cropper.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
@@ -66,12 +73,6 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
           break;
         case 2:
           provider.atributos.clear();
-          provider.valoresAtributos.clear();
-          break;
-        case 3:
-          provider.componenteCreado = null;
-          break;
-        case 4:
           provider.valoresAtributos.clear();
           break;
       }
@@ -317,7 +318,6 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
   // Tipo de componente
   final TextEditingController nombreController = TextEditingController();
 
-  // Atributos
   final List<Map<String, dynamic>> atributos = [];
   final List<String> tipos = ["Texto", "Número", "Fecha"];
   final Map<String, String> abreviaturas = {
@@ -334,7 +334,7 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
 
   void _validate() {
     final bool isValid =
-        nombreController.text.trim().isNotEmpty &&
+        nombreController.text.trim().length > 3 &&
         atributos.isNotEmpty &&
         atributos.any((attr) => attr["controller"].text.trim().isNotEmpty);
 
@@ -345,7 +345,7 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
     final controller = TextEditingController();
     controller.addListener(_validate);
     atributos.add({"controller": controller, "tipo": tipos[0]});
-    setState(() => _validate()); // 👈 actualiza después de añadir
+    setState(() => _validate());
   }
 
   Future<void> _seleccionarTipo(Map<String, dynamic> attr) async {
@@ -619,9 +619,12 @@ class ComponenteForm extends StatefulWidget {
   State<ComponenteForm> createState() => _ComponenteFormState();
 }
 
+//IMAGENES INCLUIDAS
 class _ComponenteFormState extends State<ComponenteForm> {
   final TextEditingController codigoController = TextEditingController();
   final TextEditingController cantidadController = TextEditingController();
+  final List<File> _imagenesSeleccionadas = [];
+  File? _imagenPrincipal;
 
   @override
   void initState() {
@@ -646,11 +649,93 @@ class _ComponenteFormState extends State<ComponenteForm> {
     );
   }
 
+  Future<void> _seleccionarImagen() async {
+    if (_imagenesSeleccionadas.length >= 4) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Máximo 4 imágenes permitidas")),
+      );
+      return;
+    }
+
+    final source = await showDialog<ImageSource>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Seleccionar origen de la imagen"),
+        actions: [
+          TextButton.icon(
+            onPressed: () => Navigator.pop(context, ImageSource.camera),
+            icon: const Icon(Icons.camera_alt),
+            label: const Text("Cámara"),
+          ),
+          TextButton.icon(
+            onPressed: () => Navigator.pop(context, ImageSource.gallery),
+            icon: const Icon(Icons.photo),
+            label: const Text("Galería"),
+          ),
+        ],
+      ),
+    );
+
+    if (source == null) return;
+
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source);
+
+    if (pickedFile != null) {
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: pickedFile.path,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: const Color(0xFFA30000),
+            toolbarWidgetColor: Colors.white,
+            lockAspectRatio: true,
+            hideBottomControls: false,
+            showCropGrid: true,
+            initAspectRatio: CropAspectRatioPreset.original,
+            aspectRatioPresets: [
+              CropAspectRatioPreset.square,
+              CropAspectRatioPreset.original,
+              CropAspectRatioPresetCustom4x5(),
+              CropAspectRatioPresetCustom3x4(),
+            ],
+          ),
+        ],
+      );
+
+      if (croppedFile != null) {
+        final provider = Provider.of<ComponentService>(context, listen: false);
+        final newImage = File(croppedFile.path);
+
+        setState(() {
+          _imagenesSeleccionadas.add(newImage);
+          if (_imagenPrincipal == null) {
+            _imagenPrincipal = newImage;
+          }
+
+          // 🔹 Actualizamos el provider con las imágenes
+          provider.crearComponente(
+            codigoController.text.trim(),
+            int.tryParse(cantidadController.text.trim()) ?? 0,
+            imagenes: _imagenesSeleccionadas,
+          );
+        });
+      }
+    }
+  }
+
   void guardar(ComponentService provider) {
     final codigo = codigoController.text.trim();
     final cantidad = int.tryParse(cantidadController.text.trim()) ?? 0;
+
     if (codigo.isNotEmpty && cantidad > 0) {
-      provider.crearComponente(codigo, cantidad);
+      provider.crearComponente(
+        codigo,
+        cantidad,
+        imagenes: _imagenesSeleccionadas.isNotEmpty
+            ? _imagenesSeleccionadas
+            : null,
+      );
     }
   }
 
@@ -669,26 +754,108 @@ class _ComponenteFormState extends State<ComponenteForm> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Asignar nombre de inventario y cantidad",
+            "Asignar nombre de inventario, cantidad e imágenes (opcional)",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                CustomTextField(
-                  controller: codigoController,
-                  hintText: "Se genera a partir del nombre del componente",
-                  label: "Código de Inventario",
-                ),
-                CustomTextField(
-                  controller: cantidadController,
-                  hintText: "Ingrese la cantidad",
-                  label: "Cantidad",
-                  isNumeric: true,
-                ),
-              ],
-            ),
+
+          CustomTextField(
+            controller: codigoController,
+            hintText: "Se genera a partir del nombre del componente",
+            label: "Código de Inventario",
+          ),
+          CustomTextField(
+            controller: cantidadController,
+            hintText: "Ingrese la cantidad",
+            label: "Cantidad",
+            isNumeric: true,
+          ),
+
+          const SizedBox(height: 16),
+
+          MasonryGridView.count(
+            crossAxisCount: 3,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _imagenesSeleccionadas.length < 4
+                ? _imagenesSeleccionadas.length + 1
+                : _imagenesSeleccionadas.length,
+            itemBuilder: (context, index) {
+              if (index < _imagenesSeleccionadas.length) {
+                final image = _imagenesSeleccionadas[index];
+                final isSelected = image == _imagenPrincipal;
+
+                return Stack(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _imagenPrincipal = image;
+                        });
+                        // opcional: mostrar imagen fullscreen
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.file(image, fit: BoxFit.cover),
+                      ),
+                    ),
+                    if (isSelected)
+                      const Positioned(
+                        top: 6,
+                        right: 6,
+                        child: Icon(
+                          Iconsax.tick_circle,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    Positioned(
+                      top: 6,
+                      left: 6,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _imagenesSeleccionadas.removeAt(index);
+
+                            if (_imagenesSeleccionadas.isEmpty) {
+                              _imagenPrincipal = null;
+                            } else if (_imagenPrincipal == image) {
+                              _imagenPrincipal = _imagenesSeleccionadas.first;
+                            }
+                          });
+                        },
+                        child: const Icon(
+                          LucideIcons.trash,
+                          color: Colors.red,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              } else {
+                return GestureDetector(
+                  onTap: _seleccionarImagen,
+                  child: Container(
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.black),
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Iconsax.add_circle,
+                        color: Colors.black87,
+                        size: 30,
+                      ),
+                    ),
+                  ),
+                );
+              }
+            },
           ),
         ],
       ),
@@ -876,6 +1043,47 @@ class VisualizarComponenteScreen extends StatelessWidget {
                         valor: valor,
                       );
                     }).toList(),
+                    if (provider.componenteCreado != null &&
+                        provider.componenteCreado!.imagenes != null &&
+                        provider.componenteCreado!.imagenes!.isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 24),
+                          const Text(
+                            "Imágenes",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            height: 120,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount:
+                                  provider.componenteCreado!.imagenes!.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(width: 12),
+                              itemBuilder: (context, index) {
+                                final file =
+                                    provider.componenteCreado!.imagenes![index];
+                                return ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.file(
+                                    file,
+                                    width: 120,
+                                    height: 120,
+                                    fit: BoxFit.cover,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
