@@ -43,35 +43,59 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
     pasosWidgets = [
       TipoYAtributoForm(
         key: tipoComponenteKey,
-        onValidChange: (isValid) => setState(() => puedeContinuar = isValid),
+        onValidChange: (isValid) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() => puedeContinuar = isValid);
+            }
+          });
+        },
       ),
-
       ComponenteForm(
         key: componenteFormKey,
-        onValidChange: (isValid) => setState(() => puedeContinuar = isValid),
+        onValidChange: (isValid) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() => puedeContinuar = isValid);
+            }
+          });
+        },
       ),
       ValorAtributoForm(
         key: valorAtributoFormKey,
-        onValidChange: (isValid) => setState(() => puedeContinuar = isValid),
+        onValidChange: (isValid) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() => puedeContinuar = isValid);
+            }
+          });
+        },
       ),
     ];
   }
 
   void siguientePaso() {
     if (pasoActual < pasosWidgets.length - 1) {
-      setState(() {
-        pasoActual++;
-        puedeContinuar = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            pasoActual++;
+            puedeContinuar = false;
+          });
+        }
       });
     }
   }
 
   void anteriorPaso() {
     if (pasoActual > 0) {
-      setState(() {
-        pasoActual--;
-        // Si quieres que pueda continuar según los datos que ya tiene:
-        puedeContinuar = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            pasoActual--;
+            puedeContinuar = true;
+          });
+        }
       });
     }
   }
@@ -204,34 +228,8 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
                       onPressedLogic: () async {
                         if (!puedeContinuar) return;
 
-                        final provider = Provider.of<ComponentService>(
-                          context,
-                          listen: false,
-                        );
+                        await guardarPaso();
 
-                        // 🔹 Validar si ya hay datos en el provider según el paso
-                        bool guardar = false;
-                        switch (pasoActual) {
-                          case 0:
-                            // Paso 0: Tipo de componente
-                            guardar = provider.tipoSeleccionado == null;
-                            break;
-                          case 1:
-                            // Paso 1: Componente
-                            guardar = provider.componenteCreado == null;
-                            break;
-                          case 2:
-                            // Paso 2: Valores de atributos
-                            guardar = provider.valoresAtributos.isEmpty;
-                            break;
-                        }
-
-                        // 🔹 Guardar solo si no existe
-                        if (guardar) {
-                          await guardarPaso();
-                        }
-
-                        // 🔹 Avanzar al siguiente paso o finalizar
                         if (pasoActual < pasosWidgets.length - 1) {
                           siguientePaso();
                         } else {
@@ -346,26 +344,35 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
   };
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
     final provider = Provider.of<ComponentService>(context, listen: false);
+
+    // Solo actualizar si tipoSeleccionado no es null
     if (provider.tipoSeleccionado != null) {
       nombreController.text = provider.tipoSeleccionado!.nombre;
+
+      // Limpiamos atributos antiguos
+      for (var attr in atributos) {
+        (attr["controller"] as TextEditingController).dispose();
+      }
       atributos.clear();
+
+      // Agregamos atributos del provider
       for (var attr in provider.atributos) {
         final controller = TextEditingController(text: attr.nombre);
         controller.addListener(_validate);
         atributos.add({"controller": controller, "tipo": attr.tipoDato});
       }
+      _validate();
+      setState(() {}); // Para refrescar UI
     }
-
-    nombreController.addListener(_validate);
   }
 
   void _validate() {
     final bool isValid =
-        nombreController.text.trim().length > 3 &&
+        nombreController.text.trim().length > 2 &&
         atributos.isNotEmpty &&
         atributos.any((attr) => attr["controller"].text.trim().isNotEmpty);
 
@@ -650,24 +657,31 @@ class _ComponenteFormState extends State<ComponenteForm> {
   File? _imagenPrincipal;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
     final provider = Provider.of<ComponentService>(context, listen: false);
 
     if (provider.componenteCreado != null) {
       codigoController.text = provider.componenteCreado!.codigoInventario;
       cantidadController.text = provider.componenteCreado!.cantidad.toString();
+
+      // Limpiamos las imágenes actuales
+      _imagenesSeleccionadas.clear();
       _imagenesSeleccionadas.addAll(provider.componenteCreado!.imagenes ?? []);
-      if (_imagenesSeleccionadas.isNotEmpty) {
-        _imagenPrincipal = _imagenesSeleccionadas.first;
-      }
-    } else if (provider.tipoSeleccionado != null) {
+      _imagenPrincipal = _imagenesSeleccionadas.isNotEmpty
+          ? _imagenesSeleccionadas.first
+          : null;
+
+      _validate();
+      setState(() {});
+    } else if (provider.tipoSeleccionado != null &&
+        codigoController.text.isEmpty) {
+      // Solo generamos código si no hay uno previo
       codigoController.text = generarCodigoInventario(
         provider.tipoSeleccionado!.nombre,
       );
     }
-
     codigoController.addListener(_validate);
     cantidadController.addListener(_validate);
   }

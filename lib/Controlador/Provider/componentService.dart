@@ -31,7 +31,6 @@ class ComponentService extends ChangeNotifier {
     if (tipoSeleccionado == null) return;
 
     if (reemplazar) {
-      // Buscar atributo existente y reemplazar
       final index = atributos.indexWhere(
         (a) =>
             a.nombre == nombre &&
@@ -86,7 +85,6 @@ class ComponentService extends ChangeNotifier {
         imagenes: imagenes ?? componenteCreado!.imagenes,
       );
     } else {
-      // Aquí usamos ! porque tipoSeleccionado debe existir
       componenteCreado = Componente(
         idTipo: tipoSeleccionado!.id!,
         codigoInventario: codigo,
