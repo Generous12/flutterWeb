@@ -13,13 +13,43 @@ class ComponentService extends ChangeNotifier {
   final Map<int, int> atributoIdDBMap = {};
   int _tempIdCounter = 0;
 
-  void crearTipoComponente(String nombre) {
-    tipoSeleccionado = TipoComponente(id: _tempIdCounter++, nombre: nombre);
+  void crearTipoComponente(String nombre, {bool reemplazar = false}) {
+    if (tipoSeleccionado != null && !reemplazar) return;
+
+    tipoSeleccionado = TipoComponente(
+      id: tipoSeleccionado?.id ?? _tempIdCounter++,
+      nombre: nombre,
+    );
     notifyListeners();
   }
 
-  void agregarAtributo(String nombre, String tipoDato) {
+  void agregarAtributo(
+    String nombre,
+    String tipoDato, {
+    bool reemplazar = false,
+  }) {
     if (tipoSeleccionado == null) return;
+
+    if (reemplazar) {
+      // Buscar atributo existente y reemplazar
+      final index = atributos.indexWhere(
+        (a) =>
+            a.nombre == nombre &&
+            a.tipoDato == tipoDato &&
+            a.idTipo == tipoSeleccionado!.id,
+      );
+      if (index != -1) {
+        atributos[index] = Atributo(
+          id: atributos[index].id,
+          idTipo: tipoSeleccionado!.id!,
+          nombre: nombre,
+          tipoDato: tipoDato,
+        );
+        notifyListeners();
+        return;
+      }
+    }
+
     final tempId = _tempIdCounter++;
     atributos.add(
       Atributo(
@@ -39,19 +69,37 @@ class ComponentService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void crearComponente(String codigo, int cantidad, {List<File>? imagenes}) {
-    if (tipoSeleccionado == null) return;
-    componenteCreado = Componente(
-      id: _tempIdCounter++,
-      idTipo: tipoSeleccionado!.id!,
-      codigoInventario: codigo,
-      cantidad: cantidad,
-      imagenes: imagenes ?? [],
-    );
+  void crearComponente(
+    String codigo,
+    int cantidad, {
+    List<File>? imagenes,
+    bool reemplazar = false,
+  }) {
+    if (componenteCreado != null && !reemplazar) return;
+
+    if (componenteCreado != null) {
+      componenteCreado = Componente(
+        id: componenteCreado!.id,
+        idTipo: componenteCreado!.idTipo,
+        codigoInventario: codigo,
+        cantidad: cantidad,
+        imagenes: imagenes ?? componenteCreado!.imagenes,
+      );
+    } else {
+      // Aquí usamos ! porque tipoSeleccionado debe existir
+      componenteCreado = Componente(
+        idTipo: tipoSeleccionado!.id!,
+        codigoInventario: codigo,
+        cantidad: cantidad,
+        imagenes: imagenes ?? [],
+      );
+    }
+
     notifyListeners();
   }
 
   void setValorAtributo(int idAtributo, String valor) {
+    if (valoresAtributos[idAtributo] == valor) return;
     valoresAtributos[idAtributo] = valor;
     notifyListeners();
   }

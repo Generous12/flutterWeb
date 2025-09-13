@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:iconsax/iconsax.dart';
@@ -270,7 +271,7 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
       atributos: [
         {"nombre": "Marca", "tipo": "Texto"},
         {"nombre": "Modelo", "tipo": "Texto"},
-        {"nombre": "Tipo de conexión", "tipo": "Texto"}, // USB, Bluetooth, etc.
+        {"nombre": "Tipo de conexión", "tipo": "Texto"},
         {"nombre": "Color", "tipo": "Texto"},
         {"nombre": "Dimensiones", "tipo": "Texto"},
         {"nombre": "Peso", "tipo": "Número"},
@@ -405,38 +406,36 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
 
   Future<void> guardar(ComponentService provider) async {
     final nombre = nombreController.text.trim();
-    if (nombre.isEmpty) return;
 
-    final confirmado = await showCustomDialog(
-      context: context,
-      title: "Confirmar",
-      message: "¿Deseas crear el tipo de componente '$nombre'?",
-      confirmButtonText: "Sí",
-      cancelButtonText: "No",
-    );
+    // Comparamos con el valor actual en el provider
+    final nombreOriginal = provider.tipoSeleccionado?.nombre ?? '';
+    final cambiosEnNombre = nombre != nombreOriginal;
 
-    if (confirmado == true) {
-      provider.crearTipoComponente(nombre);
+    // Comparamos atributos
+    bool cambiosEnAtributos = false;
+    for (int i = 0; i < atributos.length; i++) {
+      final nombreAttr = atributos[i]["controller"].text.trim();
+      final tipoAttr = atributos[i]["tipo"];
+
+      if (i >= provider.atributos.length ||
+          nombreAttr != provider.atributos[i].nombre ||
+          tipoAttr != provider.atributos[i].tipoDato) {
+        cambiosEnAtributos = true;
+        break;
+      }
+    }
+
+    // Si hubo cambios, actualizamos
+    if (cambiosEnNombre || cambiosEnAtributos) {
+      provider.crearTipoComponente(nombre, reemplazar: true);
 
       for (var attr in atributos) {
         final nombreAttr = attr["controller"].text.trim();
         final tipo = attr["tipo"];
         if (nombreAttr.isNotEmpty) {
-          provider.agregarAtributo(nombreAttr, tipo);
+          provider.agregarAtributo(nombreAttr, tipo, reemplazar: true);
         }
       }
-
-      await showCustomDialog(
-        context: context,
-        title: "¡Listo!",
-        message:
-            "El tipo de componente '$nombre' y sus atributos se crearon correctamente.",
-        confirmButtonText: "Aceptar",
-      );
-    } else {
-      // Si da "No", frena la navegación y sale de la pantalla
-      provider.reset();
-      Navigator.pop(context);
     }
   }
 
@@ -608,7 +607,6 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
                     "tipo": attr["tipo"],
                   });
                 }
-
                 setState(() {});
                 _validate();
               }
@@ -656,6 +654,7 @@ class _ComponenteFormState extends State<ComponenteForm> {
     super.initState();
 
     final provider = Provider.of<ComponentService>(context, listen: false);
+
     if (provider.componenteCreado != null) {
       codigoController.text = provider.componenteCreado!.codigoInventario;
       cantidadController.text = provider.componenteCreado!.cantidad.toString();
@@ -663,6 +662,10 @@ class _ComponenteFormState extends State<ComponenteForm> {
       if (_imagenesSeleccionadas.isNotEmpty) {
         _imagenPrincipal = _imagenesSeleccionadas.first;
       }
+    } else if (provider.tipoSeleccionado != null) {
+      codigoController.text = generarCodigoInventario(
+        provider.tipoSeleccionado!.nombre,
+      );
     }
 
     codigoController.addListener(_validate);
@@ -754,13 +757,23 @@ class _ComponenteFormState extends State<ComponenteForm> {
     final codigo = codigoController.text.trim();
     final cantidad = int.tryParse(cantidadController.text.trim()) ?? 0;
 
-    if (codigo.isNotEmpty && cantidad > 0) {
+    final componenteOriginal = provider.componenteCreado;
+
+    // Revisamos si hubo cambios
+    final cambios =
+        componenteOriginal == null ||
+        componenteOriginal.codigoInventario != codigo ||
+        componenteOriginal.cantidad != cantidad ||
+        !listEquals(componenteOriginal.imagenes ?? [], _imagenesSeleccionadas);
+
+    if (cambios) {
       provider.crearComponente(
         codigo,
         cantidad,
         imagenes: _imagenesSeleccionadas.isNotEmpty
             ? _imagenesSeleccionadas
             : null,
+        reemplazar: true, // similar al paso anterior
       );
     }
   }
@@ -808,26 +821,6 @@ class _ComponenteFormState extends State<ComponenteForm> {
             controller: codigoController,
             hintText: "Se genera a partir del nombre del componente",
             label: "Generar codigo de inventario",
-            suffixIcon: IconButton(
-              icon: const Icon(Icons.autorenew),
-              onPressed: () {
-                final provider = Provider.of<ComponentService>(
-                  context,
-                  listen: false,
-                );
-                if (provider.tipoSeleccionado != null) {
-                  codigoController.text = generarCodigoInventario(
-                    provider.tipoSeleccionado!.nombre,
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Primero selecciona un tipo de componente"),
-                    ),
-                  );
-                }
-              },
-            ),
           ),
 
           CustomTextField(
