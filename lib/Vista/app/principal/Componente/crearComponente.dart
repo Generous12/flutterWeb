@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -66,18 +67,9 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
 
   void anteriorPaso() {
     if (pasoActual > 0) {
-      final provider = Provider.of<ComponentService>(context, listen: false);
-      switch (pasoActual) {
-        case 1:
-          provider.tipoSeleccionado = null;
-          break;
-        case 2:
-          provider.atributos.clear();
-          provider.valoresAtributos.clear();
-          break;
-      }
       setState(() {
         pasoActual--;
+        // Si quieres que pueda continuar según los datos que ya tiene:
         puedeContinuar = true;
       });
     }
@@ -102,7 +94,7 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Crear Componente"),
+        title: const Text("Crear Componente", style: TextStyle(fontSize: 20)),
         backgroundColor: Colors.black,
         toolbarHeight: 48,
         foregroundColor: Colors.white,
@@ -209,17 +201,44 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
                           : "Continuar",
                       enabled: puedeContinuar,
                       onPressedLogic: () async {
-                        if (puedeContinuar) {
+                        if (!puedeContinuar) return;
+
+                        final provider = Provider.of<ComponentService>(
+                          context,
+                          listen: false,
+                        );
+
+                        // 🔹 Validar si ya hay datos en el provider según el paso
+                        bool guardar = false;
+                        switch (pasoActual) {
+                          case 0:
+                            // Paso 0: Tipo de componente
+                            guardar = provider.tipoSeleccionado == null;
+                            break;
+                          case 1:
+                            // Paso 1: Componente
+                            guardar = provider.componenteCreado == null;
+                            break;
+                          case 2:
+                            // Paso 2: Valores de atributos
+                            guardar = provider.valoresAtributos.isEmpty;
+                            break;
+                        }
+
+                        // 🔹 Guardar solo si no existe
+                        if (guardar) {
                           await guardarPaso();
-                          if (pasoActual < pasosWidgets.length - 1) {
-                            siguientePaso();
-                          } else {
-                            debugPrint("✅ Flujo finalizado");
-                            navegarConSlideDerecha(
-                              context,
-                              const VisualizarComponenteScreen(),
-                            );
-                          }
+                        }
+
+                        // 🔹 Avanzar al siguiente paso o finalizar
+                        if (pasoActual < pasosWidgets.length - 1) {
+                          siguientePaso();
+                        } else {
+                          debugPrint("✅ Flujo finalizado");
+                          navegarConSlideDerecha(
+                            context,
+                            const VisualizarComponenteScreen(),
+                          );
                         }
                       },
                     ),
@@ -315,7 +334,6 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
     ),
   ];
 
-  // Tipo de componente
   final TextEditingController nombreController = TextEditingController();
 
   final List<Map<String, dynamic>> atributos = [];
@@ -329,6 +347,18 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
   @override
   void initState() {
     super.initState();
+
+    final provider = Provider.of<ComponentService>(context, listen: false);
+    if (provider.tipoSeleccionado != null) {
+      nombreController.text = provider.tipoSeleccionado!.nombre;
+      atributos.clear();
+      for (var attr in provider.atributos) {
+        final controller = TextEditingController(text: attr.nombre);
+        controller.addListener(_validate);
+        atributos.add({"controller": controller, "tipo": attr.tipoDato});
+      }
+    }
+
     nombreController.addListener(_validate);
   }
 
@@ -465,11 +495,6 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Registrar componente y atributos",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
           CustomTextField(
             controller: nombreController,
             hintText: "Ingresa el nombre del componente",
@@ -631,12 +656,13 @@ class _ComponenteFormState extends State<ComponenteForm> {
     super.initState();
 
     final provider = Provider.of<ComponentService>(context, listen: false);
-    if (provider.tipoSeleccionado != null) {
-      final base = provider.tipoSeleccionado!.nombre
-          .substring(0, 3)
-          .toUpperCase();
-      final codigoGenerado = "$base-${DateTime.now().millisecondsSinceEpoch}";
-      codigoController.text = codigoGenerado;
+    if (provider.componenteCreado != null) {
+      codigoController.text = provider.componenteCreado!.codigoInventario;
+      cantidadController.text = provider.componenteCreado!.cantidad.toString();
+      _imagenesSeleccionadas.addAll(provider.componenteCreado!.imagenes ?? []);
+      if (_imagenesSeleccionadas.isNotEmpty) {
+        _imagenPrincipal = _imagenesSeleccionadas.first;
+      }
     }
 
     codigoController.addListener(_validate);
@@ -739,6 +765,25 @@ class _ComponenteFormState extends State<ComponenteForm> {
     }
   }
 
+  String generarCodigoInventario(String nombre) {
+    // Tomamos las primeras 3 letras del nombre (o todo si es más corto) y lo ponemos en mayúsculas
+    final cleanName = nombre.replaceAll(' ', '').toUpperCase();
+    final prefix = cleanName.length >= 3
+        ? cleanName.substring(0, 3)
+        : cleanName;
+
+    // Agregamos fecha en formato año-mes-día
+    final now = DateTime.now();
+    final datePart =
+        "${now.year % 100}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}";
+
+    // Número aleatorio de 3 dígitos
+    final randomNumber = (100 + Random().nextInt(900)).toString();
+
+    // Combinamos todo
+    return "$prefix-$datePart-$randomNumber";
+  }
+
   @override
   void dispose() {
     codigoController.dispose();
@@ -762,8 +807,29 @@ class _ComponenteFormState extends State<ComponenteForm> {
           CustomTextField(
             controller: codigoController,
             hintText: "Se genera a partir del nombre del componente",
-            label: "Código de Inventario",
+            label: "Generar codigo de inventario",
+            suffixIcon: IconButton(
+              icon: const Icon(Icons.autorenew),
+              onPressed: () {
+                final provider = Provider.of<ComponentService>(
+                  context,
+                  listen: false,
+                );
+                if (provider.tipoSeleccionado != null) {
+                  codigoController.text = generarCodigoInventario(
+                    provider.tipoSeleccionado!.nombre,
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Primero selecciona un tipo de componente"),
+                    ),
+                  );
+                }
+              },
+            ),
           ),
+
           CustomTextField(
             controller: cantidadController,
             hintText: "Ingrese la cantidad",

@@ -3,11 +3,11 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 class CustomTextField extends StatefulWidget {
   final TextEditingController controller;
-  final String? label; // Etiqueta arriba (opcional)
-  final String? hintText; // Hint dentro
-  final IconData? prefixIcon; // Icono al inicio (opcional)
-  final bool obscureText; // Si es contraseña (oculta texto)
-  final bool isNumeric; // Para teclado numérico
+  final String? label;
+  final String? hintText;
+  final IconData? prefixIcon;
+  final bool obscureText;
+  final bool isNumeric;
   final int? maxLength;
   final int? maxLines;
   final int? minLines;
@@ -15,7 +15,8 @@ class CustomTextField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final bool showCounter;
   final bool enabled;
-  final String? initialValue; // 🔹 Nuevo parámetro opcional
+  final String? initialValue;
+  final Widget? suffixIcon; // 🔹 Nuevo parámetro para ícono personalizado
 
   const CustomTextField({
     Key? key,
@@ -32,7 +33,8 @@ class CustomTextField extends StatefulWidget {
     this.onChanged,
     this.focusNode,
     this.showCounter = false,
-    this.initialValue, // 🔹 agregado al constructor
+    this.initialValue,
+    this.suffixIcon, // 🔹 agregado al constructor
   }) : super(key: key);
 
   @override
@@ -133,19 +135,22 @@ class _CustomTextFieldState extends State<CustomTextField> {
               ),
             ),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            suffixIcon: widget.obscureText
-                ? IconButton(
-                    icon: Icon(
-                      _obscureText ? LucideIcons.eye : LucideIcons.eyeOff,
-                      color: colorScheme.onBackground,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureText = !_obscureText;
-                      });
-                    },
-                  )
-                : null,
+            // 🔹 Aquí priorizamos el suffixIcon externo
+            suffixIcon:
+                widget.suffixIcon ??
+                (widget.obscureText
+                    ? IconButton(
+                        icon: Icon(
+                          _obscureText ? LucideIcons.eye : LucideIcons.eyeOff,
+                          color: colorScheme.onBackground,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureText = !_obscureText;
+                          });
+                        },
+                      )
+                    : null),
           ),
         ),
       ),
