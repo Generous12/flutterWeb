@@ -20,43 +20,43 @@ class MenuComponentesScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(18.0),
-        child: GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 18,
-          mainAxisSpacing: 18,
+        child: ListView(
           children: [
             _MenuButton(
               icon: Iconsax.add_circle,
               text: "Registrar",
-              color1: Colors.blueAccent,
-              color2: Colors.lightBlue,
+              color1: Colors.blue.shade800,
+              color2: Colors.blue.shade400,
               onTap: () {
                 navegarConSlideDerecha(context, FlujoCrearComponente());
               },
             ),
+            const SizedBox(height: 18),
             _MenuButton(
               icon: Iconsax.document_text,
-              text: "Listar",
-              color1: Colors.green,
-              color2: Colors.teal,
+              text: "Actualizar componente",
+              color1: Colors.black87,
+              color2: Colors.black54,
               onTap: () {
                 navegarConSlideDerecha(context, ComponentesList());
               },
             ),
+            const SizedBox(height: 18),
             _MenuButton(
               icon: Iconsax.refresh_circle,
-              text: "Actualizar",
-              color1: Colors.orange,
-              color2: Colors.deepOrange,
+              text: "Eliminar Componente",
+              color1: Colors.blueGrey.shade800,
+              color2: Colors.blueGrey.shade500,
               onTap: () {
                 debugPrint("👉 Actualizar componente");
               },
             ),
+            const SizedBox(height: 18),
             _MenuButton(
               icon: Iconsax.chart,
               text: "Reportes",
-              color1: Colors.purple,
-              color2: Colors.deepPurple,
+              color1: Colors.blue.shade900,
+              color2: Colors.blue.shade600,
               onTap: () {
                 debugPrint("👉 Reportes de componentes");
               },
@@ -108,6 +108,7 @@ class _MenuButtonState extends State<_MenuButton>
             borderRadius: BorderRadius.circular(20),
           ),
           child: Container(
+            height: 140, // altura del botón
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               gradient: LinearGradient(
@@ -125,11 +126,11 @@ class _MenuButtonState extends State<_MenuButton>
                     backgroundColor: Colors.white.withOpacity(0.2),
                     child: Icon(widget.icon, size: 36, color: Colors.white),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
                   Text(
                     widget.text,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       letterSpacing: 0.5,

@@ -15,6 +15,7 @@ class ComponentesList extends StatefulWidget {
 class _ComponentesListState extends State<ComponentesList> {
   final ComponenteUpdateService service = ComponenteUpdateService();
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
 
   List<ComponenteUpdate> componentes = [];
   bool loading = true;
@@ -35,6 +36,7 @@ class _ComponentesListState extends State<ComponentesList> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -88,202 +90,287 @@ class _ComponentesListState extends State<ComponentesList> {
     }
   }
 
+  void _onSearchChanged(String value) async {
+    busqueda = value;
+    offset = 0;
+    allLoaded = false;
+    setState(() {
+      componentes.clear();
+      loading = true;
+    });
+
+    try {
+      final nuevos = await service.listar(
+        busqueda: busqueda,
+        offset: offset,
+        limit: limit,
+      );
+
+      setState(() {
+        componentes = nuevos;
+        offset += nuevos.length;
+        if (nuevos.length < limit) allLoaded = true;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      setState(() {
+        loading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(70),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1976D2), Color(0xFF42A5F5)], // degradado azul
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(20),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
+      body: Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF000000), Color.fromARGB(255, 0, 0, 0)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-            ],
-          ),
-          child: SafeArea(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(0),
+              ),
+            ),
+            padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
+            child: Column(
               children: [
-                IconButton(
-                  icon: const Icon(
-                    Iconsax.arrow_left_2,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-                const Text(
-                  "Componentes",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Iconsax.search_normal,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                  onPressed: () async {
-                    final resultado = await showSearch(
-                      context: context,
-                      delegate: ComponentesSearch(
-                        componentes: componentes,
-                        service: service,
-                        clearIcon: Icons.close,
-                        backIcon: Icons.arrow_back_ios_new,
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Iconsax.arrow_left,
+                        color: Colors.white,
+                        size: 20,
                       ),
-                    );
-                    if (resultado != null && resultado.isNotEmpty) {
-                      setState(() {
-                        busqueda = resultado;
-                      });
-                      fetchComponentes(reset: true);
-                    }
-                  },
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'Componentes',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: _onSearchChanged,
+                    decoration: InputDecoration(
+                      hintText: 'Buscar componente',
+                      border: InputBorder.none,
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.close,
+                                color: Colors.black,
+                              ),
+                              onPressed: () {
+                                _searchController.clear();
+                                _onSearchChanged('');
+                              },
+                            )
+                          : const Icon(Iconsax.search_normal),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-        ),
-      ),
+          Expanded(
+            child: loading && componentes.isEmpty
+                ? const Center(
+                    child: CircularProgressIndicator(color: Colors.blue),
+                  )
+                : RefreshIndicator(
+                    onRefresh: () => fetchComponentes(reset: true),
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(10),
+                      itemCount: componentes.length + (loadingMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index < componentes.length) {
+                          final c = componentes[index];
+                          Color stockColor;
+                          String stockTexto;
+                          if (c.cantidad <= 5) {
+                            stockColor = Colors.red;
+                            stockTexto = 'Bajo Stock';
+                          } else if (c.cantidad <= 20) {
+                            stockColor = Colors.yellow;
+                            stockTexto = 'Medio Stock';
+                          } else {
+                            stockColor = Colors.green;
+                            stockTexto = 'Stock Disponible';
+                          }
 
-      body: loading && componentes.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: () => fetchComponentes(reset: true),
-              child: ListView.builder(
-                controller: _scrollController,
-                itemCount: componentes.length + (loadingMore ? 1 : 0),
-                padding: const EdgeInsets.all(10),
-                itemBuilder: (context, index) {
-                  if (index < componentes.length) {
-                    final c = componentes[index];
-
-                    return Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      elevation: 3,
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(15),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ComponenteDetail(componente: c),
+                          return Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
                             ),
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                            children: [
-                              c.imagenesBase64.isEmpty
-                                  ? const Icon(
-                                      Iconsax.folder5,
-                                      color: Colors.black,
-                                      size: 50,
-                                    )
-                                  : SizedBox(
-                                      width: 60,
-                                      height: 60,
-                                      child: ListView.builder(
-                                        scrollDirection: Axis.horizontal,
-                                        itemCount: c.imagenesBase64.length,
-                                        itemBuilder: (_, i) {
-                                          final bytes = c.imagenBytes(i);
-                                          return bytes != null
-                                              ? Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                        right: 6,
-                                                      ),
-                                                  child: Hero(
-                                                    tag: 'imagen_${c.id}_$i',
-                                                    child: ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            8,
+                            elevation: 3,
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(15),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ComponenteDetail(componente: c),
+                                  ),
+                                );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
+                                  children: [
+                                    c.imagenesBase64.isEmpty
+                                        ? const Icon(
+                                            Iconsax.folder5,
+                                            color: Colors.black,
+                                            size: 50,
+                                          )
+                                        : SizedBox(
+                                            width: 60,
+                                            height: 60,
+                                            child: ListView.builder(
+                                              scrollDirection: Axis.horizontal,
+                                              itemCount:
+                                                  c.imagenesBase64.length,
+                                              itemBuilder: (_, i) {
+                                                final bytes = c.imagenBytes(i);
+                                                return bytes != null
+                                                    ? Padding(
+                                                        padding:
+                                                            const EdgeInsets.only(
+                                                              right: 6,
+                                                            ),
+                                                        child: Hero(
+                                                          tag:
+                                                              'imagen_${c.id}_$i',
+                                                          child: ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  8,
+                                                                ),
+                                                            child: Image.memory(
+                                                              bytes,
+                                                              width: 50,
+                                                              height: 50,
+                                                              fit: BoxFit.cover,
+                                                            ),
                                                           ),
-                                                      child: Image.memory(
-                                                        bytes,
+                                                        ),
+                                                      )
+                                                    : const SizedBox(
                                                         width: 50,
                                                         height: 50,
-                                                        fit: BoxFit.cover,
-                                                      ),
-                                                    ),
+                                                      );
+                                              },
+                                            ),
+                                          ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            c.nombreTipo,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            c.codigoInventario,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.black54,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 4,
+                                              horizontal: 8,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: stockColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                  stockTexto,
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
                                                   ),
-                                                )
-                                              : const SizedBox(
-                                                  width: 50,
-                                                  height: 50,
-                                                );
-                                        },
+                                                ),
+                                                Text(
+                                                  '${c.cantidad}',
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      c.nombreTipo,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '${c.codigoInventario} • Stock: ${c.cantidad}',
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.black54,
-                                      ),
+                                    const Icon(
+                                      Iconsax.arrow_right_3,
+                                      color: Colors.black,
                                     ),
                                   ],
                                 ),
                               ),
-                              const Icon(
-                                Iconsax.arrow_right_3,
-                                color: Colors.blue,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  } else {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                },
-              ),
-            ),
+                            ),
+                          );
+                        } else {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 10),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-/// Adaptación para Base64 segura
 extension ComponenteUpdateExtension on ComponenteUpdate {
   Uint8List? imagenBytes(int index) {
     if (index < 0 || index >= imagenesBase64.length) return null;
@@ -295,139 +382,5 @@ extension ComponenteUpdateExtension on ComponenteUpdate {
     } catch (_) {
       return null;
     }
-  }
-}
-
-/// Búsqueda por nombre o código
-class ComponentesSearch extends SearchDelegate<String> {
-  final List<ComponenteUpdate> componentes;
-  final ComponenteUpdateService service;
-  final IconData clearIcon;
-  final IconData backIcon;
-
-  ComponentesSearch({
-    required this.componentes,
-    required this.service,
-    this.clearIcon = Icons.close,
-    this.backIcon = Icons.arrow_back_ios_new,
-  }) : super(
-         searchFieldLabel: 'Buscar por nombre o inventario',
-         textInputAction: TextInputAction.search,
-       );
-
-  @override
-  List<Widget> buildActions(BuildContext context) => [
-    IconButton(
-      icon: Icon(clearIcon, color: Colors.black),
-      onPressed: () => query = '',
-    ),
-  ];
-
-  @override
-  Widget buildLeading(BuildContext context) => IconButton(
-    icon: Icon(backIcon, color: Colors.black),
-    onPressed: () => close(context, ''),
-  );
-
-  @override
-  Widget buildResults(BuildContext context) {
-    final results = componentes
-        .where(
-          (c) =>
-              c.nombreTipo.toLowerCase().contains(query.toLowerCase()) ||
-              c.codigoInventario.toLowerCase().contains(query.toLowerCase()),
-        )
-        .toList();
-
-    if (results.isEmpty) {
-      return const Center(
-        child: Text(
-          'No se encontraron componentes',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(10),
-      itemCount: results.length,
-      itemBuilder: (context, index) {
-        final c = results[index];
-        return Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          margin: const EdgeInsets.symmetric(vertical: 6),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 15,
-              vertical: 10,
-            ),
-            leading: c.imagenBytes(0) != null
-                ? Hero(
-                    tag: 'imagen_${c.id}_0',
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.memory(
-                        c.imagenBytes(0)!,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  )
-                : const Icon(Iconsax.folder5, color: Colors.black, size: 40),
-            title: Text(
-              c.nombreTipo,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            subtitle: Text(
-              'Inventario: ${c.codigoInventario} • Stock: ${c.cantidad}',
-              style: const TextStyle(fontSize: 14, color: Colors.black54),
-            ),
-            trailing: const Icon(Iconsax.arrow_right_3, color: Colors.blue),
-            onTap: () => close(context, query),
-          ),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    final suggestions = componentes
-        .where(
-          (c) =>
-              c.nombreTipo.toLowerCase().contains(query.toLowerCase()) ||
-              c.codigoInventario.toLowerCase().contains(query.toLowerCase()),
-        )
-        .toList();
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(10),
-      itemCount: suggestions.length,
-      itemBuilder: (context, i) {
-        final c = suggestions[i];
-        return Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          margin: const EdgeInsets.symmetric(vertical: 5),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 15,
-              vertical: 10,
-            ),
-            title: Text(
-              c.nombreTipo,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Text('Inventario: ${c.codigoInventario}'),
-            onTap: () => close(context, query),
-          ),
-        );
-      },
-    );
   }
 }

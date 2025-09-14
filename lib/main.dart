@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Provider/componentService.dart';
 import 'package:proyecto_web/Vista/app/principal/inicio.dart';
 import 'package:proyecto_web/Vista/web/login.dart';
 
 void main() {
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.black,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.black,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
   runApp(
     ChangeNotifierProvider(
       create: (_) => ComponentService(),

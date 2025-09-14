@@ -16,6 +16,7 @@ import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/cropper.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
+import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 
@@ -544,21 +545,18 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
                   atributos.removeAt(index);
                   _validate();
                 });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text("Atributo eliminado"),
-                    duration: const Duration(seconds: 1),
-                    action: SnackBarAction(
-                      label: "Deshacer",
-                      textColor: Colors.blue,
-                      onPressed: () {
-                        setState(() {
-                          atributos.insert(index, eliminado);
-                          _validate();
-                        });
-                      },
-                    ),
-                  ),
+                SnackBarUtil.mostrarSnackBarPersonalizado(
+                  context: context,
+                  mensaje: "Atributo eliminado",
+                  icono: Icons.delete,
+                  duracion: const Duration(seconds: 1),
+                  textoAccion: "Deshacer",
+                  onAccion: () {
+                    setState(() {
+                      atributos.insert(index, eliminado);
+                      _validate();
+                    });
+                  },
                 );
               },
               background: Container(
@@ -586,25 +584,22 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
                         controller: attr["controller"],
                         hintText: "Nombre del atributo",
                         label: "Atributo",
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () => _seleccionarTipo(attr),
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.grey),
-                          color: Colors.grey.shade100,
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          abreviaturas[attr["tipo"]] ?? "",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                        suffixIcon: GestureDetector(
+                          onTap: () => _seleccionarTipo(attr),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: CircleAvatar(
+                              radius: 16,
+                              backgroundColor: Colors.grey.shade200,
+                              child: Text(
+                                abreviaturas[attr["tipo"]] ?? "",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
