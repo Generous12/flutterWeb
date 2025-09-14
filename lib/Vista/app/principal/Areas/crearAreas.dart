@@ -17,7 +17,6 @@ class CrearAreaScreen extends StatefulWidget {
 class _CrearAreaScreenState extends State<CrearAreaScreen> {
   final TextEditingController _nombreController = TextEditingController();
   List<TextEditingController> _subareaControllers = [];
-
   int? _idAreaPadreSeleccionada;
 
   @override

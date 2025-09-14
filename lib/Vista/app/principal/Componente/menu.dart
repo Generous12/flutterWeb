@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/crearComponente.dart';
+import 'package:proyecto_web/Vista/app/principal/Componente/listarUdapte_Componente.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
 
 class MenuComponentesScreen extends StatelessWidget {
@@ -39,7 +40,7 @@ class MenuComponentesScreen extends StatelessWidget {
               color1: Colors.green,
               color2: Colors.teal,
               onTap: () {
-                debugPrint("👉 Listar componentes");
+                navegarConSlideDerecha(context, ComponentesList());
               },
             ),
             _MenuButton(
