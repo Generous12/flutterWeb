@@ -7,8 +7,7 @@ class ComponenteUpdate {
   final String codigoInventario;
   final String nombreTipo;
   final int cantidad;
-  final List<String> imagenesBase64; // lista de imágenes en Base64
-
+  final List<String> imagenesBase64;
   ComponenteUpdate({
     required this.id,
     required this.codigoInventario,
@@ -16,19 +15,16 @@ class ComponenteUpdate {
     required this.cantidad,
     required this.imagenesBase64,
   });
-
   factory ComponenteUpdate.fromJson(Map<String, dynamic> json) {
     List<String> imagenes = [];
     if (json['imagenes'] != null) {
       try {
-        // Convertir de array JSON a List<String>
         imagenes = List<String>.from(json['imagenes']);
       } catch (e) {
         print("❌ Error al parsear imágenes: $e");
         imagenes = [];
       }
     }
-
     return ComponenteUpdate(
       id: json['id_componente'],
       codigoInventario: json['codigo_inventario'],
@@ -37,14 +33,19 @@ class ComponenteUpdate {
       imagenesBase64: imagenes,
     );
   }
-
-  /// Devuelve la imagen decodificada en bytes para usar en Image.memory
   Uint8List? imagenBytes(int index) {
     if (index < 0 || index >= imagenesBase64.length) return null;
+
     try {
-      // Limpiar saltos de línea por si acaso
-      final cleanBase64 = imagenesBase64[index].replaceAll('\n', '');
-      return base64Decode(cleanBase64);
+      String base64Str = imagenesBase64[index].replaceAll('\n', '').trim();
+
+      // Rellenar con '=' para que sea múltiplo de 4
+      final mod = base64Str.length % 4;
+      if (mod != 0) {
+        base64Str = base64Str.padRight(base64Str.length + (4 - mod), '=');
+      }
+
+      return base64Decode(base64Str);
     } catch (e) {
       print("❌ Error decodificando imagen $index: $e");
       return null;
@@ -54,11 +55,9 @@ class ComponenteUpdate {
 
 class ComponenteUpdateService {
   final String url =
-      "http://192.168.18.24/proyecto_web/backend/procedimientoAlm/list_update_component.php";
+      "http://192.168.236.89/proyecto_web/backend/procedimientoAlm/list_update_component.php";
 
-  /// =============================
-  /// LISTAR COMPONENTES
-  /// =============================
+  /// 192.168.236.89
   Future<List<ComponenteUpdate>> listar({
     String busqueda = '',
     int? offset,
@@ -88,57 +87,51 @@ class ComponenteUpdateService {
     }
   }
 
-  /// =============================
-  /// ACTUALIZAR CAMPOS (Cantidad, Código, etc)
-  /// =============================
-  Future<bool> actualizarCampo({
+  Future<bool> actualizarComponente({
     required String identificador,
-    required String columna,
-    required String valor,
+    int? cantidad,
+    required List<String?> imagenes, // longitud 4, null si no hay imagen
   }) async {
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "action": "actualizar",
-        "identificador": identificador,
-        "columna": columna,
-        "valor": valor,
-      }),
-    );
+    // Asegurar longitud 4
+    final List<String?> imagenesFinal = List.generate(4, (i) {
+      if (i < imagenes.length) return imagenes[i];
+      return null;
+    });
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return data['success'] ?? false;
+    print("📤 Preparando payload para backend:");
+    print("Identificador: $identificador");
+    print("Cantidad: $cantidad");
+    for (int i = 0; i < imagenesFinal.length; i++) {
+      final img = imagenesFinal[i];
+      print(
+        img != null
+            ? "Imagen slot $i: ${img.substring(0, 50)}..."
+            : "Imagen slot $i: null",
+      );
     }
-    return false;
-  }
 
-  /// =============================
-  /// ACTUALIZAR IMÁGENES (4 imágenes)
-  /// =============================
-  Future<bool> actualizarImagenes({
-    required String identificador,
-    required List<String> imagenes,
-  }) async {
-    if (imagenes.length != 4) {
-      throw Exception("Se requieren 4 imágenes");
+    // Preparar payload opcional: solo enviar lo que cambió
+    final Map<String, dynamic> cambios = {"identificador": identificador};
+    if (cantidad != null) cambios["cantidad"] = cantidad;
+    if (imagenesFinal.any((img) => img != null)) {
+      cambios["imagenes"] = imagenesFinal;
     }
 
     final response = await http.post(
       Uri.parse(url),
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "action": "actualizar_imagenes",
-        "identificador": identificador,
-        "imagenes": imagenes,
-      }),
+      body: jsonEncode({"action": "actualizar", ...cambios}),
     );
+
+    print("📥 Respuesta raw del backend: ${response.body}");
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      print("✅ Backend parsed: $data");
       return data['success'] ?? false;
     }
+
+    print("❌ Error HTTP: ${response.statusCode}");
     return false;
   }
 }

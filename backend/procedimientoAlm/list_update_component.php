@@ -13,18 +13,17 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 $data = json_decode(file_get_contents("php://input"), true);
 $response = ["success" => false, "message" => "Acción no válida"];
 
-$action = $data['action'] ?? '';
-$busqueda = $data['busqueda'] ?? '';
+$action        = $data['action'] ?? '';
+$busqueda      = $data['busqueda'] ?? '';
 $identificador = $data['identificador'] ?? '';
-$columna = $data['columna'] ?? '';
-$valor = $data['valor'] ?? '';
-$imagenes = $data['imagenes'] ?? []; 
-$offset = $data['offset'] ?? null;
-$limit = $data['limit'] ?? null;
+$cantidad      = $data['cantidad'] ?? null;
+$imagenes      = $data['imagenes'] ?? []; // array de 4 posiciones (pueden ser null)
+$offset        = $data['offset'] ?? null;
+$limit         = $data['limit'] ?? null;
 
 try {
     if ($action == 'listar') {
-        // Usamos un solo procedimiento con paginación opcional
+        // ✅ Listar con paginación opcional
         if ($offset !== null && $limit !== null) {
             $stmt = $conn->prepare("
                 SELECT DISTINCT
@@ -60,34 +59,39 @@ try {
         $result = $stmt->get_result();
         $componentes = [];
         while ($row = $result->fetch_assoc()) {
-            // Asegurarse de que 'imagenes' sea un array
             $row['imagenes'] = $row['imagenes'] ? json_decode($row['imagenes'], true) : [];
             $componentes[] = $row;
         }
 
-
         $response = ["success" => true, "data" => $componentes];
 
     } elseif ($action == 'actualizar') {
-        // Actualizar cualquier columna de un componente
-        $stmt = $conn->prepare("CALL ActualizarComponente(?, ?, ?)");
-        $stmt->bind_param("sss", $identificador, $columna, $valor);
-        $stmt->execute();
 
-        $response = ["success" => true, "message" => "Componente actualizado"];
+        // Asegurarse que el array tenga exactamente 4 posiciones
+        $imagenes = array_pad($imagenes, 4, null);
+        $img1 = $imagenes[0] ?? null;
+        $img2 = $imagenes[1] ?? null;
+        $img3 = $imagenes[2] ?? null;
+        $img4 = $imagenes[3] ?? null;
 
-    } elseif ($action == 'actualizar_imagenes') {
-        // Actualizar imágenes
-        if (count($imagenes) != 4) {
-            throw new Exception("Se requieren 4 imágenes");
+        // Validar que se envíe al menos un valor para actualizar
+        if ($cantidad === null && $img1 === null && $img2 === null && $img3 === null && $img4 === null) {
+            throw new Exception("No hay datos para actualizar");
         }
 
-        $stmt = $conn->prepare("CALL ActualizarComponenteImagenes(?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssss", $identificador, 
-                          $imagenes[0], $imagenes[1], $imagenes[2], $imagenes[3]);
+        // Llamar al procedimiento almacenado
+        $stmt = $conn->prepare("CALL ActualizarComponenteFlexible(?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sissss", 
+            $identificador, 
+            $cantidad, 
+            $img1, 
+            $img2, 
+            $img3, 
+            $img4
+        );
         $stmt->execute();
 
-        $response = ["success" => true, "message" => "Imágenes actualizadas"];
+        $response = ["success" => true, "message" => "Componente actualizado correctamente"];
     }
 
 } catch (Exception $e) {

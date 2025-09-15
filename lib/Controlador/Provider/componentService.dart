@@ -134,7 +134,7 @@ class ComponentService extends ChangeNotifier {
     }
 
     final url = Uri.parse(
-      "http://192.168.18.24/proyecto_web/backend/procedimientoAlm/registrar_componente.php",
+      "http://192.168.236.89/proyecto_web/backend/procedimientoAlm/registrar_componente.php",
     );
 
     // Convertir atributos a JSON

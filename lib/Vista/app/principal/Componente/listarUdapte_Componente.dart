@@ -371,15 +371,28 @@ class _ComponentesListState extends State<ComponentesList> {
   }
 }
 
+/// Extensión segura para decodificar Base64
 extension ComponenteUpdateExtension on ComponenteUpdate {
   Uint8List? imagenBytes(int index) {
     if (index < 0 || index >= imagenesBase64.length) return null;
-    final base64Str = imagenesBase64[index]
+
+    String base64Str = imagenesBase64[index]
         .replaceAll('\n', '')
-        .replaceAll(' ', '');
+        .replaceAll(' ', '')
+        .trim();
+
+    if (base64Str.isEmpty) return null;
+
     try {
+      // Asegurar longitud múltiplo de 4
+      final mod = base64Str.length % 4;
+      if (mod != 0) {
+        base64Str = base64Str.padRight(base64Str.length + (4 - mod), '=');
+      }
       return base64Decode(base64Str);
-    } catch (_) {
+    } catch (e) {
+      // Si falla, retornamos null para mostrar placeholder
+      print("❌ Imagen $index inválida, se mostrará placeholder: $e");
       return null;
     }
   }

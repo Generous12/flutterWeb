@@ -150,13 +150,12 @@ class _LoadingOverlayButtonHabilitarState
         widget.textColor ??
         (isDark ? Colors.white : Colors.white);
 
-    final isButtonEnabled =
-        widget.enabled && !isLoading; // ✅ combinamos habilitado y no cargando
+    final isButtonEnabled = widget.enabled && !isLoading;
 
     return Stack(
       children: [
         AbsorbPointer(
-          absorbing: !isButtonEnabled, // deshabilita si !enabled o cargando
+          absorbing: !isButtonEnabled,
           child: Opacity(
             opacity: isButtonEnabled ? 1 : 0.5,
             child: ElevatedButton(
