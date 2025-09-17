@@ -119,12 +119,18 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
     List<String?> imagenesFinal = List.generate(4, (i) {
       if (_imagenesNuevas[i] != null) {
         huboCambio = true;
-        // Puede ser "" (eliminar) o base64 / URL (actualizar)
-        print(
-          "📸 Imagen slot $i: ${_imagenesNuevas[i]!.isEmpty ? 'ELIMINAR' : _imagenesNuevas[i]!.substring(0, 50)}...",
-        );
+
+        if (_imagenesNuevas[i]!.isEmpty) {
+          print("📸 Imagen slot $i: ELIMINAR");
+        } else {
+          print(
+            "📸 Imagen slot $i: NUEVA/ACTUALIZADA (base64, len=${_imagenesNuevas[i]!.length})",
+          );
+        }
+
         return _imagenesNuevas[i]!;
       }
+      print("📸 Imagen slot $i: NO TOCAR");
       return null; // no tocar la existente
     });
 
@@ -139,7 +145,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
     }
 
     print(
-      "Hubo cambio: $huboCambio, Payload a enviar: identificador=$identificador, cantidad=$cantidadActualizada, imagenes=[${imagenesFinal.map((e) => e != null ? (e.isEmpty ? 'ELIMINAR' : e.substring(0, 30)) : 'null').join(', ')}]",
+      "✅ Payload a enviar:\n identificador=$identificador\n cantidad=$cantidadActualizada\n imagenes=[${imagenesFinal.map((e) => e == null ? 'NO TOCAR' : (e.isEmpty ? 'ELIMINAR' : 'BASE64(${e.length})')).join(', ')}]",
     );
 
     try {
@@ -261,10 +267,9 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                           onTap: () {
                             setState(() {
                               if (_imagenesNuevas[index] == "") {
-                                _imagenesNuevas[index] = null; // desmarcar
+                                _imagenesNuevas[index] = null;
                               } else {
-                                _imagenesNuevas[index] =
-                                    ""; // marcar para eliminar
+                                _imagenesNuevas[index] = "";
                               }
                             });
                           },
@@ -290,8 +295,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                           ),
                         ),
                       ),
-
-                      // Botón editar
                       if (imgBytes != null && _imagenesNuevas[index] != "")
                         Positioned(
                           top: 4,
@@ -316,7 +319,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                   );
                 },
               ),
-
               const SizedBox(height: 16),
               CustomTextField(
                 controller: nombreController,
@@ -352,7 +354,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
   }
 }
 
-// Extensión para decodificar imágenes con padding seguro
 extension ComponenteUpdateExtension on ComponenteUpdate {
   Uint8List? imagenBytes(int index) {
     final imgs = imagenesBase64;

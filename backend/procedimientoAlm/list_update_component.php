@@ -64,35 +64,51 @@ try {
 
         $response = ["success" => true, "data" => $componentes];
 
-    } elseif ($action == 'actualizar') {
+  } elseif ($action == 'actualizar') {
 
-        // ✅ Asegurar que siempre tengamos 4 posiciones
-        $imagenes = array_pad($imagenes, 4, null);
-        $img1 = $imagenes[0] ?? null;
-        $img2 = $imagenes[1] ?? null;
-        $img3 = $imagenes[2] ?? null;
-        $img4 = $imagenes[3] ?? null;
+    // ✅ Asegurar que siempre tengamos 4 posiciones
+    $imagenes = array_pad($imagenes, 4, null);
 
-        // Verificar que haya datos para actualizar
-        if ($cantidad === null && $img1 === null && $img2 === null && $img3 === null && $img4 === null) {
-            throw new Exception("No hay datos para actualizar");
-        }
+    // 🔹 Traer imágenes actuales de la BD
+    $stmtSel = $conn->prepare("SELECT imagenes FROM Componente WHERE codigo_inventario = ?");
+    $stmtSel->bind_param("s", $identificador);
+    $stmtSel->execute();
+    $result = $stmtSel->get_result();
+    $row = $result->fetch_assoc();
 
-        // ✅ Llamar al procedimiento almacenado
-        $stmt = $conn->prepare("CALL ActualizarComponenteFlexible(?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param(
-            "sissss", 
-            $identificador, 
-            $cantidad, 
-            $img1, 
-            $img2, 
-            $img3, 
-            $img4
-        );
-        $stmt->execute();
-
-        $response = ["success" => true, "message" => "Componente actualizado correctamente"];
+    // Decodificar las imágenes actuales (JSON → array)
+    $imagenesActuales = json_decode($row['imagenes'], true);
+    if (!$imagenesActuales) {
+        $imagenesActuales = [null, null, null, null];
     }
+
+    // 🔹 Reemplazar solo si Flutter mandó algo
+    // - null  → mantener
+    // - ""    → eliminar
+    // - base64→ actualizar
+    for ($i = 0; $i < 4; $i++) {
+        if ($imagenes[$i] !== null) {
+            $imagenesActuales[$i] = $imagenes[$i]; 
+        }
+    }
+
+    // Codificar de nuevo a JSON
+    $imagenesJson = json_encode($imagenesActuales);
+
+    // Verificar que haya algo para actualizar
+    if ($cantidad === null && $imagenesJson === $row['imagenes']) {
+        throw new Exception("No hay datos para actualizar");
+    }
+
+    // ✅ Actualizar registro
+    $stmt = $conn->prepare("UPDATE Componente SET cantidad = ?, imagenes = ? WHERE codigo_inventario = ?");
+    $stmt->bind_param("iss", $cantidad, $imagenesJson, $identificador);
+    $stmt->execute();
+
+    $response = ["success" => true, "message" => "Componente actualizado correctamente"];
+}
+
+
 
 } catch (Exception $e) {
     $response = ["success" => false, "message" => $e->getMessage()];
