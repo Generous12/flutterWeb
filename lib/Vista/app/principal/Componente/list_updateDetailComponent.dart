@@ -115,14 +115,15 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
       huboCambio = true;
     }
 
-    // 2️⃣ Preparar imágenes nuevas: solo enviar las que cambiaron
+    // 2️⃣ Preparar imágenes nuevas / eliminación: enviar "" para eliminar
     List<String?> imagenesFinal = List.generate(4, (i) {
-      if (_imagenesNuevas[i] != null && _imagenesNuevas[i]!.isNotEmpty) {
+      if (_imagenesNuevas[i] != null) {
         huboCambio = true;
+        // Puede ser "" (eliminar) o base64 / URL (actualizar)
         print(
-          "📸 Imagen nueva en slot $i: ${_imagenesNuevas[i]!.substring(0, 50)}...",
+          "📸 Imagen slot $i: ${_imagenesNuevas[i]!.isEmpty ? 'ELIMINAR' : _imagenesNuevas[i]!.substring(0, 50)}...",
         );
-        return _imagenesNuevas[i]!; // enviar solo imagen nueva
+        return _imagenesNuevas[i]!;
       }
       return null; // no tocar la existente
     });
@@ -138,7 +139,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
     }
 
     print(
-      "Hubo cambio: $huboCambio, Payload a enviar: identificador=$identificador, cantidad=$cantidadActualizada, imagenes=[${imagenesFinal.map((e) => e != null ? e.substring(0, 30) : 'null').join(', ')}]",
+      "Hubo cambio: $huboCambio, Payload a enviar: identificador=$identificador, cantidad=$cantidadActualizada, imagenes=[${imagenesFinal.map((e) => e != null ? (e.isEmpty ? 'ELIMINAR' : e.substring(0, 30)) : 'null').join(', ')}]",
     );
 
     try {
@@ -212,30 +213,106 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                   crossAxisSpacing: 8,
                 ),
                 itemBuilder: (context, index) {
-                  final imgBytes = _imagenesNuevas[index] != null
+                  final imgBytes =
+                      (_imagenesNuevas[index] != null &&
+                          _imagenesNuevas[index] != "")
                       ? base64Decode(_imagenesNuevas[index]!)
                       : componente.imagenBytes(index);
 
-                  return GestureDetector(
-                    onTap: () => _seleccionarImagen(index),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black26),
-                        borderRadius: BorderRadius.circular(12),
+                  return Stack(
+                    children: [
+                      GestureDetector(
+                        onTap: () => _seleccionarImagen(index),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.black26),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child:
+                              (imgBytes != null && _imagenesNuevas[index] != "")
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.memory(
+                                    imgBytes,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                  ),
+                                )
+                              : Center(
+                                  child: _imagenesNuevas[index] == ""
+                                      ? const Icon(
+                                          Iconsax.trash,
+                                          size: 50,
+                                          color: Colors.red,
+                                        )
+                                      : const Icon(
+                                          Iconsax.image,
+                                          size: 50,
+                                          color: Colors.black45,
+                                        ),
+                                ),
+                        ),
                       ),
-                      child: imgBytes != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.memory(imgBytes, fit: BoxFit.cover),
-                            )
-                          : const Center(
-                              child: Icon(
-                                Iconsax.image,
-                                size: 50,
-                                color: Colors.black45,
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              if (_imagenesNuevas[index] == "") {
+                                _imagenesNuevas[index] = null; // desmarcar
+                              } else {
+                                _imagenesNuevas[index] =
+                                    ""; // marcar para eliminar
+                              }
+                            });
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: _imagenesNuevas[index] == ""
+                                  ? Colors.green
+                                  : Colors.black54,
+                              shape: BoxShape.circle,
+                            ),
+                            padding: const EdgeInsets.all(6),
+                            child: _imagenesNuevas[index] == ""
+                                ? const Icon(
+                                    Icons.check,
+                                    color: Colors.white,
+                                    size: 18,
+                                  )
+                                : const Icon(
+                                    Icons.delete,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                          ),
+                        ),
+                      ),
+
+                      // Botón editar
+                      if (imgBytes != null && _imagenesNuevas[index] != "")
+                        Positioned(
+                          top: 4,
+                          left: 4,
+                          child: InkWell(
+                            onTap: () => _seleccionarImagen(index),
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                color: Colors.black54,
+                                shape: BoxShape.circle,
+                              ),
+                              padding: const EdgeInsets.all(6),
+                              child: const Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 18,
                               ),
                             ),
-                    ),
+                          ),
+                        ),
+                    ],
                   );
                 },
               ),

@@ -23,7 +23,6 @@ $limit         = $data['limit'] ?? null;
 
 try {
     if ($action == 'listar') {
-        // ✅ Listar con paginación opcional
         if ($offset !== null && $limit !== null) {
             $stmt = $conn->prepare("
                 SELECT DISTINCT
@@ -67,21 +66,22 @@ try {
 
     } elseif ($action == 'actualizar') {
 
-      
+        // ✅ Asegurar que siempre tengamos 4 posiciones
         $imagenes = array_pad($imagenes, 4, null);
         $img1 = $imagenes[0] ?? null;
         $img2 = $imagenes[1] ?? null;
         $img3 = $imagenes[2] ?? null;
         $img4 = $imagenes[3] ?? null;
 
-        
+        // Verificar que haya datos para actualizar
         if ($cantidad === null && $img1 === null && $img2 === null && $img3 === null && $img4 === null) {
             throw new Exception("No hay datos para actualizar");
         }
 
-     
+        // ✅ Llamar al procedimiento almacenado
         $stmt = $conn->prepare("CALL ActualizarComponenteFlexible(?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("sissss", 
+        $stmt->bind_param(
+            "sissss", 
             $identificador, 
             $cantidad, 
             $img1, 

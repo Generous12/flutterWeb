@@ -55,8 +55,9 @@ class ComponenteUpdate {
 
 class ComponenteUpdateService {
   final String url =
-      "http://192.168.236.89/proyecto_web/backend/procedimientoAlm/list_update_component.php";
+      "http://localhost/proyecto_web/backend/procedimientoAlm/list_update_component.php";
 
+  /// 192.168.236.89
   Future<List<ComponenteUpdate>> listar({
     String busqueda = '',
     int? offset,
@@ -91,6 +92,7 @@ class ComponenteUpdateService {
     int? cantidad,
     required List<String?> imagenes,
   }) async {
+    // 🔹 Aseguramos siempre 4 slots
     final List<String?> imagenesFinal = List.generate(4, (i) {
       if (i < imagenes.length) return imagenes[i];
       return null;
@@ -103,12 +105,20 @@ class ComponenteUpdateService {
       final img = imagenesFinal[i];
       print(
         img != null
-            ? "Imagen slot $i: ${img.substring(0, 50)}..."
+            ? "Imagen slot $i: ${img.substring(0, img.length > 50 ? 0 : 0)}..." // Solo debug
             : "Imagen slot $i: null",
       );
     }
+
+    // 🔹 Preparar payload
     final Map<String, dynamic> cambios = {"identificador": identificador};
+
     if (cantidad != null) cambios["cantidad"] = cantidad;
+
+    // Aquí distinguimos entre actualizar/añadir y eliminar imágenes
+    // - null = no tocar
+    // - "" = eliminar
+    // - base64 o URL = actualizar
     if (imagenesFinal.any((img) => img != null)) {
       cambios["imagenes"] = imagenesFinal;
     }
