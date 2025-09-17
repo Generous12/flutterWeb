@@ -57,7 +57,6 @@ class ComponenteUpdateService {
   final String url =
       "http://192.168.236.89/proyecto_web/backend/procedimientoAlm/list_update_component.php";
 
-  /// 192.168.236.89
   Future<List<ComponenteUpdate>> listar({
     String busqueda = '',
     int? offset,
@@ -90,9 +89,8 @@ class ComponenteUpdateService {
   Future<bool> actualizarComponente({
     required String identificador,
     int? cantidad,
-    required List<String?> imagenes, // longitud 4, null si no hay imagen
+    required List<String?> imagenes,
   }) async {
-    // Asegurar longitud 4
     final List<String?> imagenesFinal = List.generate(4, (i) {
       if (i < imagenes.length) return imagenes[i];
       return null;
@@ -109,8 +107,6 @@ class ComponenteUpdateService {
             : "Imagen slot $i: null",
       );
     }
-
-    // Preparar payload opcional: solo enviar lo que cambió
     final Map<String, dynamic> cambios = {"identificador": identificador};
     if (cantidad != null) cambios["cantidad"] = cantidad;
     if (imagenesFinal.any((img) => img != null)) {

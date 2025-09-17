@@ -137,7 +137,6 @@ class ComponentService extends ChangeNotifier {
       "http://192.168.236.89/proyecto_web/backend/procedimientoAlm/registrar_componente.php",
     );
 
-    // Convertir atributos a JSON
     final atributosJson = atributos.map((attr) {
       final valor = valoresAtributos[attr.id!] ?? "";
       print("   Atributo a enviar -> ${attr.nombre}: $valor");
@@ -148,7 +147,6 @@ class ComponentService extends ChangeNotifier {
       };
     }).toList();
 
-    // Convertir imágenes a Base64
     final imagenesBase64 = componenteCreado!.imagenes!
         .map((file) {
           try {
@@ -191,7 +189,6 @@ class ComponentService extends ChangeNotifier {
       if (data['success'] == true) {
         print("✅ Componente registrado correctamente");
 
-        // Actualizar IDs del backend
         tipoSeleccionado = TipoComponente(
           id: int.parse(data['id_tipo'].toString()),
           nombre: tipoSeleccionado!.nombre,

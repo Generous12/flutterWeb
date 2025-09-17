@@ -17,7 +17,7 @@ $action        = $data['action'] ?? '';
 $busqueda      = $data['busqueda'] ?? '';
 $identificador = $data['identificador'] ?? '';
 $cantidad      = $data['cantidad'] ?? null;
-$imagenes      = $data['imagenes'] ?? []; // array de 4 posiciones (pueden ser null)
+$imagenes      = $data['imagenes'] ?? []; 
 $offset        = $data['offset'] ?? null;
 $limit         = $data['limit'] ?? null;
 
@@ -67,19 +67,19 @@ try {
 
     } elseif ($action == 'actualizar') {
 
-        // Asegurarse que el array tenga exactamente 4 posiciones
+      
         $imagenes = array_pad($imagenes, 4, null);
         $img1 = $imagenes[0] ?? null;
         $img2 = $imagenes[1] ?? null;
         $img3 = $imagenes[2] ?? null;
         $img4 = $imagenes[3] ?? null;
 
-        // Validar que se envíe al menos un valor para actualizar
+        
         if ($cantidad === null && $img1 === null && $img2 === null && $img3 === null && $img4 === null) {
             throw new Exception("No hay datos para actualizar");
         }
 
-        // Llamar al procedimiento almacenado
+     
         $stmt = $conn->prepare("CALL ActualizarComponenteFlexible(?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("sissss", 
             $identificador, 
