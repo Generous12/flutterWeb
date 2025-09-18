@@ -277,6 +277,26 @@ class _ComponentesListState extends State<ComponentesList> {
                                                               width: 50,
                                                               height: 50,
                                                               fit: BoxFit.cover,
+                                                              errorBuilder:
+                                                                  (
+                                                                    context,
+                                                                    error,
+                                                                    stackTrace,
+                                                                  ) {
+                                                                    return Container(
+                                                                      width: 50,
+                                                                      height:
+                                                                          50,
+                                                                      color: Colors
+                                                                          .grey[300],
+                                                                      child: const Icon(
+                                                                        Icons
+                                                                            .broken_image,
+                                                                        color: Colors
+                                                                            .grey,
+                                                                      ),
+                                                                    );
+                                                                  },
                                                             ),
                                                           ),
                                                         ),
@@ -371,28 +391,30 @@ class _ComponentesListState extends State<ComponentesList> {
   }
 }
 
-/// Extensión segura para decodificar Base64
 extension ComponenteUpdateExtension on ComponenteUpdate {
   Uint8List? imagenBytes(int index) {
     if (index < 0 || index >= imagenesBase64.length) return null;
 
-    String base64Str = imagenesBase64[index]
-        .replaceAll('\n', '')
-        .replaceAll(' ', '')
-        .trim();
+    String? base64Str = imagenesBase64[index];
+    if (base64Str == null) return null;
 
+    base64Str = base64Str.trim();
     if (base64Str.isEmpty) return null;
 
     try {
-      // Asegurar longitud múltiplo de 4
+      // 🔹 Quitar cabecera si viene con data:image/png;base64,
+      final regex = RegExp(r'data:image/[^;]+;base64,');
+      base64Str = base64Str.replaceAll(regex, '');
+
+      // 🔹 Asegurar longitud múltiplo de 4
       final mod = base64Str.length % 4;
       if (mod != 0) {
         base64Str = base64Str.padRight(base64Str.length + (4 - mod), '=');
       }
+
       return base64Decode(base64Str);
     } catch (e) {
-      // Si falla, retornamos null para mostrar placeholder
-      print("❌ Imagen $index inválida, se mostrará placeholder: $e");
+      print("❌ Imagen[$index] inválida, se usará placeholder: $e");
       return null;
     }
   }

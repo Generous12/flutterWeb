@@ -26,7 +26,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
   late TextEditingController stockController;
   late TextEditingController tipoController;
 
-  // Imágenes nuevas (solo reemplazan si usuario selecciona)
   List<String?> _imagenesNuevas = List.filled(4, null);
 
   @override
@@ -117,21 +116,25 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
 
     // 2️⃣ Preparar imágenes nuevas / eliminación: enviar "" para eliminar
     List<String?> imagenesFinal = List.generate(4, (i) {
-      if (_imagenesNuevas[i] != null) {
+      final nuevo = _imagenesNuevas[i];
+
+      if (nuevo != null) {
         huboCambio = true;
 
-        if (_imagenesNuevas[i]!.isEmpty) {
+        if (nuevo.isEmpty) {
           print("📸 Imagen slot $i: ELIMINAR");
         } else {
           print(
-            "📸 Imagen slot $i: NUEVA/ACTUALIZADA (base64, len=${_imagenesNuevas[i]!.length})",
+            "📸 Imagen slot $i: NUEVA/ACTUALIZADA (base64, len=${nuevo.length})",
           );
         }
 
-        return _imagenesNuevas[i]!;
+        return nuevo; // "" para eliminar, base64 para actualizar/agregar
       }
+
+      // null → mantener la existente
       print("📸 Imagen slot $i: NO TOCAR");
-      return null; // no tocar la existente
+      return null;
     });
 
     if (!huboCambio) {
@@ -152,7 +155,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
       final success = await service.actualizarComponente(
         identificador: identificador,
         cantidad: cantidadActualizada,
-        imagenes: imagenesFinal,
+        imagenesNuevas: imagenesFinal,
       );
 
       print("✅ Respuesta del backend: $success");
@@ -267,9 +270,10 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                           onTap: () {
                             setState(() {
                               if (_imagenesNuevas[index] == "") {
-                                _imagenesNuevas[index] = null;
+                                _imagenesNuevas[index] = null; // restaurar
                               } else {
-                                _imagenesNuevas[index] = "";
+                                _imagenesNuevas[index] =
+                                    ""; // marcar para eliminar
                               }
                             });
                           },

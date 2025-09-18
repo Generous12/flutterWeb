@@ -55,7 +55,7 @@ class ComponenteUpdate {
 
 class ComponenteUpdateService {
   final String url =
-      "http://192.168.236.89/proyecto_web/backend/procedimientoAlm/list_update_component.php";
+      "http://192.168.146.89/proyecto_web/backend/procedimientoAlm/list_update_component.php";
 
   /// 192.168.236.89
   Future<List<ComponenteUpdate>> listar({
@@ -80,7 +80,34 @@ class ComponenteUpdateService {
     );
 
     if (response.statusCode == 200) {
-      final List data = jsonDecode(response.body)['data'] ?? [];
+      final jsonResp = jsonDecode(response.body);
+      final List data = jsonResp['data'] ?? [];
+
+      // 🔎 DEPURACIÓN: imprime cómo llegan las imágenes
+      for (int i = 0; i < data.length; i++) {
+        final comp = data[i];
+        final imagenes = comp["imagenes"];
+        print("📦 Componente $i => ${comp["codigo_inventario"]}");
+        if (imagenes is List) {
+          for (int j = 0; j < imagenes.length; j++) {
+            final img = imagenes[j];
+            if (img == null) {
+              print("  🟤 Imagen[$j]: null");
+            } else if ((img as String).isEmpty) {
+              print("  ⚪ Imagen[$j]: VACÍA");
+            } else if (img.startsWith("data:image")) {
+              print(
+                "  🟢 Imagen[$j]: con cabecera data:image (length=${img.length})",
+              );
+            } else {
+              print("  🔵 Imagen[$j]: base64 pura (length=${img.length})");
+            }
+          }
+        } else {
+          print("  ❌ Imagenes no es lista: $imagenes");
+        }
+      }
+
       return data.map((e) => ComponenteUpdate.fromJson(e)).toList();
     } else {
       throw Exception('Error al listar componentes');
@@ -90,11 +117,19 @@ class ComponenteUpdateService {
   Future<bool> actualizarComponente({
     required String identificador,
     int? cantidad,
-    required List<String?> imagenes,
+    required List<String?> imagenesNuevas,
+    List<String?>?
+    imagenesActuales, // opcional: para referencia si quieres mantener
   }) async {
-    // 🔹 Siempre 4 slots
+    // 🔹 Asegurar siempre 4 slots
     final List<String?> imagenesFinal = List.generate(4, (i) {
-      if (i < imagenes.length) return imagenes[i];
+      // Si Flutter envió algo nuevo
+      if (i < imagenesNuevas.length && imagenesNuevas[i] != null) {
+        return imagenesNuevas[i];
+      }
+      // Sino, mantener la existente (null = no tocar)
+      if (imagenesActuales != null && i < imagenesActuales.length) return null;
+
       return null;
     });
 
@@ -115,29 +150,30 @@ class ComponenteUpdateService {
 
     // 🔹 Preparar payload
     final Map<String, dynamic> cambios = {"identificador": identificador};
-
     if (cantidad != null) cambios["cantidad"] = cantidad;
-
-    // Solo incluir "imagenes" si hay algo distinto de null
-    if (imagenesFinal.any((img) => img != null)) {
+    if (imagenesFinal.any((img) => img != null))
       cambios["imagenes"] = imagenesFinal;
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"action": "actualizar", ...cambios}),
+      );
+
+      print("📥 Respuesta raw del backend: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print("✅ Backend parsed: $data");
+        return data['success'] ?? false;
+      }
+
+      print("❌ Error HTTP: ${response.statusCode}");
+      return false;
+    } catch (e) {
+      print("❌ Excepción al actualizar componente: $e");
+      return false;
     }
-
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"action": "actualizar", ...cambios}),
-    );
-
-    print("📥 Respuesta raw del backend: ${response.body}");
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      print("✅ Backend parsed: $data");
-      return data['success'] ?? false;
-    }
-
-    print("❌ Error HTTP: ${response.statusCode}");
-    return false;
   }
 }
