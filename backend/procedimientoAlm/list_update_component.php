@@ -58,7 +58,6 @@ try {
         $result = $stmt->get_result();
         $componentes = [];
         while ($row = $result->fetch_assoc()) {
-            // 🔹 Asegurar que siempre se devuelva como array numérico
             $row['imagenes'] = $row['imagenes'] 
                 ? array_values(json_decode($row['imagenes'], true)) 
                 : [];
@@ -81,12 +80,18 @@ try {
         if (!$imagenesActuales) {
             $imagenesActuales = [null, null, null, null];
         }
-
         for ($i = 0; $i < 4; $i++) {
             if ($imagenes[$i] !== null) {
-                $imagenesActuales[$i] = $imagenes[$i];
+                if ($imagenes[$i] === "") {
+                    // Si es string vacío, eliminar (poner null)
+                    $imagenesActuales[$i] = null;
+                } else {
+                    // Si es base64, actualizar/agregar
+                    $imagenesActuales[$i] = $imagenes[$i];
+                }
             }
         }
+
 
         $imagenesJson = json_encode($imagenesActuales);
 
