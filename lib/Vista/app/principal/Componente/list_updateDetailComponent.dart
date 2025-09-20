@@ -258,6 +258,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
       child: SafeArea(
         child: Scaffold(
           appBar: AppBar(
+            toolbarHeight: 48,
             title: Text(
               "Actualizar Componente",
               style: const TextStyle(color: Colors.white),
@@ -266,16 +267,10 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
             foregroundColor: Colors.white,
           ),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Imágenes del componente:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -426,21 +421,21 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                     );
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 13),
                 CustomTextField(
                   controller: nombreController,
                   label: "Nombre",
                   hintText: "Nombre del componente",
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 CustomTextField(
                   controller: codigoController,
                   label: "Código Inventario",
                   hintText: "Código inventario",
-                  enabled: false, // Inhabilitado para edición manual
+                  enabled: false,
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 CustomTextField(
                   controller: stockController,
                   label: "Stock",
@@ -455,7 +450,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
             child: LoadingOverlayButton(
               text: "Guardar cambios",
               icon: Iconsax.save_2,
-              color: Colors.blue,
+              color: const Color.fromARGB(255, 0, 0, 0),
               onPressedLogic: _guardarCambios,
             ),
           ),
