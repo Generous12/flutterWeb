@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/crearComponente.dart';
+import 'package:proyecto_web/Vista/app/principal/Componente/eliminarComponente.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/listarUdapte_Componente.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
 
@@ -48,7 +49,7 @@ class MenuComponentesScreen extends StatelessWidget {
               color1: Colors.blueGrey.shade800,
               color2: Colors.blueGrey.shade500,
               onTap: () {
-                debugPrint("👉 Actualizar componente");
+                navegarConSlideDerecha(context, ComponentesEliminar());
               },
             ),
             const SizedBox(height: 18),
