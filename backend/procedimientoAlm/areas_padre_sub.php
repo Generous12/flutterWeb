@@ -12,8 +12,6 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 $data = json_decode(file_get_contents("php://input"), true);
 $response = ["success" => false, "message" => "Acción no válida"];
-
-// Validar conexión
 if (!$conn) {
     echo json_encode(["success" => false, "message" => "❌ Error de conexión"]);
     exit;
@@ -21,10 +19,7 @@ if (!$conn) {
 
 try {
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
-        $accion = $data["accion"] ?? "";
-
-        // 🔹 1. Crear Área Padre
-        if ($accion === "crearAreaPadre") {
+        $accion = $data["accion"] ?? "";    if ($accion === "crearAreaPadre") {
             $nombre = $data["nombre_area"] ?? null;
 
             if ($nombre) {
@@ -45,8 +40,6 @@ try {
                 $response = ["success" => false, "message" => "Nombre de área requerido"];
             }
         }
-
-        // 🔹 2. Crear SubÁrea
         elseif ($accion === "crearSubArea") {
             $nombre = $data["nombre_area"] ?? null;
             $idPadre = $data["id_area_padre"] ?? null;
@@ -72,10 +65,7 @@ try {
             } else {
                 $response = ["success" => false, "message" => "Nombre e id_area_padre requeridos"];
             }
-        }
-
-        // 🔹 3. Listar Áreas Padres
-        elseif ($accion === "listarAreasPadres") {
+        }  elseif ($accion === "listarAreasPadres") {
             $result = $conn->query("CALL sp_listarAreasPadres()");
             $areas = [];
 

@@ -25,6 +25,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
   late TextEditingController codigoController;
   late TextEditingController stockController;
   late TextEditingController tipoController;
+  bool isLoading = false;
 
   List<String?> _imagenesNuevas = List.filled(4, null);
 
@@ -150,7 +151,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
     print(
       "✅ Payload a enviar:\n identificador=$identificador\n cantidad=$cantidadActualizada\n imagenes=[${imagenesFinal.map((e) => e == null ? 'NO TOCAR' : (e.isEmpty ? 'ELIMINAR' : 'BASE64(${e.length})')).join(', ')}]",
     );
-
+    setState(() => isLoading = true);
     try {
       final success = await service.actualizarComponente(
         identificador: identificador,
@@ -159,7 +160,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
       );
 
       print("✅ Respuesta del backend: $success");
-
+      setState(() => isLoading = false);
       if (success) {
         showCustomDialog(
           context: context,
@@ -167,7 +168,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
           message: "Se actualizó correctamente",
           confirmButtonText: "Cerrar",
         );
-        Navigator.pop(context);
       } else {
         showCustomDialog(
           context: context,
@@ -195,7 +195,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            componente.nombreTipo,
+            "Actualizar Componente",
             style: const TextStyle(color: Colors.white),
           ),
           backgroundColor: Colors.black,
@@ -342,15 +342,16 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                 hintText: "Cantidad",
                 isNumeric: true,
               ),
-              const SizedBox(height: 20),
-
-              LoadingOverlayButton(
-                text: "Guardar cambios",
-                icon: Iconsax.save_2,
-                color: Colors.blue,
-                onPressedLogic: _guardarCambios,
-              ),
             ],
+          ),
+        ),
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.all(12),
+          child: LoadingOverlayButton(
+            text: "Guardar cambios",
+            icon: Iconsax.save_2,
+            color: Colors.blue,
+            onPressedLogic: _guardarCambios,
           ),
         ),
       ),

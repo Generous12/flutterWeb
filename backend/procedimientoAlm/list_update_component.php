@@ -84,10 +84,8 @@ try {
         for ($i = 0; $i < 4; $i++) {
             if ($imagenes[$i] !== null) {
                 if ($imagenes[$i] === "") {
-                    // Si es string vacío, eliminar (poner null)
                     $imagenesActuales[$i] = null;
                 } else {
-                    // Si es base64, actualizar/agregar
                     $imagenesActuales[$i] = $imagenes[$i];
                 }
             }

@@ -16,7 +16,7 @@ class ComponenteUpdate {
     required this.imagenesBase64,
   });
   factory ComponenteUpdate.fromJson(Map<String, dynamic> json) {
-    List<String?> imagenes = [null, null, null, null]; // siempre 4 slots
+    List<String?> imagenes = [null, null, null, null];
 
     if (json['imagenes'] != null) {
       try {
@@ -24,9 +24,9 @@ class ComponenteUpdate {
         for (int i = 0; i < rawImgs.length && i < 4; i++) {
           final val = rawImgs[i];
           if (val == null || (val is String && val.isEmpty)) {
-            imagenes[i] = null; // slot vacío
+            imagenes[i] = null;
           } else {
-            imagenes[i] = val.toString(); // base64
+            imagenes[i] = val.toString();
           }
         }
       } catch (e) {
@@ -53,14 +53,8 @@ class ComponenteUpdate {
         print("⚠️ Imagen[$index] inválida o vacía: $raw");
         return null;
       }
-
-      // Si trae cabecera tipo "data:image/png;base64,..." la quitamos
       String base64Str = raw.contains(",") ? raw.split(",").last : raw;
-
-      // Limpiar saltos de línea y espacios
       base64Str = base64Str.replaceAll('\n', '').trim();
-
-      // Rellenar con '=' para que sea múltiplo de 4
       final mod = base64Str.length % 4;
       if (mod != 0) {
         base64Str = base64Str.padRight(base64Str.length + (4 - mod), '=');
@@ -103,8 +97,6 @@ class ComponenteUpdateService {
     if (response.statusCode == 200) {
       final jsonResp = jsonDecode(response.body);
       final List data = jsonResp['data'] ?? [];
-
-      // 🔎 DEPURACIÓN: imprime cómo llegan las imágenes
       for (int i = 0; i < data.length; i++) {
         final comp = data[i];
         final imagenes = comp["imagenes"];
@@ -139,16 +131,13 @@ class ComponenteUpdateService {
     required String identificador,
     int? cantidad,
     required List<String?> imagenesNuevas,
-    List<String?>?
-    imagenesActuales, // opcional: para referencia si quieres mantener
+    List<String?>? imagenesActuales,
   }) async {
-    // 🔹 Asegurar siempre 4 slots
     final List<String?> imagenesFinal = List.generate(4, (i) {
-      // Si Flutter envió algo nuevo
       if (i < imagenesNuevas.length && imagenesNuevas[i] != null) {
         return imagenesNuevas[i];
       }
-      // Sino, mantener la existente (null = no tocar)
+
       if (imagenesActuales != null && i < imagenesActuales.length) return null;
 
       return null;
@@ -169,7 +158,6 @@ class ComponenteUpdateService {
       }
     }
 
-    // 🔹 Preparar payload
     final Map<String, dynamic> cambios = {"identificador": identificador};
     if (cantidad != null) cambios["cantidad"] = cantidad;
     if (imagenesFinal.any((img) => img != null))

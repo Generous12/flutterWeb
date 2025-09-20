@@ -108,7 +108,7 @@ class _MenuButtonState extends State<_MenuButton>
             borderRadius: BorderRadius.circular(20),
           ),
           child: Container(
-            height: 140, // altura del botón
+            height: 140,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               gradient: LinearGradient(
