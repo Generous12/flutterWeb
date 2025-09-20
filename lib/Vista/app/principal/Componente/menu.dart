@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:proyecto_web/Vista/app/principal/Componente/actualizar_atributos.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/crearComponente.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/eliminarComponente.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/listacomponente/listageneralcomponente.dart';
@@ -59,7 +60,7 @@ class MenuComponentesScreen extends StatelessWidget {
               color1: Colors.blue.shade900,
               color2: Colors.blue.shade600,
               onTap: () {
-                debugPrint("👉 Reportes de componentes");
+                navegarConSlideDerecha(context, ListaComponentesAtributoPage());
               },
             ),
           ],

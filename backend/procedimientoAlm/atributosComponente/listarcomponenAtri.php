@@ -1,6 +1,6 @@
 <?php
 ob_start();
-include __DIR__ . "/../mysqlConexion.php"; 
+include __DIR__ . "/../../mysqlConexion.php"; 
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");

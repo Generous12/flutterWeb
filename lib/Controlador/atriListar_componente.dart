@@ -27,7 +27,7 @@ class ComponenteAtributo {
 
 class ComponenteServiceAtributo {
   final String url =
-      "http://192.168.18.21/proyecto_web/backend/procedimientoAlm/atributosComponente/list_update_component.php";
+      "http://192.168.18.21/proyecto_web/backend/procedimientoAlm/atributosComponente/listarcomponenAtri.php";
 
   Future<List<ComponenteAtributo>> listarComponentes({
     int limit = 10,
