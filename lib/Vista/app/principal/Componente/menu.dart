@@ -60,7 +60,7 @@ class MenuComponentesScreen extends StatelessWidget {
               color1: Colors.blue.shade900,
               color2: Colors.blue.shade600,
               onTap: () {
-                navegarConSlideDerecha(context, ListaComponentesAtributoPage());
+                navegarConSlideDerecha(context, ComponentesPageAtributo());
               },
             ),
           ],
