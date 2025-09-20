@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:proyecto_web/Controlador/atriListar_componente.dart';
 
-class ListaComponentesPage extends StatefulWidget {
-  const ListaComponentesPage({super.key});
+class ListaComponentesAtributoPage extends StatefulWidget {
+  const ListaComponentesAtributoPage({super.key});
 
   @override
-  State<ListaComponentesPage> createState() => _ListaComponentesPageState();
+  State<ListaComponentesAtributoPage> createState() =>
+      _ListaComponentesPageAtributoState();
 }
 
-class _ListaComponentesPageState extends State<ListaComponentesPage> {
+class _ListaComponentesPageAtributoState
+    extends State<ListaComponentesAtributoPage> {
   final ComponenteServiceAtributo service = ComponenteServiceAtributo();
   final ScrollController _scrollController = ScrollController();
 
