@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:dismissible_page/dismissible_page.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -294,7 +295,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                     return Stack(
                       children: [
                         GestureDetector(
-                          onTap: marcadoParaEliminar
+                          onTap: tieneImagen
                               ? null
                               : () => _seleccionarImagen(index),
                           child: Container(
@@ -329,92 +330,129 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                           ),
                         ),
                         if (tieneImagen || marcadoParaEliminar)
-                          Positioned(
-                            top: 4,
-                            right: 4,
-                            child: InkWell(
-                              onTap: () {
-                                setState(() {
-                                  if (marcadoParaEliminar) {
-                                    _imagenesNuevas[index] = null;
-                                  } else {
-                                    _imagenesNuevas[index] = "";
-                                  }
-                                });
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: marcadoParaEliminar
-                                      ? Colors.green
-                                      : Colors.black54,
-                                  shape: BoxShape.circle,
-                                ),
-                                padding: const EdgeInsets.all(6),
-                                child: marcadoParaEliminar
-                                    ? const Icon(
-                                        Icons.check,
-                                        color: Colors.white,
-                                        size: 18,
-                                      )
-                                    : const Icon(
-                                        Icons.delete,
-                                        color: Colors.white,
-                                        size: 18,
+                          Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (tieneImagen)
+                                  InkWell(
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (context) => DismissiblePage(
+                                            isFullScreen: true,
+                                            onDismissed: () =>
+                                                Navigator.of(context).pop(),
+                                            child: Scaffold(
+                                              backgroundColor: Colors.black,
+                                              body: Center(
+                                                child: Image.memory(
+                                                  imgBytes,
+                                                  width: MediaQuery.of(
+                                                    context,
+                                                  ).size.width,
+                                                  fit: BoxFit.contain,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        color: Colors.black54,
+                                        shape: BoxShape.circle,
                                       ),
-                              ),
-                            ),
-                          ),
-                        if (tieneImagen && !marcadoParaEliminar)
-                          Positioned(
-                            top: 4,
-                            left: 4,
-                            child: InkWell(
-                              onTap: () => _seleccionarImagen(index),
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  color: Colors.black54,
-                                  shape: BoxShape.circle,
-                                ),
-                                padding: const EdgeInsets.all(6),
-                                child: const Icon(
-                                  Icons.edit,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (marcadoParaEliminar)
-                          Positioned.fill(
-                            child: Center(
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.redAccent.shade700,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 10,
+                                      padding: const EdgeInsets.all(12),
+                                      child: const Icon(
+                                        Iconsax.eye,
+                                        color: Colors.white,
+                                        size: 28,
+                                      ),
+                                    ),
                                   ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  elevation: 6,
-                                  shadowColor: Colors.black45,
+
+                                const SizedBox(height: 12),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (tieneImagen && !marcadoParaEliminar)
+                                      InkWell(
+                                        onTap: () => _seleccionarImagen(index),
+                                        child: Container(
+                                          decoration: const BoxDecoration(
+                                            color: Colors.black54,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          padding: const EdgeInsets.all(12),
+                                          child: const Icon(
+                                            Iconsax.edit,
+                                            color: Colors.white,
+                                            size: 28,
+                                          ),
+                                        ),
+                                      ),
+                                    const SizedBox(width: 16),
+                                    InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          if (marcadoParaEliminar) {
+                                            _imagenesNuevas[index] = null;
+                                          } else {
+                                            _imagenesNuevas[index] = "";
+                                          }
+                                        });
+                                      },
+                                      child: marcadoParaEliminar
+                                          ? Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 10,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.blue,
+                                                borderRadius:
+                                                    BorderRadius.circular(24),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: const [
+                                                  Text(
+                                                    "Deshacer",
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                  SizedBox(width: 8),
+                                                  Icon(
+                                                    Icons.check,
+                                                    color: Colors.white,
+                                                    size: 24,
+                                                  ),
+                                                ],
+                                              ),
+                                            )
+                                          : Container(
+                                              decoration: const BoxDecoration(
+                                                color: Colors.black54,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              padding: const EdgeInsets.all(12),
+                                              child: const Icon(
+                                                Iconsax.trash,
+                                                color: Colors.white,
+                                                size: 28,
+                                              ),
+                                            ),
+                                    ),
+                                  ],
                                 ),
-                                onPressed: () {
-                                  setState(() {
-                                    _imagenesNuevas[index] = null;
-                                  });
-                                },
-                                child: const Text(
-                                  "Deshacer",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ),
+                              ],
                             ),
                           ),
                       ],
