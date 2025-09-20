@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proyecto_web/Controlador/Atributos/atriListar_componente.dart';
+import 'package:proyecto_web/Vista/app/principal/Componente/listaatributos/detalleAtributo.dart';
 
 class ListaComponentesAtributoPage extends StatefulWidget {
   const ListaComponentesAtributoPage({super.key});
@@ -83,9 +84,8 @@ class _ListaComponentesPageAtributoState
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => DetalleComponentePage(
-                        idComponente: comp.idComponente,
-                      ),
+                      builder: (context) =>
+                          DetalleAtributoPage(idComponente: comp.idComponente),
                     ),
                   );
                 },
@@ -100,21 +100,6 @@ class _ListaComponentesPageAtributoState
                 : const SizedBox.shrink();
           }
         },
-      ),
-    );
-  }
-}
-
-class DetalleComponentePage extends StatelessWidget {
-  final int idComponente;
-  const DetalleComponentePage({super.key, required this.idComponente});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Detalle Componente #$idComponente")),
-      body: const Center(
-        child: Text("Aquí se cargarán los atributos y valores"),
       ),
     );
   }
