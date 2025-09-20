@@ -8,6 +8,7 @@ Future<dynamic> showCustomDialog({
   String? cancelButtonText,
   Color? confirmButtonColor,
   Color? cancelButtonColor,
+  VoidCallback? onConfirm, // acción opcional al confirmar
 }) {
   final theme = Theme.of(context);
   final colorScheme = theme.colorScheme;
@@ -78,9 +79,11 @@ Future<dynamic> showCustomDialog({
                       ),
                     ),
                   TextButton(
-                    onPressed: () => Navigator.of(
-                      context,
-                    ).pop(cancelButtonText != null ? true : null),
+                    onPressed: () {
+                      Navigator.of(context).pop(true); // cerrar diálogo
+                      if (onConfirm != null)
+                        onConfirm(); // ejecutar acción opcional
+                    },
                     style: TextButton.styleFrom(
                       foregroundColor:
                           confirmButtonColor ?? colorScheme.primary,

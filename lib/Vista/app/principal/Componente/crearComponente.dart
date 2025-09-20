@@ -770,7 +770,6 @@ class _ComponenteFormState extends State<ComponenteForm> {
             _imagenPrincipal = newImage;
           }
 
-          // 🔹 Actualizamos el provider con las imágenes
           provider.crearComponente(
             codigoController.text.trim(),
             int.tryParse(cantidadController.text.trim()) ?? 0,
@@ -787,7 +786,6 @@ class _ComponenteFormState extends State<ComponenteForm> {
 
     final componenteOriginal = provider.componenteCreado;
 
-    // Revisamos si hubo cambios
     final cambios =
         componenteOriginal == null ||
         componenteOriginal.codigoInventario != codigo ||
@@ -801,27 +799,23 @@ class _ComponenteFormState extends State<ComponenteForm> {
         imagenes: _imagenesSeleccionadas.isNotEmpty
             ? _imagenesSeleccionadas
             : null,
-        reemplazar: true, // similar al paso anterior
+        reemplazar: true,
       );
     }
   }
 
   String generarCodigoInventario(String nombre) {
-    // Tomamos las primeras 3 letras del nombre (o todo si es más corto) y lo ponemos en mayúsculas
     final cleanName = nombre.replaceAll(' ', '').toUpperCase();
     final prefix = cleanName.length >= 3
         ? cleanName.substring(0, 3)
         : cleanName;
 
-    // Agregamos fecha en formato año-mes-día
     final now = DateTime.now();
     final datePart =
         "${now.year % 100}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}";
 
-    // Número aleatorio de 3 dígitos
     final randomNumber = (100 + Random().nextInt(900)).toString();
 
-    // Combinamos todo
     return "$prefix-$datePart-$randomNumber";
   }
 
@@ -881,7 +875,6 @@ class _ComponenteFormState extends State<ComponenteForm> {
                         setState(() {
                           _imagenPrincipal = image;
                         });
-                        // opcional: mostrar imagen fullscreen
                       },
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
@@ -950,7 +943,6 @@ class _ComponenteFormState extends State<ComponenteForm> {
   }
 }
 
-// PASO 4 ASIGNAMOS LOS VALORES ACORDE A LOS ATRIBUTOS CREADOS
 class ValorAtributoForm extends StatefulWidget {
   final ValueChanged<bool> onValidChange;
 

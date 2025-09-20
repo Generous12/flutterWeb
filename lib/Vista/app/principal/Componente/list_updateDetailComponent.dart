@@ -44,6 +44,32 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
     tipoController = TextEditingController(text: widget.componente.nombreTipo);
   }
 
+  bool get huboCambio {
+    if (nombreController.text != widget.componente.nombreTipo ||
+        codigoController.text != widget.componente.codigoInventario ||
+        stockController.text != widget.componente.cantidad.toString()) {
+      return true;
+    }
+    for (var img in _imagenesNuevas) {
+      if (img != null) return true;
+    }
+    return false;
+  }
+
+  Future<bool> _onWillPop() async {
+    if (huboCambio) {
+      final salir = await showCustomDialog(
+        context: context,
+        title: "Cambios sin guardar",
+        message: "Tienes cambios sin guardar. ¿Deseas salir de todas formas?",
+        confirmButtonText: "Salir",
+        cancelButtonText: "Cancelar",
+      );
+      return salir ?? false;
+    }
+    return true;
+  }
+
   @override
   void dispose() {
     nombreController.dispose();
@@ -106,7 +132,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
     final service = ComponenteUpdateService();
     bool huboCambio = false;
 
-    // 1️⃣ Verificar cambio de stock
     int? cantidadActualizada;
     if (stockController.text.isNotEmpty &&
         stockController.text != widget.componente.cantidad.toString()) {
@@ -115,7 +140,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
       huboCambio = true;
     }
 
-    // 2️⃣ Preparar imágenes nuevas / eliminación: enviar "" para eliminar
     List<String?> imagenesFinal = List.generate(4, (i) {
       final nuevo = _imagenesNuevas[i];
 
@@ -130,10 +154,8 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
           );
         }
 
-        return nuevo; // "" para eliminar, base64 para actualizar/agregar
+        return nuevo;
       }
-
-      // null → mantener la existente
       print("📸 Imagen slot $i: NO TOCAR");
       return null;
     });
@@ -162,11 +184,14 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
       print("✅ Respuesta del backend: $success");
       setState(() => isLoading = false);
       if (success) {
-        showCustomDialog(
+        await showCustomDialog(
           context: context,
           title: "Éxito",
           message: "Se actualizó correctamente",
           confirmButtonText: "Cerrar",
+          onConfirm: () {
+            Navigator.of(context).pop(true);
+          },
         );
       } else {
         showCustomDialog(
@@ -191,167 +216,209 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
   Widget build(BuildContext context) {
     final componente = widget.componente;
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            "Actualizar Componente",
-            style: const TextStyle(color: Colors.white),
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: SafeArea(
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(
+              "Actualizar Componente",
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
           ),
-          backgroundColor: Colors.black,
-          foregroundColor: Colors.white,
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Imágenes del componente:",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 4,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Imágenes del componente:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                itemBuilder: (context, index) {
-                  final imgBytes =
-                      (_imagenesNuevas[index] != null &&
-                          _imagenesNuevas[index] != "")
-                      ? base64Decode(_imagenesNuevas[index]!)
-                      : componente.imagenBytes(index);
+                const SizedBox(height: 8),
 
-                  return Stack(
-                    children: [
-                      GestureDetector(
-                        onTap: () => _seleccionarImagen(index),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black26),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child:
-                              (imgBytes != null && _imagenesNuevas[index] != "")
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image.memory(
-                                    imgBytes,
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                  ),
-                                )
-                              : Center(
-                                  child: _imagenesNuevas[index] == ""
-                                      ? const Icon(
-                                          Iconsax.trash,
-                                          size: 50,
-                                          color: Colors.red,
-                                        )
-                                      : const Icon(
-                                          Iconsax.image,
-                                          size: 50,
-                                          color: Colors.black45,
-                                        ),
-                                ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              if (_imagenesNuevas[index] == "") {
-                                _imagenesNuevas[index] = null; // restaurar
-                              } else {
-                                _imagenesNuevas[index] =
-                                    ""; // marcar para eliminar
-                              }
-                            });
-                          },
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: 4,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                  ),
+                  itemBuilder: (context, index) {
+                    final imgBytes =
+                        (_imagenesNuevas[index] != null &&
+                            _imagenesNuevas[index] != "")
+                        ? base64Decode(_imagenesNuevas[index]!)
+                        : componente.imagenBytes(index);
+
+                    final tieneImagen =
+                        imgBytes != null && _imagenesNuevas[index] != "";
+                    final marcadoParaEliminar = _imagenesNuevas[index] == "";
+
+                    return Stack(
+                      children: [
+                        GestureDetector(
+                          onTap: marcadoParaEliminar
+                              ? null
+                              : () => _seleccionarImagen(index),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: _imagenesNuevas[index] == ""
-                                  ? Colors.green
-                                  : Colors.black54,
-                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: marcadoParaEliminar
+                                    ? Colors.redAccent
+                                    : Colors.black26,
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            padding: const EdgeInsets.all(6),
-                            child: _imagenesNuevas[index] == ""
-                                ? const Icon(
-                                    Icons.check,
-                                    color: Colors.white,
-                                    size: 18,
-                                  )
-                                : const Icon(
-                                    Icons.delete,
-                                    color: Colors.white,
-                                    size: 18,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: tieneImagen
+                                  ? Image.memory(
+                                      imgBytes,
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                    )
+                                  : marcadoParaEliminar
+                                  ? null
+                                  : const Center(
+                                      child: Icon(
+                                        Icons.add,
+                                        size: 50,
+                                        color: Colors.black45,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                        if (tieneImagen || marcadoParaEliminar)
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  if (marcadoParaEliminar) {
+                                    _imagenesNuevas[index] = null;
+                                  } else {
+                                    _imagenesNuevas[index] = "";
+                                  }
+                                });
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: marcadoParaEliminar
+                                      ? Colors.green
+                                      : Colors.black54,
+                                  shape: BoxShape.circle,
+                                ),
+                                padding: const EdgeInsets.all(6),
+                                child: marcadoParaEliminar
+                                    ? const Icon(
+                                        Icons.check,
+                                        color: Colors.white,
+                                        size: 18,
+                                      )
+                                    : const Icon(
+                                        Icons.delete,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
+                              ),
+                            ),
+                          ),
+                        if (tieneImagen && !marcadoParaEliminar)
+                          Positioned(
+                            top: 4,
+                            left: 4,
+                            child: InkWell(
+                              onTap: () => _seleccionarImagen(index),
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.black54,
+                                  shape: BoxShape.circle,
+                                ),
+                                padding: const EdgeInsets.all(6),
+                                child: const Icon(
+                                  Icons.edit,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        if (marcadoParaEliminar)
+                          Positioned.fill(
+                            child: Center(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.redAccent.shade700,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 10,
                                   ),
-                          ),
-                        ),
-                      ),
-                      if (imgBytes != null && _imagenesNuevas[index] != "")
-                        Positioned(
-                          top: 4,
-                          left: 4,
-                          child: InkWell(
-                            onTap: () => _seleccionarImagen(index),
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                color: Colors.black54,
-                                shape: BoxShape.circle,
-                              ),
-                              padding: const EdgeInsets.all(6),
-                              child: const Icon(
-                                Icons.edit,
-                                color: Colors.white,
-                                size: 18,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  elevation: 6,
+                                  shadowColor: Colors.black45,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _imagenesNuevas[index] = null;
+                                  });
+                                },
+                                child: const Text(
+                                  "Deshacer",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                    ],
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: nombreController,
-                label: "Nombre",
-                hintText: "Nombre del componente",
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: codigoController,
-                label: "Código Inventario",
-                hintText: "Código inventario",
-              ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: stockController,
-                label: "Stock",
-                hintText: "Cantidad",
-                isNumeric: true,
-              ),
-            ],
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                CustomTextField(
+                  controller: nombreController,
+                  label: "Nombre",
+                  hintText: "Nombre del componente",
+                ),
+                const SizedBox(height: 12),
+                CustomTextField(
+                  controller: codigoController,
+                  label: "Código Inventario",
+                  hintText: "Código inventario",
+                ),
+                const SizedBox(height: 12),
+                CustomTextField(
+                  controller: stockController,
+                  label: "Stock",
+                  hintText: "Cantidad",
+                  isNumeric: true,
+                ),
+              ],
+            ),
           ),
-        ),
-        bottomNavigationBar: Padding(
-          padding: const EdgeInsets.all(12),
-          child: LoadingOverlayButton(
-            text: "Guardar cambios",
-            icon: Iconsax.save_2,
-            color: Colors.blue,
-            onPressedLogic: _guardarCambios,
+          bottomNavigationBar: Padding(
+            padding: const EdgeInsets.all(12),
+            child: LoadingOverlayButton(
+              text: "Guardar cambios",
+              icon: Iconsax.save_2,
+              color: Colors.blue,
+              onPressedLogic: _guardarCambios,
+            ),
           ),
         ),
       ),
@@ -363,22 +430,16 @@ extension ComponenteUpdateExtension on ComponenteUpdate {
   Uint8List? imagenBytes(int index) {
     if (index < 0 || index >= imagenesBase64.length) return null;
 
-    final String? raw = imagenesBase64[index]; // 🔹 Puede ser null
+    final String? raw = imagenesBase64[index];
     if (raw == null || raw.isEmpty) return null;
 
     try {
-      // Quitar cabecera tipo "data:image/png;base64,..."
       String normalized = raw.contains(",") ? raw.split(",").last : raw;
-
-      // Limpiar saltos de línea y espacios
       normalized = normalized.replaceAll('\n', '').trim();
-
-      // Rellenar con '=' para múltiplo de 4
       final mod = normalized.length % 4;
       if (mod > 0) {
         normalized = normalized.padRight(normalized.length + (4 - mod), '=');
       }
-
       return base64Decode(normalized);
     } catch (e) {
       print('❌ Error decodificando imagen $index: $e');

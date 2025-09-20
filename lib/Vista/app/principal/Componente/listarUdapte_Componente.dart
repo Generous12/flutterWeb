@@ -243,7 +243,6 @@ class _ComponentesListState extends State<ComponentesList> {
                                 padding: const EdgeInsets.all(12),
                                 child: Row(
                                   children: [
-                                    // 👇 Reemplaza el bloque que tienes actualmente
                                     c.imagenesBase64.isEmpty
                                         ? const Icon(
                                             Iconsax.folder5,
@@ -335,7 +334,6 @@ class _ComponentesListState extends State<ComponentesList> {
 }
 
 Widget _buildFirstImage(ComponenteUpdate c) {
-  // Buscar la primera imagen decodificable
   Uint8List? firstBytes;
   int firstIndex = -1;
 
@@ -348,12 +346,10 @@ Widget _buildFirstImage(ComponenteUpdate c) {
     }
   }
 
-  // Si no encontró ninguna válida → icono vacío
   if (firstBytes == null) {
     return const Icon(Iconsax.folder5, color: Colors.black, size: 50);
   }
 
-  // Si encontró → mostrar solo esa
   return Hero(
     tag: 'imagen_${c.id}_$firstIndex',
     child: ClipRRect(
@@ -387,11 +383,9 @@ extension ComponenteUpdateExtension on ComponenteUpdate {
     if (base64Str.isEmpty) return null;
 
     try {
-      // 🔹 Quitar cabecera si viene con data:image/png;base64,
       final regex = RegExp(r'data:image/[^;]+;base64,');
       base64Str = base64Str.replaceAll(regex, '');
 
-      // 🔹 Asegurar longitud múltiplo de 4
       final mod = base64Str.length % 4;
       if (mod != 0) {
         base64Str = base64Str.padRight(base64Str.length + (4 - mod), '=');
