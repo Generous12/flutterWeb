@@ -49,7 +49,7 @@ class ComponenteUpdate {
     try {
       final raw = imagenesBase64[index];
 
-      if (raw == null || raw is! String || raw.isEmpty) {
+      if (raw == null || raw.isEmpty) {
         print("⚠️ Imagen[$index] inválida o vacía: $raw");
         return null;
       }
