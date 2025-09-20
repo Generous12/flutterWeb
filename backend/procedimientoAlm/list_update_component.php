@@ -58,9 +58,10 @@ try {
         $result = $stmt->get_result();
         $componentes = [];
         while ($row = $result->fetch_assoc()) {
-            $row['imagenes'] = $row['imagenes'] 
-                ? array_values(json_decode($row['imagenes'], true)) 
-                : [];
+           $row['imagenes'] = $row['imagenes'] 
+    ? json_decode($row['imagenes'], true) 
+    : [null, null, null, null];
+
             $componentes[] = $row;
         }
 

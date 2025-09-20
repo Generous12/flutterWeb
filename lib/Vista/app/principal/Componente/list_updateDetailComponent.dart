@@ -360,20 +360,28 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
 
 extension ComponenteUpdateExtension on ComponenteUpdate {
   Uint8List? imagenBytes(int index) {
-    final imgs = imagenesBase64;
-    if (index >= 0 && index < imgs.length && imgs[index].isNotEmpty) {
-      try {
-        String normalized = imgs[index];
-        final mod = normalized.length % 4;
-        if (mod > 0) {
-          normalized = normalized.padRight(normalized.length + (4 - mod), '=');
-        }
-        return base64Decode(normalized);
-      } catch (e) {
-        print('❌ Error decodificando imagen $index: $e');
-        return null;
+    if (index < 0 || index >= imagenesBase64.length) return null;
+
+    final String? raw = imagenesBase64[index]; // 🔹 Puede ser null
+    if (raw == null || raw.isEmpty) return null;
+
+    try {
+      // Quitar cabecera tipo "data:image/png;base64,..."
+      String normalized = raw.contains(",") ? raw.split(",").last : raw;
+
+      // Limpiar saltos de línea y espacios
+      normalized = normalized.replaceAll('\n', '').trim();
+
+      // Rellenar con '=' para múltiplo de 4
+      final mod = normalized.length % 4;
+      if (mod > 0) {
+        normalized = normalized.padRight(normalized.length + (4 - mod), '=');
       }
+
+      return base64Decode(normalized);
+    } catch (e) {
+      print('❌ Error decodificando imagen $index: $e');
+      return null;
     }
-    return null;
   }
 }

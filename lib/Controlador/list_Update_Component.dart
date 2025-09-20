@@ -7,7 +7,7 @@ class ComponenteUpdate {
   final String codigoInventario;
   final String nombreTipo;
   final int cantidad;
-  final List<String> imagenesBase64;
+  final List<String?> imagenesBase64;
   ComponenteUpdate({
     required this.id,
     required this.codigoInventario,
@@ -16,15 +16,24 @@ class ComponenteUpdate {
     required this.imagenesBase64,
   });
   factory ComponenteUpdate.fromJson(Map<String, dynamic> json) {
-    List<String> imagenes = [];
+    List<String?> imagenes = [null, null, null, null]; // siempre 4 slots
+
     if (json['imagenes'] != null) {
       try {
-        imagenes = List<String>.from(json['imagenes']);
+        final List rawImgs = json['imagenes'];
+        for (int i = 0; i < rawImgs.length && i < 4; i++) {
+          final val = rawImgs[i];
+          if (val == null || (val is String && val.isEmpty)) {
+            imagenes[i] = null; // slot vacío
+          } else {
+            imagenes[i] = val.toString(); // base64
+          }
+        }
       } catch (e) {
         print("❌ Error al parsear imágenes: $e");
-        imagenes = [];
       }
     }
+
     return ComponenteUpdate(
       id: json['id_componente'],
       codigoInventario: json['codigo_inventario'],
@@ -33,11 +42,23 @@ class ComponenteUpdate {
       imagenesBase64: imagenes,
     );
   }
+
   Uint8List? imagenBytes(int index) {
     if (index < 0 || index >= imagenesBase64.length) return null;
 
     try {
-      String base64Str = imagenesBase64[index].replaceAll('\n', '').trim();
+      final raw = imagenesBase64[index];
+
+      if (raw == null || raw is! String || raw.isEmpty) {
+        print("⚠️ Imagen[$index] inválida o vacía: $raw");
+        return null;
+      }
+
+      // Si trae cabecera tipo "data:image/png;base64,..." la quitamos
+      String base64Str = raw.contains(",") ? raw.split(",").last : raw;
+
+      // Limpiar saltos de línea y espacios
+      base64Str = base64Str.replaceAll('\n', '').trim();
 
       // Rellenar con '=' para que sea múltiplo de 4
       final mod = base64Str.length % 4;
@@ -55,7 +76,7 @@ class ComponenteUpdate {
 
 class ComponenteUpdateService {
   final String url =
-      "http://192.168.146.89/proyecto_web/backend/procedimientoAlm/list_update_component.php";
+      "http://192.168.18.22/proyecto_web/backend/procedimientoAlm/list_update_component.php";
 
   /// 192.168.236.89
   Future<List<ComponenteUpdate>> listar({
