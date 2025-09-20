@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:proyecto_web/Controlador/list_Update_Component.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/listacomponente/detallecomponente.dart';
+import 'package:proyecto_web/Widgets/navegator.dart';
 
 class ComponentesList extends StatefulWidget {
   const ComponentesList({Key? key}) : super(key: key);
@@ -246,14 +247,17 @@ class _ComponentesListState extends State<ComponentesList> {
                             child: InkWell(
                               borderRadius: BorderRadius.circular(15),
                               onTap: () {
-                                Navigator.push(
+                                navegarConSlideDerecha(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        ComponenteDetail(componente: c),
-                                  ),
+                                  ComponenteDetail(componente: c),
+                                  onVolver: () {
+                                    setState(() {
+                                      fetchComponentes(reset: true);
+                                    });
+                                  },
                                 );
                               },
+
                               child: Padding(
                                 padding: const EdgeInsets.all(12),
                                 child: Row(
