@@ -466,7 +466,7 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
     }
   }
 
-  Future<Plantilla?> mostrarDialogoPlantilla(BuildContext context) async {
+  Future<Plantilla?> mostrarModalPlantilla(BuildContext context) async {
     final Map<String, IconData> iconosPlantilla = {
       "Periféricos": LucideIcons.mouse,
       "RAM": LucideIcons.cpu,
@@ -475,33 +475,52 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
       "Tarjeta de video": LucideIcons.monitor,
     };
 
-    return showDialog<Plantilla>(
+    return showModalBottomSheet<Plantilla>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Selecciona una plantilla"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: plantillas.map((p) {
-            return ListTile(
-              leading: Icon(
-                iconosPlantilla[p.nombre] ?? LucideIcons.box,
-                color: Colors.blue,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.7,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      "Selecciona una plantilla",
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  ...plantillas.map((p) {
+                    return ListTile(
+                      leading: Icon(
+                        iconosPlantilla[p.nombre] ?? LucideIcons.box,
+                        color: Colors.blue,
+                      ),
+                      title: Text(p.nombre),
+                      onTap: () => Navigator.pop(context, p),
+                    );
+                  }).toList(),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      "Cancelar",
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                ],
               ),
-              title: Text(p.nombre),
-              onTap: () => Navigator.pop(context, p),
-            );
-          }).toList(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "Cancelar",
-              style: TextStyle(color: Colors.black),
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -527,10 +546,24 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
             label: "Nombre de componente",
           ),
           const SizedBox(height: 10),
-          const Text(
-            "Atributos del componente",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Lista de Atributos",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              TextButton.icon(
+                onPressed: _addAtributo,
+                icon: const Icon(Icons.add, color: Colors.black),
+                label: const Text(
+                  "Añadir atributo",
+                  style: TextStyle(color: Colors.black),
+                ),
+              ),
+            ],
           ),
+
           const SizedBox(height: 8),
           ...atributos.asMap().entries.map((entry) {
             final index = entry.key;
@@ -612,7 +645,7 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
           const SizedBox(height: 10),
           TextButton.icon(
             onPressed: () async {
-              final seleccion = await mostrarDialogoPlantilla(context);
+              final seleccion = await mostrarModalPlantilla(context);
               if (seleccion != null) {
                 for (var attr in atributos) {
                   (attr["controller"] as TextEditingController).dispose();
@@ -639,14 +672,6 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
             ),
           ),
           const SizedBox(height: 5),
-          TextButton.icon(
-            onPressed: _addAtributo,
-            icon: const Icon(Icons.add, color: Color.fromARGB(255, 0, 0, 0)),
-            label: const Text(
-              "Añadir atributo",
-              style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
-            ),
-          ),
         ],
       ),
     );
@@ -680,7 +705,6 @@ class _ComponenteFormState extends State<ComponenteForm> {
       codigoController.text = provider.componenteCreado!.codigoInventario;
       cantidadController.text = provider.componenteCreado!.cantidad.toString();
 
-      // Limpiamos las imágenes actuales
       _imagenesSeleccionadas.clear();
       _imagenesSeleccionadas.addAll(provider.componenteCreado!.imagenes ?? []);
       _imagenPrincipal = _imagenesSeleccionadas.isNotEmpty
@@ -691,7 +715,6 @@ class _ComponenteFormState extends State<ComponenteForm> {
       setState(() {});
     } else if (provider.tipoSeleccionado != null &&
         codigoController.text.isEmpty) {
-      // Solo generamos código si no hay uno previo
       codigoController.text = generarCodigoInventario(
         provider.tipoSeleccionado!.nombre,
       );

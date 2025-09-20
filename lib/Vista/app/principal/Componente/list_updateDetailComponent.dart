@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
@@ -27,19 +28,30 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
   bool isLoading = false;
 
   List<String?> _imagenesNuevas = List.filled(4, null);
-
   @override
   void initState() {
     super.initState();
+
     nombreController = TextEditingController(
       text: widget.componente.nombreTipo,
     );
+
     codigoController = TextEditingController(
       text: widget.componente.codigoInventario,
     );
+
     stockController = TextEditingController(
       text: widget.componente.cantidad.toString(),
     );
+
+    nombreController.addListener(() {
+      final nombre = nombreController.text;
+      if (nombre.isNotEmpty) {
+        codigoController.text = generarCodigoInventario(nombre);
+      } else {
+        codigoController.clear();
+      }
+    });
   }
 
   bool get huboCambio {
@@ -95,9 +107,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
         ],
       ),
     );
-
     if (source == null) return;
-
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: source);
     if (pickedFile != null) {
@@ -122,6 +132,21 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
         });
       }
     }
+  }
+
+  String generarCodigoInventario(String nombre) {
+    final cleanName = nombre.replaceAll(' ', '').toUpperCase();
+    final prefix = cleanName.length >= 3
+        ? cleanName.substring(0, 3)
+        : cleanName;
+
+    final now = DateTime.now();
+    final datePart =
+        "${now.year % 100}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}";
+
+    final randomNumber = (100 + Random().nextInt(900)).toString();
+
+    return "$prefix-$datePart-$randomNumber";
   }
 
   Future<void> _guardarCambios() async {
@@ -412,7 +437,9 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                   controller: codigoController,
                   label: "Código Inventario",
                   hintText: "Código inventario",
+                  enabled: false, // Inhabilitado para edición manual
                 ),
+
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller: stockController,
