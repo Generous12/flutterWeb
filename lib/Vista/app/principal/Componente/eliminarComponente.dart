@@ -214,28 +214,13 @@ class _ComponentesEliminartState extends State<ComponentesEliminar> {
                           Color stockColor;
                           String stockTexto;
                           if (c.cantidad <= 5) {
-                            stockColor = const Color.fromARGB(
-                              255,
-                              255,
-                              137,
-                              129,
-                            );
+                            stockColor = const Color(0xFFFF8981);
                             stockTexto = 'Bajo Stock';
                           } else if (c.cantidad <= 20) {
-                            stockColor = const Color.fromARGB(
-                              255,
-                              255,
-                              242,
-                              124,
-                            );
+                            stockColor = const Color(0xFFFFF27C);
                             stockTexto = 'Medio Stock';
                           } else {
-                            stockColor = const Color.fromARGB(
-                              255,
-                              123,
-                              180,
-                              125,
-                            );
+                            stockColor = const Color(0xFF7BB47D);
                             stockTexto = 'Stock Disponible';
                           }
                           return Card(
@@ -322,9 +307,7 @@ class _ComponentesEliminartState extends State<ComponentesEliminar> {
                                         color: Colors.black,
                                       ),
                                       onPressed: () async {
-                                        final tipoSeleccionadoId = c
-                                            .idTipo; // <--- aquí el ID correcto
-
+                                        final tipoSeleccionadoId = c.idTipo;
                                         final salir = await showCustomDialog(
                                           context: context,
                                           title: "Confirmar eliminación",
@@ -351,7 +334,6 @@ class _ComponentesEliminartState extends State<ComponentesEliminar> {
 
                                           if (result['success']) {
                                             setState(() {
-                                              // Elimina todos los componentes de ese tipo de la lista
                                               componentes.removeWhere(
                                                 (comp) =>
                                                     comp.idTipo ==
