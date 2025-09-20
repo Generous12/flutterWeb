@@ -35,7 +35,7 @@ class MenuComponentesScreen extends StatelessWidget {
             const SizedBox(height: 18),
             _MenuButton(
               icon: Iconsax.document_text,
-              text: "Actualizar componente",
+              text: "Lista de Componentes",
               color1: Colors.black87,
               color2: Colors.black54,
               onTap: () {
@@ -45,7 +45,7 @@ class MenuComponentesScreen extends StatelessWidget {
             const SizedBox(height: 18),
             _MenuButton(
               icon: Iconsax.refresh_circle,
-              text: "Eliminar Componente",
+              text: "Eliminar un Componente",
               color1: Colors.blueGrey.shade800,
               color2: Colors.blueGrey.shade500,
               onTap: () {
@@ -55,7 +55,7 @@ class MenuComponentesScreen extends StatelessWidget {
             const SizedBox(height: 18),
             _MenuButton(
               icon: Iconsax.chart,
-              text: "Reportes",
+              text: "Atributos y Valores",
               color1: Colors.blue.shade900,
               color2: Colors.blue.shade600,
               onTap: () {

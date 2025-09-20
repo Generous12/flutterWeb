@@ -68,7 +68,7 @@ class _ComponentesEliminartState extends State<ComponentesEliminar> {
       if (!mounted) return;
       setState(() {
         componentes.addAll(nuevos);
-        offset += limit;
+        offset += nuevos.length; //offset += limit;
       });
     } catch (e) {
       ScaffoldMessenger.of(

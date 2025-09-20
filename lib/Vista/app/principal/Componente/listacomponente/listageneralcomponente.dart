@@ -68,7 +68,7 @@ class _ComponentesListState extends State<ComponentesList> {
       if (!mounted) return;
       setState(() {
         componentes.addAll(nuevos);
-        offset += limit;
+        offset += nuevos.length; //offset += limit;
       });
     } catch (e) {
       ScaffoldMessenger.of(
