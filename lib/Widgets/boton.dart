@@ -97,12 +97,11 @@ class _LoadingOverlayButtonState extends State<LoadingOverlayButton> {
   }
 }
 
-//deshabilita boton:
 class LoadingOverlayButtonHabilitar extends StatefulWidget {
   final Future<void> Function() onPressedLogic;
   final String text;
   final IconData? icon;
-  final bool enabled; // 🔹 nuevo parámetro para habilitar/deshabilitar
+  final bool enabled;
   final Color? backgroundColor;
   final Color? textColor;
   final Color? foregroundColor;
@@ -113,7 +112,7 @@ class LoadingOverlayButtonHabilitar extends StatefulWidget {
     required this.onPressedLogic,
     required this.text,
     this.icon,
-    this.enabled = true, // por defecto habilitado
+    this.enabled = true,
     this.backgroundColor,
     this.textColor,
     this.foregroundColor,

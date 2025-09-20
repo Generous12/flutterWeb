@@ -9,7 +9,7 @@ void navegarYRemoverConSlideDerecha(BuildContext context, Widget pantalla) {
         return SlideTransition(
           position:
               Tween<Offset>(
-                begin: const Offset(1.0, 0.0), // Desde la derecha
+                begin: const Offset(1.0, 0.0),
                 end: Offset.zero,
               ).animate(
                 CurvedAnimation(parent: animation, curve: Curves.easeInOut),

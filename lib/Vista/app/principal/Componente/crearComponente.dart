@@ -144,11 +144,11 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
 
               if (salir == true) {
                 provider.reset();
-                navegarYRemoverConSlideIzquierda(context, const InicioScreen());
+                Navigator.pop(context);
               }
             } else {
               provider.reset();
-              navegarYRemoverConSlideIzquierda(context, const InicioScreen());
+              Navigator.pop(context);
             }
           },
         ),

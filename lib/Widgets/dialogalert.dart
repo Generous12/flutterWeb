@@ -8,7 +8,7 @@ Future<dynamic> showCustomDialog({
   String? cancelButtonText,
   Color? confirmButtonColor,
   Color? cancelButtonColor,
-  VoidCallback? onConfirm, // acción opcional al confirmar
+  VoidCallback? onConfirm,
 }) {
   final theme = Theme.of(context);
   final colorScheme = theme.colorScheme;
@@ -27,7 +27,6 @@ Future<dynamic> showCustomDialog({
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// Title
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -43,10 +42,7 @@ Future<dynamic> showCustomDialog({
                   ),
                 ],
               ),
-
               const SizedBox(height: 8),
-
-              /// Message
               Text(
                 message,
                 style: TextStyle(
@@ -57,8 +53,6 @@ Future<dynamic> showCustomDialog({
               ),
 
               const SizedBox(height: 14),
-
-              /// Buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -80,9 +74,8 @@ Future<dynamic> showCustomDialog({
                     ),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).pop(true); // cerrar diálogo
-                      if (onConfirm != null)
-                        onConfirm(); // ejecutar acción opcional
+                      Navigator.of(context).pop(true);
+                      if (onConfirm != null) onConfirm();
                     },
                     style: TextButton.styleFrom(
                       foregroundColor:
