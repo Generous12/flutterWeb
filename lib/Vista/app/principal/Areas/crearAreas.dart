@@ -95,6 +95,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 48,
         title: const Text("Crear Área", style: TextStyle(fontSize: 19)),
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
