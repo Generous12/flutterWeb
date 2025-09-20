@@ -212,16 +212,30 @@ class _ComponentesListState extends State<ComponentesList> {
                           Color stockColor;
                           String stockTexto;
                           if (c.cantidad <= 5) {
-                            stockColor = Colors.red;
+                            stockColor = const Color.fromARGB(
+                              255,
+                              255,
+                              137,
+                              129,
+                            );
                             stockTexto = 'Bajo Stock';
                           } else if (c.cantidad <= 20) {
-                            stockColor = Colors.yellow;
+                            stockColor = const Color.fromARGB(
+                              255,
+                              255,
+                              242,
+                              124,
+                            );
                             stockTexto = 'Medio Stock';
                           } else {
-                            stockColor = Colors.green;
+                            stockColor = const Color.fromARGB(
+                              255,
+                              123,
+                              180,
+                              125,
+                            );
                             stockTexto = 'Stock Disponible';
                           }
-
                           return Card(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15),
@@ -280,7 +294,7 @@ class _ComponentesListState extends State<ComponentesList> {
                                             decoration: BoxDecoration(
                                               color: stockColor,
                                               borderRadius:
-                                                  BorderRadius.circular(6),
+                                                  BorderRadius.circular(90),
                                             ),
                                             child: Row(
                                               mainAxisAlignment:

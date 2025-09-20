@@ -132,20 +132,24 @@ class ComponenteUpdateService {
     int? cantidad,
     required List<String?> imagenesNuevas,
     List<String?>? imagenesActuales,
+    String? nuevoCodigo,
+    String? nuevoNombreTipo,
   }) async {
     final List<String?> imagenesFinal = List.generate(4, (i) {
       if (i < imagenesNuevas.length && imagenesNuevas[i] != null) {
         return imagenesNuevas[i];
       }
-
-      if (imagenesActuales != null && i < imagenesActuales.length) return null;
-
+      if (imagenesActuales != null && i < imagenesActuales.length) {
+        return imagenesActuales[i];
+      }
       return null;
     });
 
     print("📤 Preparando payload para backend:");
     print("Identificador: $identificador");
     print("Cantidad: $cantidad");
+    print("Nuevo código: $nuevoCodigo");
+    print("Nuevo nombre tipo: $nuevoNombreTipo");
 
     for (int i = 0; i < imagenesFinal.length; i++) {
       final img = imagenesFinal[i];
@@ -162,6 +166,8 @@ class ComponenteUpdateService {
     if (cantidad != null) cambios["cantidad"] = cantidad;
     if (imagenesFinal.any((img) => img != null))
       cambios["imagenes"] = imagenesFinal;
+    if (nuevoCodigo != null) cambios["nuevo_codigo"] = nuevoCodigo;
+    if (nuevoNombreTipo != null) cambios["nuevo_nombre_tipo"] = nuevoNombreTipo;
 
     try {
       final response = await http.post(

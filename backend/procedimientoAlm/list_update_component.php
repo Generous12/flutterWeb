@@ -67,47 +67,50 @@ try {
 
         $response = ["success" => true, "data" => $componentes];
 
-    } elseif ($action == 'actualizar') {
-        $imagenes = array_pad($imagenes, 4, null);
+   } elseif ($action == 'actualizar') {
+    $nuevo_codigo = $data['nuevo_codigo'] ?? null;
+    $nuevo_nombre_tipo = $data['nuevo_nombre_tipo'] ?? null;
 
-        $stmtSel = $conn->prepare("SELECT cantidad, imagenes FROM Componente WHERE codigo_inventario = ?");
-        $stmtSel->bind_param("s", $identificador);
-        $stmtSel->execute();
-        $result = $stmtSel->get_result();
-        $row = $result->fetch_assoc();
+    $imagenes = array_pad($imagenes, 4, null);
 
-        $cantidadActual = $row['cantidad'];
-        $imagenesActuales = json_decode($row['imagenes'], true);
-        if (!$imagenesActuales) {
-            $imagenesActuales = [null, null, null, null];
-        }
-        for ($i = 0; $i < 4; $i++) {
-            if ($imagenes[$i] !== null) {
-                if ($imagenes[$i] === "") {
-                    $imagenesActuales[$i] = null;
-                } else {
-                    $imagenesActuales[$i] = $imagenes[$i];
-                }
-            }
-        }
+    $stmtSel = $conn->prepare("SELECT cantidad, imagenes, codigo_inventario, id_tipo FROM Componente WHERE codigo_inventario = ?");
+    $stmtSel->bind_param("s", $identificador);
+    $stmtSel->execute();
+    $result = $stmtSel->get_result();
+    $row = $result->fetch_assoc();
 
-
-        $imagenesJson = json_encode($imagenesActuales);
-
-        if ($cantidad === null) {
-            $cantidad = $cantidadActual;
-        }
-
-        if ($cantidad == $cantidadActual && $imagenesJson === $row['imagenes']) {
-            throw new Exception("No hay datos para actualizar");
-        }
-
-        $stmt = $conn->prepare("UPDATE Componente SET cantidad = ?, imagenes = ? WHERE codigo_inventario = ?");
-        $stmt->bind_param("iss", $cantidad, $imagenesJson, $identificador);
-        $stmt->execute();
-
-        $response = ["success" => true, "message" => "Componente actualizado correctamente"];
+    if (!$row) {
+        throw new Exception("Componente no encontrado");
     }
+
+    $cantidadActual = $row['cantidad'];
+    $imagenesActuales = json_decode($row['imagenes'], true) ?: [null, null, null, null];
+    $codigoActual = $row['codigo_inventario'];
+
+    for ($i = 0; $i < 4; $i++) {
+        if ($imagenes[$i] !== null) {
+            $imagenesActuales[$i] = ($imagenes[$i] === "") ? null : $imagenes[$i];
+        }
+    }
+    $imagenesJson = json_encode($imagenesActuales);
+
+    $cantidadAActualizar = $cantidad ?? $cantidadActual;
+    $codigoAActualizar = $nuevo_codigo ?? $codigoActual;
+
+    $stmt = $conn->prepare("UPDATE Componente SET cantidad = ?, imagenes = ?, codigo_inventario = ? WHERE codigo_inventario = ?");
+    $stmt->bind_param("isss", $cantidadAActualizar, $imagenesJson, $codigoAActualizar, $identificador);
+    $stmt->execute();
+
+    if ($nuevo_nombre_tipo !== null && $nuevo_nombre_tipo !== '') {
+        $stmtTipo = $conn->prepare("UPDATE Tipo_Componente SET nombre_tipo = ? WHERE id_tipo = ?");
+        $stmtTipo->bind_param("si", $nuevo_nombre_tipo, $row['id_tipo']);
+        $stmtTipo->execute();
+    }
+
+    $response = ["success" => true, "message" => "Componente actualizado correctamente"];
+}
+
+
 
 } catch (Exception $e) {
     $response = ["success" => false, "message" => $e->getMessage()];

@@ -24,7 +24,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
   late TextEditingController nombreController;
   late TextEditingController codigoController;
   late TextEditingController stockController;
-  late TextEditingController tipoController;
   bool isLoading = false;
 
   List<String?> _imagenesNuevas = List.filled(4, null);
@@ -41,7 +40,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
     stockController = TextEditingController(
       text: widget.componente.cantidad.toString(),
     );
-    tipoController = TextEditingController(text: widget.componente.nombreTipo);
   }
 
   bool get huboCambio {
@@ -75,7 +73,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
     nombreController.dispose();
     codigoController.dispose();
     stockController.dispose();
-    tipoController.dispose();
     super.dispose();
   }
 
@@ -140,12 +137,24 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
       huboCambio = true;
     }
 
+    String? nuevoCodigo;
+    if (codigoController.text.isNotEmpty &&
+        codigoController.text != widget.componente.codigoInventario) {
+      nuevoCodigo = codigoController.text;
+      huboCambio = true;
+    }
+
+    String? nuevoNombreTipo;
+    if (nombreController.text.isNotEmpty &&
+        nombreController.text != widget.componente.nombreTipo) {
+      nuevoNombreTipo = nombreController.text;
+      huboCambio = true;
+    }
+
     List<String?> imagenesFinal = List.generate(4, (i) {
       final nuevo = _imagenesNuevas[i];
-
       if (nuevo != null) {
         huboCambio = true;
-
         if (nuevo.isEmpty) {
           print("📸 Imagen slot $i: ELIMINAR");
         } else {
@@ -153,7 +162,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
             "📸 Imagen slot $i: NUEVA/ACTUALIZADA (base64, len=${nuevo.length})",
           );
         }
-
         return nuevo;
       }
       print("📸 Imagen slot $i: NO TOCAR");
@@ -171,18 +179,22 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
     }
 
     print(
-      "✅ Payload a enviar:\n identificador=$identificador\n cantidad=$cantidadActualizada\n imagenes=[${imagenesFinal.map((e) => e == null ? 'NO TOCAR' : (e.isEmpty ? 'ELIMINAR' : 'BASE64(${e.length})')).join(', ')}]",
+      "✅ Payload a enviar:\n identificador=$identificador\n cantidad=$cantidadActualizada\n nuevoCodigo=$nuevoCodigo\n nuevoNombreTipo=$nuevoNombreTipo\n imagenes=[${imagenesFinal.map((e) => e == null ? 'NO TOCAR' : (e.isEmpty ? 'ELIMINAR' : 'BASE64(${e.length})')).join(', ')}]",
     );
+
     setState(() => isLoading = true);
     try {
       final success = await service.actualizarComponente(
         identificador: identificador,
         cantidad: cantidadActualizada,
         imagenesNuevas: imagenesFinal,
+        nuevoCodigo: nuevoCodigo,
+        nuevoNombreTipo: nuevoNombreTipo,
       );
 
       print("✅ Respuesta del backend: $success");
       setState(() => isLoading = false);
+
       if (success) {
         await showCustomDialog(
           context: context,
