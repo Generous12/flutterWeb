@@ -22,52 +22,61 @@ $offset        = $data['offset'] ?? null;
 $limit         = $data['limit'] ?? null;
 
 try {
-    if ($action == 'listar') {
-        if ($offset !== null && $limit !== null) {
-            $stmt = $conn->prepare("
-                SELECT DISTINCT
-                    c.id_componente,
-                    c.codigo_inventario,
-                    c.cantidad,
-                    c.imagenes,
-                    tc.nombre_tipo
-                FROM Componente c
-                INNER JOIN Tipo_Componente tc ON c.id_tipo = tc.id_tipo
-                WHERE c.codigo_inventario LIKE CONCAT('%', ?, '%')
-                   OR tc.nombre_tipo LIKE CONCAT('%', ?, '%')
-                LIMIT ?, ?
-            ");
-            $stmt->bind_param("ssii", $busqueda, $busqueda, $offset, $limit);
-        } else {
-            $stmt = $conn->prepare("
-                SELECT DISTINCT
-                    c.id_componente,
-                    c.codigo_inventario,
-                    c.cantidad,
-                    c.imagenes,
-                    tc.nombre_tipo
-                FROM Componente c
-                INNER JOIN Tipo_Componente tc ON c.id_tipo = tc.id_tipo
-                WHERE c.codigo_inventario LIKE CONCAT('%', ?, '%')
-                   OR tc.nombre_tipo LIKE CONCAT('%', ?, '%')
-            ");
-            $stmt->bind_param("ss", $busqueda, $busqueda);
+   if ($action == 'listar') {
+    if ($offset !== null && $limit !== null) {
+        $stmt = $conn->prepare("
+            SELECT DISTINCT
+                c.id_componente,
+                c.id_tipo,  -- <--- agregar esto
+                c.codigo_inventario,
+                c.cantidad,
+                c.imagenes,
+                tc.nombre_tipo
+            FROM Componente c
+            INNER JOIN Tipo_Componente tc ON c.id_tipo = tc.id_tipo
+            WHERE c.codigo_inventario LIKE CONCAT('%', ?, '%')
+               OR tc.nombre_tipo LIKE CONCAT('%', ?, '%')
+            LIMIT ?, ?
+        ");
+        $stmt->bind_param("ssii", $busqueda, $busqueda, $offset, $limit);
+    } else {
+        $stmt = $conn->prepare("
+            SELECT DISTINCT
+                c.id_componente,
+                c.id_tipo,  -- <--- agregar esto
+                c.codigo_inventario,
+                c.cantidad,
+                c.imagenes,
+                tc.nombre_tipo
+            FROM Componente c
+            INNER JOIN Tipo_Componente tc ON c.id_tipo = tc.id_tipo
+            WHERE c.codigo_inventario LIKE CONCAT('%', ?, '%')
+               OR tc.nombre_tipo LIKE CONCAT('%', ?, '%')
+        ");
+        $stmt->bind_param("ss", $busqueda, $busqueda);
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $componentes = [];
+    while ($row = $result->fetch_assoc()) {
+    $imagenes = json_decode($row['imagenes'], true) ?: [];
+    $imagenesNum = [null, null, null, null];
+
+    for ($i = 0; $i < 4; $i++) {
+        if (isset($imagenes[$i])) {
+            $imagenesNum[$i] = $imagenes[$i];
         }
+    }
 
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $componentes = [];
-        while ($row = $result->fetch_assoc()) {
-           $row['imagenes'] = $row['imagenes'] 
-    ? json_decode($row['imagenes'], true) 
-    : [null, null, null, null];
+    $row['imagenes'] = $imagenesNum;
+    $componentes[] = $row;
+}
 
-            $componentes[] = $row;
-        }
 
-        $response = ["success" => true, "data" => $componentes];
-
-   } elseif ($action == 'actualizar') {
+    $response = ["success" => true, "data" => $componentes];
+}
+ elseif ($action == 'actualizar') {
     $nuevo_codigo = $data['nuevo_codigo'] ?? null;
     $nuevo_nombre_tipo = $data['nuevo_nombre_tipo'] ?? null;
     $imagenes = array_pad($imagenes, 4, null);

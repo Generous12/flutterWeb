@@ -4,12 +4,14 @@ import 'package:http/http.dart' as http;
 
 class ComponenteUpdate {
   final int id;
+  final int idTipo;
   final String codigoInventario;
   final String nombreTipo;
   final int cantidad;
   final List<String?> imagenesBase64;
   ComponenteUpdate({
     required this.id,
+    required this.idTipo,
     required this.codigoInventario,
     required this.nombreTipo,
     required this.cantidad,
@@ -36,6 +38,7 @@ class ComponenteUpdate {
 
     return ComponenteUpdate(
       id: json['id_componente'],
+      idTipo: json["id_tipo"],
       codigoInventario: json['codigo_inventario'],
       nombreTipo: json['nombre_tipo'],
       cantidad: int.tryParse(json['cantidad'].toString()) ?? 0,

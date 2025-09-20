@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/crearComponente.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/eliminarComponente.dart';
-import 'package:proyecto_web/Vista/app/principal/Componente/listarUdapte_Componente.dart';
+import 'package:proyecto_web/Vista/app/principal/Componente/listacomponente/listageneralcomponente.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
 
 class MenuComponentesScreen extends StatelessWidget {

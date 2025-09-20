@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:proyecto_web/Controlador/eliminar_componente.dart';
 import 'package:proyecto_web/Controlador/list_Update_Component.dart';
+import 'package:proyecto_web/Widgets/dialogalert.dart';
 
 class ComponentesEliminar extends StatefulWidget {
   const ComponentesEliminar({Key? key}) : super(key: key);
@@ -47,7 +49,7 @@ class _ComponentesEliminartState extends State<ComponentesEliminar> {
     }
 
     if (allLoaded) return;
-
+    if (!mounted) return;
     setState(() {
       if (offset == 0)
         loading = true;
@@ -63,7 +65,7 @@ class _ComponentesEliminartState extends State<ComponentesEliminar> {
       );
 
       if (nuevos.length < limit) allLoaded = true;
-
+      if (!mounted) return;
       setState(() {
         componentes.addAll(nuevos);
         offset += limit;
@@ -73,6 +75,7 @@ class _ComponentesEliminartState extends State<ComponentesEliminar> {
         context,
       ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
+      if (!mounted) return;
       setState(() {
         loading = false;
         loadingMore = false;
@@ -318,8 +321,45 @@ class _ComponentesEliminartState extends State<ComponentesEliminar> {
                                         Iconsax.trash,
                                         color: Colors.black,
                                       ),
-                                      onPressed: () {
-                                        // Tu lógica de eliminar
+                                      onPressed: () async {
+                                        final tipoSeleccionadoId = c
+                                            .idTipo; // <--- aquí el ID correcto
+
+                                        final salir = await showCustomDialog(
+                                          context: context,
+                                          title: "Confirmar eliminación",
+                                          message:
+                                              "¿Deseas eliminar el tipo de componente: '${c.nombreTipo}' y todos sus registros relacionados?",
+                                          confirmButtonText: "Sí",
+                                          cancelButtonText: "No",
+                                        );
+
+                                        if (salir == true) {
+                                          final service =
+                                              EliminarComponenteService();
+                                          final result = await service
+                                              .eliminarTipo(tipoSeleccionadoId);
+
+                                          await showCustomDialog(
+                                            context: context,
+                                            title: result['success']
+                                                ? "Éxito"
+                                                : "Error",
+                                            message: result['message'],
+                                            confirmButtonText: "Cerrar",
+                                          );
+
+                                          if (result['success']) {
+                                            setState(() {
+                                              // Elimina todos los componentes de ese tipo de la lista
+                                              componentes.removeWhere(
+                                                (comp) =>
+                                                    comp.idTipo ==
+                                                    tipoSeleccionadoId,
+                                              );
+                                            });
+                                          }
+                                        }
                                       },
                                     ),
                                   ],

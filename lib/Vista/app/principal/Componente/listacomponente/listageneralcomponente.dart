@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:proyecto_web/Controlador/list_Update_Component.dart';
-import 'package:proyecto_web/Vista/app/principal/Componente/list_updateDetailComponent.dart';
+import 'package:proyecto_web/Vista/app/principal/Componente/listacomponente/detallecomponente.dart';
 
 class ComponentesList extends StatefulWidget {
   const ComponentesList({Key? key}) : super(key: key);
@@ -48,7 +48,7 @@ class _ComponentesListState extends State<ComponentesList> {
     }
 
     if (allLoaded) return;
-
+    if (!mounted) return;
     setState(() {
       if (offset == 0)
         loading = true;
@@ -64,7 +64,7 @@ class _ComponentesListState extends State<ComponentesList> {
       );
 
       if (nuevos.length < limit) allLoaded = true;
-
+      if (!mounted) return;
       setState(() {
         componentes.addAll(nuevos);
         offset += limit;
@@ -74,6 +74,7 @@ class _ComponentesListState extends State<ComponentesList> {
         context,
       ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
+      if (!mounted) return;
       setState(() {
         loading = false;
         loadingMore = false;
