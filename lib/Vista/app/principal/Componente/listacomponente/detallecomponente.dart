@@ -339,23 +339,10 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                                     onTap: () {
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
-                                          builder: (context) => DismissiblePage(
-                                            isFullScreen: true,
-                                            onDismissed: () =>
-                                                Navigator.of(context).pop(),
-                                            child: Scaffold(
-                                              backgroundColor: Colors.black,
-                                              body: Center(
-                                                child: Image.memory(
-                                                  imgBytes,
-                                                  width: MediaQuery.of(
-                                                    context,
-                                                  ).size.width,
-                                                  fit: BoxFit.contain,
-                                                ),
+                                          builder: (context) =>
+                                              ZoomableImagePage(
+                                                imgBytes: imgBytes,
                                               ),
-                                            ),
-                                          ),
                                         ),
                                       );
                                     },
@@ -517,5 +504,74 @@ extension ComponenteUpdateExtension on ComponenteUpdate {
       print('❌ Error decodificando imagen $index: $e');
       return null;
     }
+  }
+}
+
+class ZoomableImagePage extends StatefulWidget {
+  final Uint8List imgBytes;
+  const ZoomableImagePage({super.key, required this.imgBytes});
+
+  @override
+  State<ZoomableImagePage> createState() => _ZoomableImagePageState();
+}
+
+class _ZoomableImagePageState extends State<ZoomableImagePage> {
+  bool showCloseButton = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return DismissiblePage(
+      isFullScreen: true,
+      disabled: true,
+      onDismissed: () => Navigator.of(context).pop(),
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            InteractiveViewer(
+              panEnabled: true,
+              scaleEnabled: true,
+              minScale: 1.0,
+              maxScale: 5.0,
+              constrained: true,
+              child: Align(
+                alignment: Alignment.center,
+                child: Image.memory(widget.imgBytes, fit: BoxFit.contain),
+              ),
+            ),
+            Positioned(
+              bottom: 30,
+              left: 0,
+              right: 0,
+              child: SafeArea(
+                top: false,
+                bottom: true,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 300),
+                  opacity: showCloseButton ? 1.0 : 0.0,
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(12),
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
