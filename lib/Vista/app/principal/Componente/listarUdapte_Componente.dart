@@ -243,71 +243,14 @@ class _ComponentesListState extends State<ComponentesList> {
                                 padding: const EdgeInsets.all(12),
                                 child: Row(
                                   children: [
+                                    // 👇 Reemplaza el bloque que tienes actualmente
                                     c.imagenesBase64.isEmpty
                                         ? const Icon(
                                             Iconsax.folder5,
                                             color: Colors.black,
                                             size: 50,
                                           )
-                                        : SizedBox(
-                                            width: 60,
-                                            height: 60,
-                                            child: ListView.builder(
-                                              scrollDirection: Axis.horizontal,
-                                              itemCount:
-                                                  c.imagenesBase64.length,
-                                              itemBuilder: (_, i) {
-                                                final bytes = c.imagenBytes(i);
-                                                return bytes != null
-                                                    ? Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              right: 6,
-                                                            ),
-                                                        child: Hero(
-                                                          tag:
-                                                              'imagen_${c.id}_$i',
-                                                          child: ClipRRect(
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  8,
-                                                                ),
-                                                            child: Image.memory(
-                                                              bytes,
-                                                              width: 50,
-                                                              height: 50,
-                                                              fit: BoxFit.cover,
-                                                              errorBuilder:
-                                                                  (
-                                                                    context,
-                                                                    error,
-                                                                    stackTrace,
-                                                                  ) {
-                                                                    return Container(
-                                                                      width: 50,
-                                                                      height:
-                                                                          50,
-                                                                      color: Colors
-                                                                          .grey[300],
-                                                                      child: const Icon(
-                                                                        Icons
-                                                                            .broken_image,
-                                                                        color: Colors
-                                                                            .grey,
-                                                                      ),
-                                                                    );
-                                                                  },
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      )
-                                                    : const SizedBox(
-                                                        width: 50,
-                                                        height: 50,
-                                                      );
-                                              },
-                                            ),
-                                          ),
+                                        : _buildFirstImage(c),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Column(
@@ -389,6 +332,48 @@ class _ComponentesListState extends State<ComponentesList> {
       ),
     );
   }
+}
+
+Widget _buildFirstImage(ComponenteUpdate c) {
+  // Buscar la primera imagen decodificable
+  Uint8List? firstBytes;
+  int firstIndex = -1;
+
+  for (int i = 0; i < c.imagenesBase64.length; i++) {
+    final bytes = c.imagenBytes(i);
+    if (bytes != null) {
+      firstBytes = bytes;
+      firstIndex = i;
+      break;
+    }
+  }
+
+  // Si no encontró ninguna válida → icono vacío
+  if (firstBytes == null) {
+    return const Icon(Iconsax.folder5, color: Colors.black, size: 50);
+  }
+
+  // Si encontró → mostrar solo esa
+  return Hero(
+    tag: 'imagen_${c.id}_$firstIndex',
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.memory(
+        firstBytes,
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: 50,
+            height: 50,
+            color: Colors.grey[300],
+            child: const Icon(Icons.broken_image, color: Colors.grey),
+          );
+        },
+      ),
+    ),
+  );
 }
 
 extension ComponenteUpdateExtension on ComponenteUpdate {
