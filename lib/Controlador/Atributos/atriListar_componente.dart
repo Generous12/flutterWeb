@@ -32,11 +32,18 @@ class ComponenteServiceAtributo {
   Future<List<ComponenteAtributo>> listarComponentes({
     int limit = 10,
     int offset = 0,
+    String? busqueda, // <-- nuevo parámetro opcional
   }) async {
+    final body = {
+      "limit": limit,
+      "offset": offset,
+      "busqueda": busqueda, // se envía null si no se pasa
+    };
+
     final response = await http.post(
       Uri.parse(url),
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"limit": limit, "offset": offset}),
+      body: jsonEncode(body),
     );
 
     if (response.statusCode == 200) {

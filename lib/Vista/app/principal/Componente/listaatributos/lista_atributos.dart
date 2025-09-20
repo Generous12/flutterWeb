@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:proyecto_web/Controlador/atriListar_componente.dart';
+import 'package:proyecto_web/Controlador/Atributos/atriListar_componente.dart';
 
 class ListaComponentesAtributoPage extends StatefulWidget {
   const ListaComponentesAtributoPage({super.key});
@@ -48,7 +48,7 @@ class _ListaComponentesPageAtributoState
         _componentes.addAll(nuevos);
         _offset += nuevos.length;
         if (nuevos.length < _limit) {
-          _hayMas = false; // No hay más en backend
+          _hayMas = false;
         }
       });
     } catch (e) {

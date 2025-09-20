@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:proyecto_web/Vista/app/principal/Componente/actualizar_atributos.dart';
+import 'package:proyecto_web/Vista/app/principal/Componente/listaatributos/lista_atributos.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/crearComponente.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/eliminarComponente.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/listacomponente/listageneralcomponente.dart';
