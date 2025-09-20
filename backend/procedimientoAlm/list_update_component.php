@@ -70,9 +70,7 @@ try {
    } elseif ($action == 'actualizar') {
     $nuevo_codigo = $data['nuevo_codigo'] ?? null;
     $nuevo_nombre_tipo = $data['nuevo_nombre_tipo'] ?? null;
-
     $imagenes = array_pad($imagenes, 4, null);
-
     $stmtSel = $conn->prepare("SELECT cantidad, imagenes, codigo_inventario, id_tipo FROM Componente WHERE codigo_inventario = ?");
     $stmtSel->bind_param("s", $identificador);
     $stmtSel->execute();
@@ -93,10 +91,8 @@ try {
         }
     }
     $imagenesJson = json_encode($imagenesActuales);
-
     $cantidadAActualizar = $cantidad ?? $cantidadActual;
     $codigoAActualizar = $nuevo_codigo ?? $codigoActual;
-
     $stmt = $conn->prepare("UPDATE Componente SET cantidad = ?, imagenes = ?, codigo_inventario = ? WHERE codigo_inventario = ?");
     $stmt->bind_param("isss", $cantidadAActualizar, $imagenesJson, $codigoAActualizar, $identificador);
     $stmt->execute();
@@ -106,7 +102,6 @@ try {
         $stmtTipo->bind_param("si", $nuevo_nombre_tipo, $row['id_tipo']);
         $stmtTipo->execute();
     }
-
     $response = ["success" => true, "message" => "Componente actualizado correctamente"];
 }
 
