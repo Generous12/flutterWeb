@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:proyecto_web/Controlador/Atributos/atriListar_componente.dart';
+import 'package:proyecto_web/Widgets/textfield.dart';
 
 class DetalleAtributoPage extends StatefulWidget {
   final int idComponente;
@@ -14,9 +16,17 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
   final ComponenteServiceAtributo _service = ComponenteServiceAtributo();
 
   Map<String, dynamic>? _cabecera;
-  List<AtributoDetalle> _atributos = [];
+  List<Map<String, dynamic>> atributos = [];
   bool _cargando = true;
   String? _error;
+
+  // Tipos y abreviaturas
+  final List<String> tipos = ["Texto", "Número", "Fecha"];
+  final Map<String, String> abreviaturas = {
+    "Texto": "T",
+    "Número": "N",
+    "Fecha": "F",
+  };
 
   @override
   void initState() {
@@ -29,7 +39,17 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
       final data = await _service.detalleComponente(widget.idComponente);
       setState(() {
         _cabecera = data["cabecera"];
-        _atributos = data["atributos"];
+        atributos = data["atributos"]
+            .map<Map<String, dynamic>>(
+              (atr) => {
+                "controllerNombre": TextEditingController(
+                  text: atr.nombreAtributo,
+                ),
+                "controllerValor": TextEditingController(text: atr.valor),
+                "tipo": atr.tipoDato,
+              },
+            )
+            .toList();
         _cargando = false;
       });
     } catch (e) {
@@ -40,71 +60,208 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
     }
   }
 
+  void _addAtributo() {
+    atributos.add({
+      "controllerNombre": TextEditingController(),
+      "controllerValor": TextEditingController(),
+      "tipo": tipos[0],
+    });
+    setState(() {});
+  }
+
+  Future<void> _seleccionarTipo(Map<String, dynamic> attr) async {
+    final seleccionado = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Selecciona el tipo de atributo"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: tipos
+              .map(
+                (t) => ListTile(
+                  title: Text(t),
+                  onTap: () => Navigator.pop(context, t),
+                ),
+              )
+              .toList(),
+        ),
+      ),
+    );
+
+    if (seleccionado != null) {
+      setState(() => attr["tipo"] = seleccionado);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Detalle Componente")),
+      backgroundColor: Colors.grey.shade100,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        title: const Text(
+          "Detalle Componente",
+          style: TextStyle(color: Colors.white),
+        ),
+        iconTheme: const IconThemeData(color: Colors.blueAccent),
+        actions: [
+          IconButton(
+            onPressed: _addAtributo,
+            icon: const Icon(Icons.add, color: Colors.blueAccent),
+          ),
+        ],
+      ),
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-          ? Center(child: Text("Error: $_error"))
+          ? Center(
+              child: Text(
+                "Error: $_error",
+                style: const TextStyle(color: Colors.red),
+              ),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Cabecera
+                  // Cabecera del componente
                   Card(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    elevation: 3,
-                    margin: const EdgeInsets.only(bottom: 20),
+                    elevation: 6,
+                    color: Colors.black,
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "ID: ${_cabecera?["id_componente"]}",
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          Row(
+                            children: [
+                              const Icon(
+                                Iconsax.box,
+                                color: Colors.blueAccent,
+                                size: 28,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                "ID: ${_cabecera?["id_componente"]}",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
                           ),
-                          Text("Tipo: ${_cabecera?["nombre_tipo"]}"),
-                          Text("Código: ${_cabecera?["codigo_inventario"]}"),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              const Icon(
+                                Iconsax.category,
+                                color: Colors.blueAccent,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                "Tipo: ${_cabecera?["nombre_tipo"]}",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              const Icon(
+                                Iconsax.code,
+                                color: Colors.blueAccent,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                "Código: ${_cabecera?["codigo_inventario"]}",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
                   ),
 
-                  // Lista atributos
                   const Text(
-                    "Atributos:",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    "Atributos",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
                   const SizedBox(height: 10),
 
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _atributos.length,
-                    itemBuilder: (context, index) {
-                      final atr = _atributos[index];
+                  // Lista de atributos con nombre y valor
+                  Column(
+                    children: atributos.map((attr) {
                       return Card(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         elevation: 2,
                         margin: const EdgeInsets.symmetric(vertical: 6),
-                        child: ListTile(
-                          title: Text(atr.nombreAtributo),
-                          subtitle: Text("Tipo: ${atr.tipoDato}"),
-                          trailing: Text(
-                            atr.valor,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Nombre del atributo
+                              CustomTextField(
+                                controller: attr["controllerNombre"],
+                                hintText: "Nombre del atributo",
+                                label: "Atributo",
+                              ),
+                              const SizedBox(height: 8),
+
+                              // Valor del atributo
+                              CustomTextField(
+                                controller: attr["controllerValor"],
+                                hintText: "Valor del atributo",
+                                label: "Valor",
+
+                                suffixIcon: GestureDetector(
+                                  onTap: () => _seleccionarTipo(attr),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: CircleAvatar(
+                                      radius: 16,
+                                      backgroundColor: Colors.blueAccent,
+                                      child: Text(
+                                        abreviaturas[attr["tipo"]] ?? "",
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       );
-                    },
+                    }).toList(),
                   ),
                 ],
               ),

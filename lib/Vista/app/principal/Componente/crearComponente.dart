@@ -380,13 +380,6 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
     widget.onValidChange(isValid);
   }
 
-  void _addAtributo() {
-    final controller = TextEditingController();
-    controller.addListener(_validate);
-    atributos.add({"controller": controller, "tipo": tipos[0]});
-    setState(() => _validate());
-  }
-
   Future<void> _seleccionarTipo(Map<String, dynamic> attr) async {
     final seleccionado = await showDialog<String>(
       context: context,
@@ -531,6 +524,13 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
       (attr["controller"] as TextEditingController).dispose();
     }
     super.dispose();
+  }
+
+  void _addAtributo() {
+    final controller = TextEditingController();
+    controller.addListener(_validate);
+    atributos.add({"controller": controller, "tipo": tipos[0]});
+    setState(() => _validate());
   }
 
   @override

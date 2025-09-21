@@ -164,7 +164,7 @@ class _ComponentesPageAtributoState extends State<ComponentesPageAtributo> {
                   return Card(
                     margin: const EdgeInsets.symmetric(
                       horizontal: 12,
-                      vertical: 2,
+                      vertical: 6,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -175,7 +175,7 @@ class _ComponentesPageAtributoState extends State<ComponentesPageAtributo> {
                     child: ListTile(
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
-                        vertical: 12,
+                        vertical: 2,
                       ),
                       leading: Container(
                         padding: const EdgeInsets.all(4),
