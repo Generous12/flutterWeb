@@ -50,9 +50,8 @@ class AtributoDetalle {
 
 class ComponenteServiceAtributo {
   final String url =
-      "http://192.168.18.21/proyecto_web/backend/procedimientoAlm/atributosComponente/listarcomponenAtri.php";
+      "http://localhost/proyecto_web/backend/procedimientoAlm/atributosComponente/listarcomponenAtri.php";
 
-  /// Listado de componentes
   Future<List<ComponenteAtributo>> listarComponentes({
     int limit = 10,
     int offset = 0,
@@ -84,12 +83,8 @@ class ComponenteServiceAtributo {
     }
   }
 
-  /// Detalle de un componente (cabecera + atributos)
   Future<Map<String, dynamic>> detalleComponente(int idComponente) async {
-    final body = {
-      "accion": "detalle", // <-- agregado
-      "id_componente": idComponente,
-    };
+    final body = {"accion": "detalle", "id_componente": idComponente};
 
     final response = await http.post(
       Uri.parse(url),

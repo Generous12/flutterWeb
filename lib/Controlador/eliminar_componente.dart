@@ -3,9 +3,8 @@ import 'package:http/http.dart' as http;
 
 class EliminarComponenteService {
   final String baseUrl =
-      "http://192.168.18.21/proyecto_web/backend/procedimientoAlm";
+      "http://localhost/proyecto_web/backend/procedimientoAlm";
 
-  /// Método para eliminar un Tipo_Componente por id
   Future<Map<String, dynamic>> eliminarTipo(int idTipo) async {
     final url = Uri.parse('$baseUrl/eliminar_componente.php');
 
@@ -18,7 +17,7 @@ class EliminarComponenteService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data; // Contendrá success y message
+        return data;
       } else {
         return {
           "success": false,

@@ -134,7 +134,7 @@ class ComponentService extends ChangeNotifier {
     }
 
     final url = Uri.parse(
-      "http://192.168.18.21/proyecto_web/backend/procedimientoAlm/registrar_componente.php",
+      "http://localhost/proyecto_web/backend/procedimientoAlm/registrar_componente.php",
     );
 
     final atributosJson = atributos.map((attr) {
@@ -159,7 +159,7 @@ class ComponentService extends ChangeNotifier {
           }
         })
         .whereType<String>()
-        .toList(); // eliminar nulls
+        .toList();
 
     print("🔹 Número de imágenes a enviar: ${imagenesBase64.length}");
 
