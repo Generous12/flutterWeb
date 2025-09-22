@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:iconsax/iconsax.dart';
 import 'package:proyecto_web/Controlador/Atributos/atriListar_componente.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
 
@@ -15,12 +14,10 @@ class DetalleAtributoPage extends StatefulWidget {
 class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
   final ComponenteServiceAtributo _service = ComponenteServiceAtributo();
 
-  Map<String, dynamic>? _cabecera;
   List<Map<String, dynamic>> atributos = [];
   bool _cargando = true;
   String? _error;
 
-  // Tipos y abreviaturas
   final List<String> tipos = ["Texto", "Número", "Fecha"];
   final Map<String, String> abreviaturas = {
     "Texto": "T",
@@ -38,7 +35,6 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
     try {
       final data = await _service.detalleComponente(widget.idComponente);
       setState(() {
-        _cabecera = data["cabecera"];
         atributos = data["atributos"]
             .map<Map<String, dynamic>>(
               (atr) => {
@@ -99,10 +95,7 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text(
-          "Detalle Componente",
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text("Atributos", style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.blueAccent),
         actions: [
           IconButton(
@@ -125,89 +118,6 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Cabecera del componente
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 6,
-                    color: Colors.black,
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(
-                                Iconsax.box,
-                                color: Colors.blueAccent,
-                                size: 28,
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                "ID: ${_cabecera?["id_componente"]}",
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              const Icon(
-                                Iconsax.category,
-                                color: Colors.blueAccent,
-                                size: 24,
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                "Tipo: ${_cabecera?["nombre_tipo"]}",
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white70,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              const Icon(
-                                Iconsax.code,
-                                color: Colors.blueAccent,
-                                size: 24,
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                "Código: ${_cabecera?["codigo_inventario"]}",
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white70,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const Text(
-                    "Atributos",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
                   const SizedBox(height: 10),
                   Column(
                     children: atributos.map((attr) {
