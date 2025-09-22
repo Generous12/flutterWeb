@@ -209,8 +209,6 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                     ),
                   ),
                   const SizedBox(height: 10),
-
-                  // Lista de atributos con nombre y valor
                   Column(
                     children: atributos.map((attr) {
                       return Card(
@@ -224,20 +222,16 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Nombre del atributo
                               CustomTextField(
                                 controller: attr["controllerNombre"],
                                 hintText: "Nombre del atributo",
                                 label: "Atributo",
                               ),
                               const SizedBox(height: 8),
-
-                              // Valor del atributo
                               CustomTextField(
                                 controller: attr["controllerValor"],
                                 hintText: "Valor del atributo",
                                 label: "Valor",
-
                                 suffixIcon: GestureDetector(
                                   onTap: () => _seleccionarTipo(attr),
                                   child: Padding(
