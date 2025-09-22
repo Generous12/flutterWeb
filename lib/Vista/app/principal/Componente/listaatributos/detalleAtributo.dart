@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:proyecto_web/Controlador/Atributos/atriListar_componente.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
+import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
 
 class DetalleAtributoPage extends StatefulWidget {
@@ -66,6 +67,7 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
       "controllerNombre": TextEditingController(),
       "controllerValor": TextEditingController(),
       "tipo": tipos[0],
+      "esNuevo": true,
     });
     setState(() {});
   }
@@ -98,8 +100,8 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
         appBar: AppBar(
+          toolbarHeight: 48,
           backgroundColor: Colors.black,
           title: const Text("Atributos", style: TextStyle(color: Colors.white)),
           iconTheme: const IconThemeData(color: Colors.blueAccent),
@@ -120,75 +122,118 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                 ),
               )
             : SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(6, 5, 6, 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Card(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      elevation: 6,
-                      color: Colors.black,
+                      elevation: 8,
                       margin: const EdgeInsets.symmetric(
-                        horizontal: 12,
+                        horizontal: 5,
                         vertical: 10,
                       ),
-                      child: Padding(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          gradient: const LinearGradient(
+                            colors: [Colors.black87, Colors.black54],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
                               children: [
-                                const Icon(
-                                  Iconsax.box,
-                                  color: Colors.blueAccent,
-                                  size: 28,
+                                CircleAvatar(
+                                  radius: 24,
+                                  backgroundColor: Colors.blueAccent
+                                      .withOpacity(0.2),
+                                  child: const Icon(
+                                    Iconsax.box,
+                                    color: Colors.blueAccent,
+                                    size: 28,
+                                  ),
                                 ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  "ID: ${_cabecera?["id_componente"]}",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Colors.white,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    "Componente #${_cabecera?["id_componente"] ?? "-"}",
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 16),
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Icon(
-                                  Iconsax.category,
-                                  color: Colors.blueAccent,
-                                  size: 24,
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Iconsax.category,
+                                          size: 18,
+                                          color: Colors.blueAccent,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          _cabecera?["nombre_tipo"] ?? "-",
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Iconsax.code,
+                                          size: 18,
+                                          color: Colors.blueAccent,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          _cabecera?["codigo_inventario"] ??
+                                              "-",
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  "Tipo: ${_cabecera?["nombre_tipo"]}",
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white70,
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Iconsax.code,
-                                  color: Colors.blueAccent,
-                                  size: 24,
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  "Código: ${_cabecera?["codigo_inventario"]}",
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white70,
+                                  decoration: BoxDecoration(
+                                    color: Colors.blueAccent.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Text(
+                                    "Activo",
+                                    style: TextStyle(
+                                      color: Colors.blueAccent,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -197,19 +242,12 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                         ),
                       ),
                     ),
-                    const Text(
-                      "Atributos",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
+
                     Column(
                       children: atributos.asMap().entries.map((entry) {
                         final index = entry.key;
                         final attr = entry.value;
+
                         return Dismissible(
                           key: UniqueKey(),
                           direction: DismissDirection.endToStart,
@@ -223,6 +261,12 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                             ),
                           ),
                           confirmDismiss: (direction) async {
+                            // si es nuevo, no pedimos confirmación
+                            if (attr["esNuevo"] == true) {
+                              return true;
+                            }
+
+                            // si es de BD, pedimos confirmación
                             final confirmado = await showCustomDialog(
                               context: context,
                               title: "Confirmar",
@@ -233,18 +277,37 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                             return confirmado ?? false;
                           },
                           onDismissed: (direction) {
+                            final eliminado = attr;
+                            final indexEliminado = index;
+
                             setState(() {
                               atributos.removeAt(index);
                             });
+
+                            // si era nuevo, mostramos snackbar para deshacer
+                            if (eliminado["esNuevo"] == true) {
+                              SnackBarUtil.mostrarSnackBarPersonalizado(
+                                context: context,
+                                mensaje: "Atributo eliminado",
+                                icono: Icons.delete,
+                                duracion: const Duration(seconds: 2),
+                                textoAccion: "Deshacer",
+                                onAccion: () {
+                                  setState(() {
+                                    atributos.insert(indexEliminado, eliminado);
+                                  });
+                                },
+                              );
+                            }
                           },
                           child: Card(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(0),
                             ),
-                            elevation: 2,
-                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            elevation: 0,
+                            margin: const EdgeInsets.symmetric(vertical: 4),
                             child: Padding(
-                              padding: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.fromLTRB(8, 5, 8, 5),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
