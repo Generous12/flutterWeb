@@ -22,7 +22,6 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
   bool _cargando = true;
   String? _error;
 
-  // Tipos y abreviaturas
   final List<String> tipos = ["Texto", "Número", "Fecha"];
   final Map<String, String> abreviaturas = {
     "Texto": "T",
@@ -100,18 +99,6 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(
-          toolbarHeight: 48,
-          backgroundColor: Colors.black,
-          title: const Text("Atributos", style: TextStyle(color: Colors.white)),
-          iconTheme: const IconThemeData(color: Colors.blueAccent),
-          actions: [
-            IconButton(
-              onPressed: _addAtributo,
-              icon: const Icon(Icons.add, color: Colors.blueAccent),
-            ),
-          ],
-        ),
         body: _cargando
             ? const Center(child: CircularProgressIndicator())
             : _error != null
@@ -122,7 +109,7 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                 ),
               )
             : SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(6, 5, 6, 10),
+                padding: const EdgeInsets.fromLTRB(6, 5, 6, 80),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -130,30 +117,57 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      elevation: 8,
+                      elevation: 0,
                       margin: const EdgeInsets.symmetric(
-                        horizontal: 5,
+                        horizontal: 0,
                         vertical: 10,
                       ),
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
-                          gradient: const LinearGradient(
-                            colors: [Colors.black87, Colors.black54],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
+                          color: Colors.white,
                         ),
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.fromLTRB(3, 0, 3, 8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                IconButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  icon: const Icon(
+                                    Icons.arrow_back,
+                                    color: Colors.blueAccent,
+                                  ),
+                                ),
+                                const Text(
+                                  "Atributos",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: _addAtributo,
+                                  icon: const Icon(
+                                    Icons.add,
+                                    color: Colors.blueAccent,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Divider(
+                              color: Color.fromARGB(110, 210, 210, 210),
+                              thickness: 1,
+                            ),
                             Row(
                               children: [
                                 CircleAvatar(
                                   radius: 24,
                                   backgroundColor: Colors.blueAccent
-                                      .withOpacity(0.2),
+                                      .withOpacity(0.1),
                                   child: const Icon(
                                     Iconsax.box,
                                     color: Colors.blueAccent,
@@ -167,7 +181,7 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: Colors.black,
                                     ),
                                   ),
                                 ),
@@ -191,7 +205,7 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                                         Text(
                                           _cabecera?["nombre_tipo"] ?? "-",
                                           style: const TextStyle(
-                                            color: Colors.white70,
+                                            color: Colors.black54,
                                             fontSize: 14,
                                           ),
                                         ),
@@ -210,7 +224,7 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                                           _cabecera?["codigo_inventario"] ??
                                               "-",
                                           style: const TextStyle(
-                                            color: Colors.white70,
+                                            color: Colors.black54,
                                             fontSize: 14,
                                           ),
                                         ),
@@ -224,7 +238,7 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.blueAccent.withOpacity(0.2),
+                                    color: Colors.blueAccent.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: const Text(
@@ -243,6 +257,7 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                       ),
                     ),
 
+                    /// ---- Lista de atributos (tu lógica intacta) ----
                     Column(
                       children: atributos.asMap().entries.map((entry) {
                         final index = entry.key;
@@ -254,19 +269,21 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                           background: Container(
                             alignment: Alignment.centerRight,
                             padding: const EdgeInsets.symmetric(horizontal: 20),
-                            color: Colors.red,
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(
+                                20,
+                              ), // 👈 también redondeo el fondo rojo
+                            ),
                             child: const Icon(
                               Icons.delete,
                               color: Colors.white,
                             ),
                           ),
                           confirmDismiss: (direction) async {
-                            // si es nuevo, no pedimos confirmación
                             if (attr["esNuevo"] == true) {
                               return true;
                             }
-
-                            // si es de BD, pedimos confirmación
                             final confirmado = await showCustomDialog(
                               context: context,
                               title: "Confirmar",
@@ -283,8 +300,6 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                             setState(() {
                               atributos.removeAt(index);
                             });
-
-                            // si era nuevo, mostramos snackbar para deshacer
                             if (eliminado["esNuevo"] == true) {
                               SnackBarUtil.mostrarSnackBarPersonalizado(
                                 context: context,
@@ -302,7 +317,9 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                           },
                           child: Card(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(0),
+                              borderRadius: BorderRadius.circular(
+                                20,
+                              ), // 👈 esquinas redondeadas
                             ),
                             elevation: 0,
                             margin: const EdgeInsets.symmetric(vertical: 4),
@@ -350,6 +367,31 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                   ],
                 ),
               ),
+
+        /// ---- Botón fijo al fondo ----
+        bottomNavigationBar: Container(
+          padding: const EdgeInsets.all(12),
+
+          child: ElevatedButton(
+            onPressed: () {
+              // acción de guardar
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              "Guardar Cambios",
+              style: TextStyle(
+                fontSize: 16,
+                color: Color.fromARGB(255, 255, 255, 255),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
