@@ -50,9 +50,9 @@ class AtributoDetalle {
 
 class ComponenteServiceAtributo {
   final String url =
-      "http://192.168.72.89/proyecto_web/backend/procedimientoAlm/atributosComponente/listarcomponenAtri.php";
+      "http://192.168.18.25/proyecto_web/backend/procedimientoAlm/atributosComponente/listarcomponenAtri.php";
   final String urlCrud =
-      "http://192.168.72.89/proyecto_web/backend/procedimientoAlm/atributosComponente/crudAtri.php";
+      "http://192.168.18.25/proyecto_web/backend/procedimientoAlm/atributosComponente/crudAtri.php";
   Future<List<ComponenteAtributo>> listarComponentes({
     int limit = 10,
     int offset = 0,
@@ -97,7 +97,8 @@ class ComponenteServiceAtributo {
       final data = jsonDecode(response.body);
 
       if (data["success"] == true) {
-        final cabecera = data["cabecera"];
+        final cabecera =
+            data["cabecera"]; // contiene id_componente, id_tipo, nombre_tipo, codigo_inventario
         final List listaAtributos = data["atributos"] ?? [];
 
         return {
@@ -114,7 +115,6 @@ class ComponenteServiceAtributo {
     }
   }
 
-  // 1️⃣ Insertar atributo
   Future<Map<String, dynamic>> insertarAtributo(
     int idTipo,
     String nombre,
@@ -131,7 +131,18 @@ class ComponenteServiceAtributo {
       }),
     );
 
-    return jsonDecode(response.body);
+    final data = jsonDecode(response.body);
+
+    // Validar que venga id_atributo
+    if (data["success"] == true && data["id_atributo"] != null) {
+      return data;
+    } else {
+      return {
+        "success": false,
+        "id_atributo": null,
+        "mensaje": data["mensaje"] ?? "Error al insertar atributo",
+      };
+    }
   }
 
   // 2️⃣ Actualizar atributo
@@ -154,7 +165,6 @@ class ComponenteServiceAtributo {
     return jsonDecode(response.body);
   }
 
-  // 3️⃣ Guardar o actualizar valor
   Future<Map<String, dynamic>> guardarValor(
     int idComponente,
     int idAtributo,

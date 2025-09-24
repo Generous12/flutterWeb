@@ -69,10 +69,14 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
 
   void _addAtributo() {
     atributos.add({
+      "id_atributo": null,
       "controllerNombre": TextEditingController(),
       "controllerValor": TextEditingController(),
       "tipo": tipos[0],
       "esNuevo": true,
+      "originalNombre": "",
+      "originalTipo": tipos[0],
+      "originalValor": "",
     });
     setState(() {});
   }
@@ -184,7 +188,6 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                           });
 
                           if (eliminado["esNuevo"] == true) {
-                            // Solo era local
                             SnackBarUtil.mostrarSnackBarPersonalizado(
                               context: context,
                               mensaje: "Atributo eliminado",
@@ -198,7 +201,6 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                               },
                             );
                           } else {
-                            // Ya existía en la DB
                             final resp = await _service.eliminarAtributo(
                               eliminado["id_atributo"],
                             );
@@ -295,7 +297,6 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
     );
   }
 
-  /// Función para verificar cambios antes de salir
   Future<bool> _onWillPop() async {
     bool cambios = atributos.any((attr) {
       final nombre = attr["controllerNombre"].text.trim();
@@ -331,18 +332,18 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
         final valor = attr["controllerValor"].text.trim();
         final tipo = attr["tipo"];
 
+        // ===== NUEVO ATRIBUTO =====
         if (attr["esNuevo"] == true) {
-          // 1️⃣ Insertar atributo nuevo
           final insertado = await _service.insertarAtributo(
             _cabecera!["id_tipo"],
             nombre,
             tipo,
           );
 
-          if (insertado["success"] == true) {
-            final nuevoId = insertado["id_atributo"];
+          final nuevoId = insertado["id_atributo"];
+          if (insertado["success"] == true && nuevoId != null) {
+            attr["id_atributo"] = nuevoId;
 
-            // 2️⃣ Guardar valor del atributo
             final valorGuardado = await _service.guardarValor(
               _cabecera!["id_componente"],
               nuevoId,
@@ -351,24 +352,31 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
 
             if (valorGuardado["success"] == true) {
               huboCambio = true;
-
-              // Actualizar datos locales para no volver a pedir confirmación
-              attr["id_atributo"] = nuevoId;
               attr["esNuevo"] = false;
               attr["originalNombre"] = nombre;
               attr["originalTipo"] = tipo;
               attr["originalValor"] = valor;
+            } else {
+              throw Exception("No se pudo guardar el valor del nuevo atributo");
             }
+          } else {
+            throw Exception("No se pudo insertar el nuevo atributo");
           }
+
+          // ===== ATRIBUTO EXISTENTE =====
         } else {
-          // 3️⃣ Atributo existente: verificar cambios
+          final int? idAtributo = attr["id_atributo"];
+          if (idAtributo == null) {
+            throw Exception("El atributo existente no tiene ID");
+          }
+
           final bool cambioAtributo =
               nombre != attr["originalNombre"] || tipo != attr["originalTipo"];
           final bool cambioValor = valor != attr["originalValor"];
 
           if (cambioAtributo) {
             final actualizado = await _service.actualizarAtributo(
-              attr["id_atributo"],
+              idAtributo,
               nombre,
               tipo,
             );
@@ -383,7 +391,7 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
           if (cambioValor) {
             final valorGuardado = await _service.guardarValor(
               _cabecera!["id_componente"],
-              attr["id_atributo"],
+              idAtributo,
               valor,
             );
 
@@ -395,6 +403,7 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
         }
       }
 
+      // ===== MENSAJES FINALES =====
       if (huboCambio) {
         showCustomDialog(
           context: context,

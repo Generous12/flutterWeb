@@ -70,7 +70,7 @@ elseif ($accion === "detalle") {
 
         // Primer SELECT (cabecera)
         $result1 = $stmt->get_result();
-        $cabecera = $result1->fetch_assoc();
+        $cabecera = $result1->fetch_assoc();  // aquí cabecera debe contener: id_componente, id_tipo, nombre_tipo, codigo_inventario
 
         // Avanzar al segundo SELECT
         $stmt->next_result();
@@ -86,9 +86,9 @@ elseif ($accion === "detalle") {
         }
 
         $response = [
-            "success"  => true,
-            "cabecera" => $cabecera,
-            "atributos"=> $atributos
+            "success"   => true,
+            "cabecera"  => $cabecera,   // importante: contiene id_tipo
+            "atributos" => $atributos
         ];
 
         $stmt->close();
@@ -101,5 +101,6 @@ elseif ($accion === "detalle") {
         ];
     }
 }
+
 
 echo json_encode($response, JSON_UNESCAPED_UNICODE);
