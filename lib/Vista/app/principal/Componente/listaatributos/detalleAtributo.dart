@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:proyecto_web/Clases/plantillasComponente.dart';
 import 'package:proyecto_web/Controlador/Atributos/atriListar_componente.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
@@ -15,6 +17,75 @@ class DetalleAtributoPage extends StatefulWidget {
 
 class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
   final ComponenteServiceAtributo _service = ComponenteServiceAtributo();
+  final List<Plantilla> plantillas = [
+    Plantilla(
+      nombre: "Periféricos",
+      atributos: [
+        {"nombre": "Marca", "tipo": "Texto"},
+        {"nombre": "Modelo", "tipo": "Texto"},
+        {"nombre": "Tipo de conexión", "tipo": "Texto"},
+        {"nombre": "Color", "tipo": "Texto"},
+        {"nombre": "Dimensiones", "tipo": "Texto"},
+        {"nombre": "Peso", "tipo": "Número"},
+      ],
+    ),
+    Plantilla(
+      nombre: "RAM",
+      atributos: [
+        {"nombre": "Capacidad", "tipo": "Número"}, // GB
+        {"nombre": "Velocidad", "tipo": "Número"}, // MHz
+        {"nombre": "Tipo", "tipo": "Texto"}, // DDR4, DDR5, etc.
+        {"nombre": "Latencia", "tipo": "Número"}, // CL
+        {"nombre": "Voltaje", "tipo": "Número"}, // V
+      ],
+    ),
+    Plantilla(
+      nombre: "Procesador",
+      atributos: [
+        {"nombre": "Marca", "tipo": "Texto"}, // Intel, AMD
+        {"nombre": "Modelo", "tipo": "Texto"},
+        {"nombre": "Número de núcleos", "tipo": "Número"},
+        {"nombre": "Número de hilos", "tipo": "Número"},
+        {"nombre": "Frecuencia base", "tipo": "Número"}, // GHz
+        {"nombre": "Frecuencia turbo", "tipo": "Número"}, // GHz
+        {"nombre": "Litografía", "tipo": "Número"}, // nm
+      ],
+    ),
+    Plantilla(
+      nombre: "Disco duro / SSD",
+      atributos: [
+        {"nombre": "Capacidad", "tipo": "Número"}, // GB/TB
+        {"nombre": "Tipo", "tipo": "Texto"}, // SSD, HDD
+        {"nombre": "Interfaz", "tipo": "Texto"}, // SATA, NVMe
+        {"nombre": "Velocidad de lectura", "tipo": "Número"}, // MB/s
+        {"nombre": "Velocidad de escritura", "tipo": "Número"}, // MB/s
+        {"nombre": "Formato", "tipo": "Texto"}, // 2.5", M.2, etc.
+      ],
+    ),
+    Plantilla(
+      nombre: "Tarjeta de video",
+      atributos: [
+        {"nombre": "Marca", "tipo": "Texto"}, // Nvidia, AMD
+        {"nombre": "Modelo", "tipo": "Texto"},
+        {"nombre": "Memoria", "tipo": "Número"}, // GB
+        {"nombre": "Tipo de memoria", "tipo": "Texto"}, // GDDR6, etc.
+        {"nombre": "Frecuencia del núcleo", "tipo": "Número"}, // MHz
+        {"nombre": "Consumo energético", "tipo": "Número"}, // W
+      ],
+    ),
+    Plantilla(
+      nombre: "Placa base",
+      atributos: [
+        {"nombre": "Marca", "tipo": "Texto"},
+        {"nombre": "Modelo", "tipo": "Texto"},
+        {"nombre": "Socket", "tipo": "Texto"}, // LGA1700, AM5, etc.
+        {"nombre": "Chipset", "tipo": "Texto"},
+        {"nombre": "Memoria máxima", "tipo": "Número"}, // GB
+        {"nombre": "Ranuras RAM", "tipo": "Número"},
+        {"nombre": "Formato", "tipo": "Texto"}, // ATX, Micro-ATX
+      ],
+    ),
+  ];
 
   Map<String, dynamic>? _cabecera;
   List<Map<String, dynamic>> atributos = [];
@@ -33,6 +104,64 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
   void initState() {
     super.initState();
     _cargarDetalle();
+  }
+
+  Future<Plantilla?> mostrarModalPlantilla(BuildContext context) async {
+    final Map<String, IconData> iconosPlantilla = {
+      "Periféricos": LucideIcons.mouse,
+      "RAM": LucideIcons.cpu,
+      "Procesador": LucideIcons.cpu,
+      "Disco duro / SSD": LucideIcons.hardDrive,
+      "Tarjeta de video": LucideIcons.monitor,
+    };
+
+    return showModalBottomSheet<Plantilla>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.7,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      "Selecciona una plantilla",
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  ...plantillas.map((p) {
+                    return ListTile(
+                      leading: Icon(
+                        iconosPlantilla[p.nombre] ?? LucideIcons.box,
+                        color: Colors.blue,
+                      ),
+                      title: Text(p.nombre),
+                      onTap: () => Navigator.pop(context, p),
+                    );
+                  }).toList(),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      "Cancelar",
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _cargarDetalle() async {
@@ -122,12 +251,12 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
               },
               icon: const Icon(Icons.arrow_back, color: Colors.blueAccent),
             ),
-            title: const Text(
-              "Atributos",
+            title: Text(
+              _cabecera?["codigo_inventario"] ?? "Atributos",
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 20,
+                fontSize: 17,
               ),
             ),
             centerTitle: true,
@@ -135,6 +264,34 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
               IconButton(
                 onPressed: _addAtributo,
                 icon: const Icon(Icons.add, color: Colors.blueAccent),
+              ),
+              // ===== NUEVO ICONO PARA PLANTILLAS =====
+              IconButton(
+                onPressed: () async {
+                  final plantillaSeleccionada = await mostrarModalPlantilla(
+                    context,
+                  );
+                  if (plantillaSeleccionada != null) {
+                    // Agregar atributos de la plantilla a la lista
+                    setState(() {
+                      for (var attr in plantillaSeleccionada.atributos) {
+                        atributos.add({
+                          "controllerNombre": TextEditingController(
+                            text: attr["nombre"],
+                          ),
+                          "controllerValor": TextEditingController(),
+                          "tipo": attr["tipo"],
+                          "esNuevo": true,
+                        });
+                      }
+                    });
+                  }
+                },
+                icon: const Icon(
+                  Icons.grid_view,
+                  color: Colors.blueAccent,
+                ), // icono de plantilla
+                tooltip: "Seleccionar plantilla",
               ),
             ],
           ),
@@ -231,6 +388,9 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                           ),
                           elevation: 0,
                           margin: const EdgeInsets.symmetric(vertical: 4),
+                          color: attr["esNuevo"] == true
+                              ? const Color.fromARGB(255, 241, 249, 255)
+                              : Colors.white,
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(8, 5, 8, 5),
                             child: Column(

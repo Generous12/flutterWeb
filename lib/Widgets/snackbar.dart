@@ -17,7 +17,9 @@ class SnackBarUtil {
         behavior: SnackBarBehavior.floating,
         backgroundColor:
             colorFondo ??
-            (isDark ? const Color(0xFF2C2C2C) : const Color(0xFF444444)),
+            (isDark
+                ? const Color.fromARGB(255, 0, 0, 0)
+                : const Color.fromARGB(255, 0, 0, 0)),
         elevation: 6,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
