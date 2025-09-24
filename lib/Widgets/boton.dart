@@ -197,3 +197,82 @@ class _LoadingOverlayButtonHabilitarState
     );
   }
 }
+
+class FullWidthMenuTile extends StatelessWidget {
+  final String title;
+  final String? description;
+  final IconData? icon;
+  final VoidCallback? onTap;
+
+  const FullWidthMenuTile({
+    super.key,
+    required this.title,
+    this.description,
+    this.icon,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 5),
+        decoration: BoxDecoration(
+          color: theme.scaffoldBackgroundColor,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 35,
+              height: 35,
+              decoration: BoxDecoration(
+                color: theme.scaffoldBackgroundColor,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                icon ?? Icons.tune,
+                color: const Color.fromARGB(255, 0, 68, 255),
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      color: theme.textTheme.bodyLarge?.color,
+                    ),
+                  ),
+                  if (description != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2.0),
+                      child: Text(
+                        description!,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontSize: 12,
+                          color: theme.textTheme.bodySmall?.color?.withOpacity(
+                            0.6,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

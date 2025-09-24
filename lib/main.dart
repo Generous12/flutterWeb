@@ -31,9 +31,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Web Test',
       theme: ThemeData(
         fontFamily: 'FunnelDisplay',
-
         scaffoldBackgroundColor: Colors.white,
-
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
