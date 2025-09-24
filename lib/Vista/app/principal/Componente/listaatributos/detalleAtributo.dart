@@ -256,8 +256,6 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                         ),
                       ),
                     ),
-
-                    /// ---- Lista de atributos (tu lógica intacta) ----
                     Column(
                       children: atributos.asMap().entries.map((entry) {
                         final index = entry.key;
@@ -367,15 +365,62 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                   ],
                 ),
               ),
-
-        /// ---- Botón fijo al fondo ----
         bottomNavigationBar: Container(
           padding: const EdgeInsets.all(12),
 
           child: ElevatedButton(
-            onPressed: () {
-              // acción de guardar
+            onPressed: () async {
+              for (var attr in atributos) {
+                final nombre = attr["controllerNombre"].text.trim();
+                final valor = attr["controllerValor"].text.trim();
+                final tipo = attr["tipo"];
+
+                if (attr["esNuevo"] == true) {
+                  // 1️⃣ Insertar atributo
+                  final insertado = await _service.insertarAtributo(
+                    _cabecera!["id_tipo"], // viene de la cabecera
+                    nombre,
+                    tipo,
+                  );
+
+                  if (insertado["success"] == true) {
+                    final nuevoId = insertado["id_atributo"];
+
+                    // 2️⃣ Guardar valor
+                    await _service.guardarValor(
+                      _cabecera!["id_componente"],
+                      nuevoId,
+                      valor,
+                    );
+                  }
+                } else {
+                  // 3️⃣ Actualizar atributo
+                  await _service.actualizarAtributo(
+                    attr["id_atributo"],
+                    nombre,
+                    tipo,
+                  );
+
+                  // 4️⃣ Guardar valor
+                  await _service.guardarValor(
+                    _cabecera!["id_componente"],
+                    attr["id_atributo"],
+                    valor,
+                  );
+                }
+              }
+
+              // Feedback al usuario
+              if (mounted) {
+                SnackBarUtil.mostrarSnackBarPersonalizado(
+                  context: context,
+                  mensaje: "Cambios guardados correctamente",
+                  icono: Icons.check_circle,
+                  duracion: const Duration(seconds: 2),
+                );
+              }
             },
+
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color.fromARGB(255, 0, 0, 0),
               padding: const EdgeInsets.symmetric(vertical: 14),

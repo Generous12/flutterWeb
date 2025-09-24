@@ -112,4 +112,73 @@ class ComponenteServiceAtributo {
       throw Exception("Error de conexión: ${response.statusCode}");
     }
   }
+
+  Future<Map<String, dynamic>> insertarAtributo(
+    int idTipo,
+    String nombre,
+    String tipoDato,
+  ) async {
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "accion": "insertar_atributo",
+        "id_tipo": idTipo,
+        "nombre_atributo": nombre,
+        "tipo_dato": tipoDato,
+      }),
+    );
+    return jsonDecode(response.body);
+  }
+
+  // Actualizar atributo
+  Future<Map<String, dynamic>> actualizarAtributo(
+    int idAtributo,
+    String nombre,
+    String tipoDato,
+  ) async {
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "accion": "actualizar_atributo",
+        "id_atributo": idAtributo,
+        "nombre_atributo": nombre,
+        "tipo_dato": tipoDato,
+      }),
+    );
+    return jsonDecode(response.body);
+  }
+
+  // Guardar valor
+  Future<Map<String, dynamic>> guardarValor(
+    int idComponente,
+    int idAtributo,
+    String valor,
+  ) async {
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "accion": "guardar_valor",
+        "id_componente": idComponente,
+        "id_atributo": idAtributo,
+        "valor": valor,
+      }),
+    );
+    return jsonDecode(response.body);
+  }
+
+  // Eliminar atributo
+  Future<Map<String, dynamic>> eliminarAtributo(int idAtributo) async {
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "accion": "eliminar_atributo",
+        "id_atributo": idAtributo,
+      }),
+    );
+    return jsonDecode(response.body);
+  }
 }
