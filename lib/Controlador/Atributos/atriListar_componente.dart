@@ -51,7 +51,8 @@ class AtributoDetalle {
 class ComponenteServiceAtributo {
   final String url =
       "http://192.168.72.89/proyecto_web/backend/procedimientoAlm/atributosComponente/listarcomponenAtri.php";
-
+  final String urlCrud =
+      "http://192.168.72.89/proyecto_web/backend/procedimientoAlm/atributosComponente/crudAtri.php";
   Future<List<ComponenteAtributo>> listarComponentes({
     int limit = 10,
     int offset = 0,
@@ -113,13 +114,14 @@ class ComponenteServiceAtributo {
     }
   }
 
+  // 1️⃣ Insertar atributo
   Future<Map<String, dynamic>> insertarAtributo(
     int idTipo,
     String nombre,
     String tipoDato,
   ) async {
     final response = await http.post(
-      Uri.parse(url),
+      Uri.parse(urlCrud),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         "accion": "insertar_atributo",
@@ -128,17 +130,18 @@ class ComponenteServiceAtributo {
         "tipo_dato": tipoDato,
       }),
     );
+
     return jsonDecode(response.body);
   }
 
-  // Actualizar atributo
+  // 2️⃣ Actualizar atributo
   Future<Map<String, dynamic>> actualizarAtributo(
     int idAtributo,
     String nombre,
     String tipoDato,
   ) async {
     final response = await http.post(
-      Uri.parse(url),
+      Uri.parse(urlCrud),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         "accion": "actualizar_atributo",
@@ -147,17 +150,18 @@ class ComponenteServiceAtributo {
         "tipo_dato": tipoDato,
       }),
     );
+
     return jsonDecode(response.body);
   }
 
-  // Guardar valor
+  // 3️⃣ Guardar o actualizar valor
   Future<Map<String, dynamic>> guardarValor(
     int idComponente,
     int idAtributo,
     String valor,
   ) async {
     final response = await http.post(
-      Uri.parse(url),
+      Uri.parse(urlCrud),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         "accion": "guardar_valor",
@@ -166,19 +170,21 @@ class ComponenteServiceAtributo {
         "valor": valor,
       }),
     );
+
     return jsonDecode(response.body);
   }
 
-  // Eliminar atributo
+  // 4️⃣ Eliminar atributo
   Future<Map<String, dynamic>> eliminarAtributo(int idAtributo) async {
     final response = await http.post(
-      Uri.parse(url),
+      Uri.parse(urlCrud),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         "accion": "eliminar_atributo",
         "id_atributo": idAtributo,
       }),
     );
+
     return jsonDecode(response.body);
   }
 }
