@@ -164,7 +164,7 @@ class _ComponentesPageAtributoState extends State<ComponentesPageAtributo> {
                   return Card(
                     margin: const EdgeInsets.symmetric(
                       horizontal: 12,
-                      vertical: 2,
+                      vertical: 1,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

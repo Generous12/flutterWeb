@@ -158,7 +158,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                           ),
                           SizedBox(width: 8),
                           Text(
-                            "No hay ninguna subárea creada",
+                            "No hay ninguna subárea creada.\nEmpieza a crearla presionando\n+ Subárea",
                             style: TextStyle(
                               color: Colors.grey,
                               fontStyle: FontStyle.italic,
