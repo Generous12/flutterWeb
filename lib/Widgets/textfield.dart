@@ -118,7 +118,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             ),
             counterText: widget.showCounter ? null : "",
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(15),
               borderSide: BorderSide(
                 color: isDark
                     ? Colors.grey.shade700
