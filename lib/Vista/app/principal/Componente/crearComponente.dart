@@ -15,6 +15,7 @@ import 'package:proyecto_web/Vista/app/principal/inicio.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/cropper.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
+import 'package:proyecto_web/Widgets/dropdownbutton.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
@@ -694,6 +695,7 @@ class _ComponenteFormState extends State<ComponenteForm> {
   final TextEditingController cantidadController = TextEditingController();
   final List<File> _imagenesSeleccionadas = [];
   File? _imagenPrincipal;
+  String? _tipoSeleccionado;
 
   @override
   void didChangeDependencies() {
@@ -870,12 +872,34 @@ class _ComponenteFormState extends State<ComponenteForm> {
             hintText: "Se genera a partir del nombre del componente",
             label: "Generar codigo de inventario",
           ),
-
-          CustomTextField(
-            controller: cantidadController,
-            hintText: "Ingrese la cantidad",
-            label: "Cantidad",
-            isNumeric: true,
+          Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: CustomTextField(
+                  controller: cantidadController,
+                  hintText: "Ingrese la cantidad",
+                  label: "Cantidad",
+                  isNumeric: true,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 1,
+                child: CustomDropdownSelector(
+                  labelText: "Tipo",
+                  hintText: "Selecciona...",
+                  value: _tipoSeleccionado,
+                  items: const ["Componentes", "Periféricos"],
+                  onChanged: (value) {
+                    setState(() {
+                      _tipoSeleccionado = value;
+                    });
+                    debugPrint("Seleccionado: $_tipoSeleccionado");
+                  },
+                ),
+              ),
+            ],
           ),
 
           const SizedBox(height: 16),
