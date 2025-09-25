@@ -7,7 +7,7 @@ header("Content-Type: application/json; charset=utf-8");
 $host = "localhost";   
 $user = "root";          
 $password = "";         
-$database = "inventarioapp";  
+$database = "inventariodb";  
 $port = 3306;             
 
 $conn = new mysqli($host, $user, $password, $database, $port);
