@@ -725,7 +725,9 @@ class _ComponenteFormState extends State<ComponenteForm> {
 
   void _validate() {
     widget.onValidChange(
-      codigoController.text.isNotEmpty && cantidadController.text.isNotEmpty,
+      codigoController.text.isNotEmpty &&
+          cantidadController.text.isNotEmpty &&
+          _imagenesSeleccionadas.isNotEmpty,
     );
   }
 
@@ -798,6 +800,7 @@ class _ComponenteFormState extends State<ComponenteForm> {
             int.tryParse(cantidadController.text.trim()) ?? 0,
             imagenes: _imagenesSeleccionadas,
           );
+          _validate();
         });
       }
     }
