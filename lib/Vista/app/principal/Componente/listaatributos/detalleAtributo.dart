@@ -401,7 +401,6 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                                   hintText: "Nombre del atributo",
                                   label: "Atributo",
                                 ),
-                                const SizedBox(height: 8),
                                 CustomTextField(
                                   controller: attr["controllerValor"],
                                   hintText: "Valor del atributo",
