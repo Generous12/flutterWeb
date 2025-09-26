@@ -27,6 +27,7 @@ class Componente {
   final String codigoInventario;
   final int cantidad;
   final List<File>? imagenes;
+  final String tipoNombre;
 
   Componente({
     this.id,
@@ -34,5 +35,6 @@ class Componente {
     required this.codigoInventario,
     required this.cantidad,
     this.imagenes,
+    required this.tipoNombre,
   });
 }

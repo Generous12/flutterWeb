@@ -72,6 +72,7 @@ class ComponentService extends ChangeNotifier {
     String codigo,
     int cantidad, {
     List<File>? imagenes,
+    String? tipoNombre,
     bool reemplazar = false,
   }) {
     if (componenteCreado != null && !reemplazar) return;
@@ -83,6 +84,7 @@ class ComponentService extends ChangeNotifier {
         codigoInventario: codigo,
         cantidad: cantidad,
         imagenes: imagenes ?? componenteCreado!.imagenes,
+        tipoNombre: tipoNombre ?? componenteCreado!.tipoNombre,
       );
     } else {
       componenteCreado = Componente(
@@ -90,6 +92,7 @@ class ComponentService extends ChangeNotifier {
         codigoInventario: codigo,
         cantidad: cantidad,
         imagenes: imagenes ?? [],
+        tipoNombre: tipoNombre ?? tipoSeleccionado!.nombre,
       );
     }
 
@@ -169,6 +172,7 @@ class ComponentService extends ChangeNotifier {
       "cantidad": componenteCreado!.cantidad,
       "atributos": atributosJson,
       "imagenes": imagenesBase64,
+      "tipo_nombre": componenteCreado!.tipoNombre,
     });
 
     print("🚀 Body enviado al backend: $body");
@@ -199,6 +203,7 @@ class ComponentService extends ChangeNotifier {
           idTipo: tipoSeleccionado!.id!,
           codigoInventario: componenteCreado!.codigoInventario,
           cantidad: componenteCreado!.cantidad,
+          tipoNombre: componenteCreado!.tipoNombre,
           imagenes: componenteCreado!.imagenes,
         );
 

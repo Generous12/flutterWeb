@@ -33,7 +33,7 @@ $nombre_tipo = $data['nombre_tipo'];
 $atributos = $data['atributos'];
 $codigo_inventario = $data['codigo_inventario'];
 $cantidad = intval($data['cantidad']);
-
+$tipo_nombre = $data['tipo_nombre'];
 try {
     $conn->begin_transaction();
     error_log("➡️ Iniciando transacción para crear componente");
@@ -77,16 +77,15 @@ try {
 
 
     // 3️ Crear Componente
-    $stmt = $conn->prepare("CALL sp_crearComponenteInCan(?, ?, ?, ?, @id_componente)");
+    $stmt = $conn->prepare("CALL sp_crearComponenteInCan(?,?,?,?,?, @id_componente)");
     if (!$stmt) { error_log("❌ Error prepare Componente: ".$conn->error); }
 
     // Tipos: i = INT, s = STRING
     // id_tipo -> i, codigo_inventario -> s, cantidad -> i, imagenes_json -> s
-    $stmt->bind_param("isis", $id_tipo, $codigo_inventario, $cantidad, $imagenes_json);
+    $stmt->bind_param("isiss", $id_tipo, $codigo_inventario, $cantidad, $imagenes_json, $tipo_nombre);
 
     $stmt->execute();
     $stmt->close();
-
     $result = $conn->query("SELECT @id_componente as id_componente");
     $id_componente = $result->fetch_assoc()['id_componente'];
 

@@ -818,6 +818,7 @@ class _ComponenteFormState extends State<ComponenteForm> {
         componenteOriginal == null ||
         componenteOriginal.codigoInventario != codigo ||
         componenteOriginal.cantidad != cantidad ||
+        componenteOriginal.tipoNombre != _tipoSeleccionado ||
         !listEquals(componenteOriginal.imagenes ?? [], _imagenesSeleccionadas);
 
     if (cambios) {
@@ -827,6 +828,7 @@ class _ComponenteFormState extends State<ComponenteForm> {
         imagenes: _imagenesSeleccionadas.isNotEmpty
             ? _imagenesSeleccionadas
             : null,
+        tipoNombre: _tipoSeleccionado,
         reemplazar: true,
       );
     }
@@ -866,7 +868,6 @@ class _ComponenteFormState extends State<ComponenteForm> {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-
           CustomTextField(
             controller: codigoController,
             hintText: "Se genera a partir del nombre del componente",
@@ -1139,8 +1140,6 @@ class VisualizarComponenteScreen extends StatelessWidget {
                       subtitle: provider.tipoSeleccionado!.nombre,
                       color: Colors.blue,
                     ),
-                    const SizedBox(height: 16),
-
                     if (provider.componenteCreado != null)
                       _InfoCard(
                         icon: LucideIcons.layers,
@@ -1150,8 +1149,13 @@ class VisualizarComponenteScreen extends StatelessWidget {
                             "Cantidad: ${provider.componenteCreado!.cantidad}",
                         color: Colors.black87,
                       ),
-                    const SizedBox(height: 24),
-
+                    if (provider.componenteCreado != null)
+                      _InfoCard(
+                        icon: LucideIcons.package,
+                        title: "Tipo Guardado",
+                        subtitle: provider.componenteCreado!.tipoNombre,
+                        color: Colors.blueGrey,
+                      ),
                     const Text(
                       "Atributos",
                       style: TextStyle(
