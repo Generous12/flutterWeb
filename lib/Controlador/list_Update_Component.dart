@@ -7,6 +7,8 @@ class ComponenteUpdate {
   final int idTipo;
   final String codigoInventario;
   final String nombreTipo;
+  final String tipoNombre;
+
   final int cantidad;
   final List<String?> imagenesBase64;
   ComponenteUpdate({
@@ -14,6 +16,7 @@ class ComponenteUpdate {
     required this.idTipo,
     required this.codigoInventario,
     required this.nombreTipo,
+    required this.tipoNombre,
     required this.cantidad,
     required this.imagenesBase64,
   });
@@ -41,6 +44,7 @@ class ComponenteUpdate {
       idTipo: json["id_tipo"],
       codigoInventario: json['codigo_inventario'],
       nombreTipo: json['nombre_tipo'],
+      tipoNombre: json['tipo_nombre'] ?? '',
       cantidad: int.tryParse(json['cantidad'].toString()) ?? 0,
       imagenesBase64: imagenes,
     );
@@ -75,15 +79,16 @@ class ComponenteUpdateService {
   final String url =
       "http://192.168.18.23/proyecto_web/backend/procedimientoAlm/list_update_component.php";
 
-  /// 192.168.236.89
   Future<List<ComponenteUpdate>> listar({
     String busqueda = '',
+    String tipo = 'General',
     int? offset,
     int? limit,
   }) async {
     final Map<String, dynamic> body = {
       "action": "listar",
       "busqueda": busqueda,
+      "tipo": tipo,
     };
 
     if (offset != null && limit != null) {
@@ -137,6 +142,7 @@ class ComponenteUpdateService {
     List<String?>? imagenesActuales,
     String? nuevoCodigo,
     String? nuevoNombreTipo,
+    String? nuevoTipoNombre,
   }) async {
     final List<String?> imagenesFinal = List.generate(4, (i) {
       if (i < imagenesNuevas.length && imagenesNuevas[i] != null) {
@@ -153,6 +159,7 @@ class ComponenteUpdateService {
     print("Cantidad: $cantidad");
     print("Nuevo código: $nuevoCodigo");
     print("Nuevo nombre tipo: $nuevoNombreTipo");
+    print("Nuevo tipo nombre: $nuevoTipoNombre");
 
     for (int i = 0; i < imagenesFinal.length; i++) {
       final img = imagenesFinal[i];
@@ -171,7 +178,7 @@ class ComponenteUpdateService {
       cambios["imagenes"] = imagenesFinal;
     if (nuevoCodigo != null) cambios["nuevo_codigo"] = nuevoCodigo;
     if (nuevoNombreTipo != null) cambios["nuevo_nombre_tipo"] = nuevoNombreTipo;
-
+    if (nuevoTipoNombre != null) cambios["nuevo_tipo_nombre"] = nuevoTipoNombre;
     try {
       final response = await http.post(
         Uri.parse(url),

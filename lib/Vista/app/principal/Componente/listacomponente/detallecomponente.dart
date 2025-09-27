@@ -46,7 +46,9 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
     stockController = TextEditingController(
       text: widget.componente.cantidad.toString(),
     );
-
+    _tipoSeleccionado = widget.componente.tipoNombre.isNotEmpty
+        ? widget.componente.tipoNombre
+        : null;
     nombreController.addListener(() {
       final nombre = nombreController.text;
       if (nombre.isNotEmpty) {
@@ -178,6 +180,13 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
       nuevoNombreTipo = nombreController.text;
       huboCambio = true;
     }
+    String? nuevoTipoNombre;
+    if (_tipoSeleccionado != null &&
+        _tipoSeleccionado!.isNotEmpty &&
+        _tipoSeleccionado != widget.componente.tipoNombre) {
+      nuevoTipoNombre = _tipoSeleccionado;
+      huboCambio = true;
+    }
 
     List<String?> imagenesFinal = List.generate(4, (i) {
       final nuevo = _imagenesNuevas[i];
@@ -218,6 +227,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
         imagenesNuevas: imagenesFinal,
         nuevoCodigo: nuevoCodigo,
         nuevoNombreTipo: nuevoNombreTipo,
+        nuevoTipoNombre: nuevoTipoNombre,
       );
 
       print("✅ Respuesta del backend: $success");
@@ -474,7 +484,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                         isNumeric: true,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 5),
                     Expanded(
                       flex: 1,
                       child: CustomDropdownSelector(

@@ -26,7 +26,7 @@ class _ComponentesListState extends State<ComponentesList> {
   String busqueda = '';
   int offset = 0;
   final int limit = 20;
-
+  String filtroTipo = 'General';
   @override
   void initState() {
     super.initState();
@@ -60,6 +60,7 @@ class _ComponentesListState extends State<ComponentesList> {
     try {
       final nuevos = await service.listar(
         busqueda: busqueda,
+        tipo: filtroTipo,
         offset: offset,
         limit: limit,
       );
@@ -104,6 +105,7 @@ class _ComponentesListState extends State<ComponentesList> {
     try {
       final nuevos = await service.listar(
         busqueda: busqueda,
+        tipo: filtroTipo,
         offset: offset,
         limit: limit,
       );
@@ -192,6 +194,39 @@ class _ComponentesListState extends State<ComponentesList> {
                             )
                           : const Icon(Iconsax.search_normal),
                     ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 40,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      const SizedBox(width: 4),
+                      ...["General", "Periféricos", "Componentes"].map((tipo) {
+                        final bool isSelected = filtroTipo == tipo;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: ChoiceChip(
+                            label: Text(tipo),
+                            selected: isSelected,
+                            selectedColor: Colors.blue,
+                            backgroundColor: Colors.white,
+                            labelStyle: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            onSelected: (_) {
+                              setState(() {
+                                filtroTipo = tipo;
+                                fetchComponentes(reset: true);
+                              });
+                            },
+                          ),
+                        );
+                      }).toList(),
+                      const SizedBox(width: 4),
+                    ],
                   ),
                 ),
               ],

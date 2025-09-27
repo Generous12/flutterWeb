@@ -36,10 +36,7 @@ class CustomDropdownSelector extends StatelessWidget {
         ),
         filled: true,
         fillColor: isDarkMode ? Colors.grey[900] : Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 10,
-          vertical: 16,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 16),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
