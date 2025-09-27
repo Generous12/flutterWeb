@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:proyecto_web/Controlador/list_Update_Component.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
+import 'package:proyecto_web/Widgets/dropdownbutton.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
 
 class ComponenteDetail extends StatefulWidget {
@@ -27,6 +28,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
   late TextEditingController codigoController;
   late TextEditingController stockController;
   bool isLoading = false;
+  String? _tipoSeleccionado;
 
   List<String?> _imagenesNuevas = List.filled(4, null);
   @override
@@ -461,11 +463,34 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                 ),
 
                 const SizedBox(height: 10),
-                CustomTextField(
-                  controller: stockController,
-                  label: "Stock",
-                  hintText: "Cantidad",
-                  isNumeric: true,
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: CustomTextField(
+                        controller: stockController,
+                        hintText: "Ingrese la cantidad",
+                        label: "Cantidad",
+                        isNumeric: true,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 1,
+                      child: CustomDropdownSelector(
+                        labelText: "Tipo",
+                        hintText: "Selecciona...",
+                        value: _tipoSeleccionado,
+                        items: const ["Componentes", "Periféricos"],
+                        onChanged: (value) {
+                          setState(() {
+                            _tipoSeleccionado = value;
+                          });
+                          debugPrint("Seleccionado: $_tipoSeleccionado");
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
