@@ -49,12 +49,10 @@ class _ComponentesListState extends State<ComponentesList> {
     }
 
     if (allLoaded) return;
-    if (!mounted) return;
+
     setState(() {
-      if (offset == 0)
-        loading = true;
-      else
-        loadingMore = true;
+      loading = offset == 0;
+      loadingMore = offset != 0;
     });
 
     try {
@@ -65,13 +63,19 @@ class _ComponentesListState extends State<ComponentesList> {
         limit: limit,
       );
 
-      if (nuevos.length < limit) allLoaded = true;
       if (!mounted) return;
+
       setState(() {
-        componentes.addAll(nuevos);
-        offset += nuevos.length; //offset += limit;
+        if (reset) {
+          componentes = nuevos;
+        } else {
+          componentes.addAll(nuevos);
+        }
+        offset += nuevos.length;
+        if (nuevos.length < limit) allLoaded = true;
       });
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(e.toString())));
@@ -216,11 +220,17 @@ class _ComponentesListState extends State<ComponentesList> {
                               color: isSelected ? Colors.white : Colors.black,
                               fontWeight: FontWeight.bold,
                             ),
-                            onSelected: (_) {
-                              setState(() {
+                            onSelected: (_) async {
+                              if (filtroTipo != tipo) {
                                 filtroTipo = tipo;
-                                fetchComponentes(reset: true);
-                              });
+                                offset = 0;
+                                allLoaded = false;
+                                setState(() {
+                                  componentes.clear();
+                                  loading = true;
+                                });
+                                await fetchComponentes(reset: true);
+                              }
                             },
                           ),
                         );
