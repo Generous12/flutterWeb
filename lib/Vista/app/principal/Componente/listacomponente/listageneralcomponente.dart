@@ -5,6 +5,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:proyecto_web/Controlador/list_Update_Component.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/listacomponente/detallecomponente.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
+import 'package:proyecto_web/Widgets/selectores.dart';
 
 class ComponentesList extends StatefulWidget {
   const ComponentesList({Key? key}) : super(key: key);
@@ -136,46 +137,12 @@ class _ComponentesListState extends State<ComponentesList> {
       body: Column(
         children: [
           Container(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF000000), Color.fromARGB(255, 0, 0, 0)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(0),
-              ),
-            ),
             padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
             child: Column(
               children: [
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(
-                        Iconsax.arrow_left,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    const SizedBox(width: 10),
-                    const Expanded(
-                      child: Text(
-                        'Componentes',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color.fromARGB(255, 238, 238, 238),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -185,6 +152,13 @@ class _ComponentesListState extends State<ComponentesList> {
                     decoration: InputDecoration(
                       hintText: 'Buscar componente',
                       border: InputBorder.none,
+                      prefixIcon: IconButton(
+                        icon: const Icon(
+                          Iconsax.arrow_left,
+                          color: Colors.black,
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                      ),
                       suffixIcon: _searchController.text.isNotEmpty
                           ? IconButton(
                               icon: const Icon(
@@ -196,48 +170,30 @@ class _ComponentesListState extends State<ComponentesList> {
                                 _onSearchChanged('');
                               },
                             )
-                          : const Icon(Iconsax.search_normal),
+                          : const Icon(
+                              Iconsax.search_normal,
+                              color: Colors.black,
+                            ),
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 10),
-                SizedBox(
-                  height: 40,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      const SizedBox(width: 4),
-                      ...["General", "Periféricos", "Componentes"].map((tipo) {
-                        final bool isSelected = filtroTipo == tipo;
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: ChoiceChip(
-                            label: Text(tipo),
-                            selected: isSelected,
-                            selectedColor: Colors.blue,
-                            backgroundColor: Colors.white,
-                            labelStyle: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            onSelected: (_) async {
-                              if (filtroTipo != tipo) {
-                                filtroTipo = tipo;
-                                offset = 0;
-                                allLoaded = false;
-                                setState(() {
-                                  componentes.clear();
-                                  loading = true;
-                                });
-                                await fetchComponentes(reset: true);
-                              }
-                            },
-                          ),
-                        );
-                      }).toList(),
-                      const SizedBox(width: 4),
-                    ],
-                  ),
+                CustomChoiceChips(
+                  opciones: ["General", "Periféricos", "Componentes"],
+                  selected: filtroTipo,
+                  onSelected: (tipo) async {
+                    if (filtroTipo != tipo) {
+                      filtroTipo = tipo;
+                      offset = 0;
+                      allLoaded = false;
+                      setState(() {
+                        componentes.clear();
+                        loading = true;
+                      });
+                      await fetchComponentes(reset: true);
+                    }
+                  },
                 ),
               ],
             ),

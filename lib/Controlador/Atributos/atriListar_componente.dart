@@ -24,7 +24,6 @@ class ComponenteAtributo {
   }
 }
 
-/// Modelo para atributos de un componente
 class AtributoDetalle {
   final int idAtributo;
   final String nombreAtributo;
@@ -133,7 +132,6 @@ class ComponenteServiceAtributo {
 
     final data = jsonDecode(response.body);
 
-    // Validar que venga id_atributo
     if (data["success"] == true && data["id_atributo"] != null) {
       return data;
     } else {
