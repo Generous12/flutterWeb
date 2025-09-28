@@ -712,7 +712,7 @@ class _ComponenteFormState extends State<ComponenteForm> {
       _imagenPrincipal = _imagenesSeleccionadas.isNotEmpty
           ? _imagenesSeleccionadas.first
           : null;
-
+      _tipoSeleccionado = provider.componenteCreado!.tipoNombre;
       _validate();
       setState(() {});
     } else if (provider.tipoSeleccionado != null &&
@@ -729,7 +729,8 @@ class _ComponenteFormState extends State<ComponenteForm> {
     widget.onValidChange(
       codigoController.text.isNotEmpty &&
           cantidadController.text.isNotEmpty &&
-          _imagenesSeleccionadas.isNotEmpty,
+          _imagenesSeleccionadas.isNotEmpty &&
+          _tipoSeleccionado != null,
     );
   }
 
@@ -786,7 +787,6 @@ class _ComponenteFormState extends State<ComponenteForm> {
           ),
         ],
       );
-
       if (croppedFile != null) {
         final provider = Provider.of<ComponentService>(context, listen: false);
         final newImage = File(croppedFile.path);
@@ -829,6 +829,7 @@ class _ComponenteFormState extends State<ComponenteForm> {
             ? _imagenesSeleccionadas
             : null,
         tipoNombre: _tipoSeleccionado,
+
         reemplazar: true,
       );
     }
@@ -896,15 +897,26 @@ class _ComponenteFormState extends State<ComponenteForm> {
                     setState(() {
                       _tipoSeleccionado = value;
                     });
+
+                    final provider = Provider.of<ComponentService>(
+                      context,
+                      listen: false,
+                    );
+                    provider.crearComponente(
+                      codigoController.text.trim(),
+                      int.tryParse(cantidadController.text.trim()) ?? 0,
+                      imagenes: _imagenesSeleccionadas,
+                      tipoNombre: _tipoSeleccionado,
+                      reemplazar: true,
+                    );
+
                     debugPrint("Seleccionado: $_tipoSeleccionado");
                   },
                 ),
               ),
             ],
           ),
-
           const SizedBox(height: 16),
-
           MasonryGridView.count(
             crossAxisCount: 3,
             mainAxisSpacing: 8,
