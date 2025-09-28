@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:proyecto_web/Controlador/eliminar_componente.dart';
 import 'package:proyecto_web/Controlador/list_Update_Component.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/listacomponente/detallecomponente.dart';
+import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
-import 'package:proyecto_web/Widgets/selectores.dart';
 
 class ComponentesList extends StatefulWidget {
   const ComponentesList({Key? key}) : super(key: key);
@@ -23,7 +25,8 @@ class _ComponentesListState extends State<ComponentesList> {
   bool loading = true;
   bool loadingMore = false;
   bool allLoaded = false;
-
+  Set<int> seleccionados = {};
+  bool modoSeleccion = false;
   String busqueda = '';
   int offset = 0;
   final int limit = 20;
@@ -146,54 +149,190 @@ class _ComponentesListState extends State<ComponentesList> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: _onSearchChanged,
-                    decoration: InputDecoration(
-                      hintText: 'Buscar componente',
-                      border: InputBorder.none,
-                      prefixIcon: IconButton(
-                        icon: const Icon(
-                          Iconsax.arrow_left,
+                  child: Row(
+                    children: [
+                      if (modoSeleccion)
+                        IconButton(
+                          icon: const Icon(
+                            Iconsax.close_circle,
+                            color: Colors.black,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              seleccionados.clear();
+                              modoSeleccion = false;
+                            });
+                          },
+                        ),
+                      Expanded(
+                        child: modoSeleccion
+                            ? Text(
+                                "Seleccionados ${seleccionados.length}",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            : TextField(
+                                controller: _searchController,
+                                onChanged: _onSearchChanged,
+                                decoration: InputDecoration(
+                                  hintText: 'Buscar componente',
+                                  border: InputBorder.none,
+                                  prefixIcon: IconButton(
+                                    icon: const Icon(
+                                      Iconsax.arrow_left,
+                                      color: Colors.black,
+                                    ),
+                                    onPressed: () => Navigator.pop(context),
+                                  ),
+                                  suffixIcon: _searchController.text.isNotEmpty
+                                      ? IconButton(
+                                          icon: const Icon(
+                                            LucideIcons.eraser,
+                                            color: Colors.black,
+                                          ),
+                                          onPressed: () {
+                                            _searchController.clear();
+                                            _onSearchChanged('');
+                                          },
+                                        )
+                                      : const Icon(
+                                          Iconsax.search_normal,
+                                          color: Colors.black,
+                                        ),
+                                ),
+                              ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          modoSeleccion
+                              ? Iconsax.trash
+                              : filtroTipo == "General"
+                              ? Iconsax.filter
+                              : Iconsax.close_circle,
                           color: Colors.black,
                         ),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      suffixIcon: _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(
-                                Icons.close,
-                                color: Colors.black,
-                              ),
-                              onPressed: () {
-                                _searchController.clear();
-                                _onSearchChanged('');
-                              },
-                            )
-                          : const Icon(
-                              Iconsax.search_normal,
-                              color: Colors.black,
-                            ),
-                    ),
-                  ),
-                ),
+                        onPressed: () async {
+                          if (modoSeleccion) {
+                            if (seleccionados.isEmpty) return;
 
-                const SizedBox(height: 10),
-                CustomChoiceChips(
-                  opciones: ["General", "Periféricos", "Componentes"],
-                  selected: filtroTipo,
-                  onSelected: (tipo) async {
-                    if (filtroTipo != tipo) {
-                      filtroTipo = tipo;
-                      offset = 0;
-                      allLoaded = false;
-                      setState(() {
-                        componentes.clear();
-                        loading = true;
-                      });
-                      await fetchComponentes(reset: true);
-                    }
-                  },
+                            final confirmar = await showCustomDialog(
+                              context: context,
+                              title: "Confirmar eliminación",
+                              message:
+                                  "¿Deseas eliminar los ${seleccionados.length} componentes seleccionados?",
+                              confirmButtonText: "Sí",
+                              cancelButtonText: "No",
+                            );
+
+                            if (confirmar == true) {
+                              final service = EliminarComponenteService();
+                              final idsTipo = seleccionados
+                                  .map(
+                                    (id) => componentes
+                                        .firstWhere((c) => c.id == id)
+                                        .idTipo,
+                                  )
+                                  .toSet()
+                                  .toList();
+
+                              final result = await service.eliminarTipos(
+                                idsTipo,
+                              );
+
+                              await showCustomDialog(
+                                context: context,
+                                title: result['success'] ? "Éxito" : "Error",
+                                message: result['message'],
+                                confirmButtonText: "Cerrar",
+                              );
+
+                              if (result['success']) {
+                                setState(() {
+                                  seleccionados.clear();
+                                  modoSeleccion = false;
+                                  componentes.clear();
+                                  loading = true;
+                                });
+                                await fetchComponentes(reset: true);
+                              }
+                            }
+                          } else {
+                            if (filtroTipo != "General") {
+                              setState(() {
+                                filtroTipo = "General";
+                                offset = 0;
+                                allLoaded = false;
+                                componentes.clear();
+                                loading = true;
+                              });
+                              await fetchComponentes(reset: true);
+                            } else {
+                              showModalBottomSheet(
+                                context: context,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(20),
+                                  ),
+                                ),
+                                builder: (BuildContext context) {
+                                  return SafeArea(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          ListTile(
+                                            leading: const Icon(Iconsax.mouse),
+                                            title: const Text("Periféricos"),
+                                            onTap: () async {
+                                              Navigator.pop(context);
+                                              if (filtroTipo != "Periféricos") {
+                                                setState(() {
+                                                  filtroTipo = "Periféricos";
+                                                  offset = 0;
+                                                  allLoaded = false;
+                                                  componentes.clear();
+                                                  loading = true;
+                                                });
+                                                await fetchComponentes(
+                                                  reset: true,
+                                                );
+                                              }
+                                            },
+                                          ),
+                                          ListTile(
+                                            leading: const Icon(Iconsax.cpu),
+                                            title: const Text("Componentes"),
+                                            onTap: () async {
+                                              Navigator.pop(context);
+                                              if (filtroTipo != "Componentes") {
+                                                setState(() {
+                                                  filtroTipo = "Componentes";
+                                                  offset = 0;
+                                                  allLoaded = false;
+                                                  componentes.clear();
+                                                  loading = true;
+                                                });
+                                                await fetchComponentes(
+                                                  reset: true,
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            }
+                          }
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -207,7 +346,7 @@ class _ComponentesListState extends State<ComponentesList> {
                     onRefresh: () => fetchComponentes(reset: true),
                     child: ListView.builder(
                       controller: _scrollController,
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(0),
                       itemCount: componentes.length + (loadingMore ? 1 : 0),
                       itemBuilder: (context, index) {
                         if (index < componentes.length) {
@@ -241,24 +380,44 @@ class _ComponentesListState extends State<ComponentesList> {
                           }
                           return Card(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
+                              borderRadius: BorderRadius.circular(0),
                             ),
-                            elevation: 3,
-                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            elevation: 0,
+                            margin: const EdgeInsets.symmetric(vertical: 0),
+                            color: seleccionados.contains(c.id)
+                                ? Colors.blue.withOpacity(0.2)
+                                : Colors.white,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(15),
                               onTap: () {
-                                navegarConSlideDerecha(
-                                  context,
-                                  ComponenteDetail(componente: c),
-                                  onVolver: () {
-                                    setState(() {
-                                      fetchComponentes(reset: true);
-                                    });
-                                  },
-                                );
+                                if (modoSeleccion) {
+                                  setState(() {
+                                    if (seleccionados.contains(c.id)) {
+                                      seleccionados.remove(c.id);
+                                      if (seleccionados.isEmpty)
+                                        modoSeleccion = false;
+                                    } else {
+                                      seleccionados.add(c.id);
+                                    }
+                                  });
+                                } else {
+                                  navegarConSlideDerecha(
+                                    context,
+                                    ComponenteDetail(componente: c),
+                                    onVolver: () {
+                                      setState(() {
+                                        fetchComponentes(reset: true);
+                                      });
+                                    },
+                                  );
+                                }
                               },
-
+                              onLongPress: () {
+                                setState(() {
+                                  modoSeleccion = true;
+                                  seleccionados.add(c.id);
+                                });
+                              },
                               child: Padding(
                                 padding: const EdgeInsets.all(12),
                                 child: Row(
