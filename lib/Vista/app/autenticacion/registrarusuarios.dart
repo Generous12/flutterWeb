@@ -36,11 +36,18 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
   }
 
   Future<void> _registrarUsuario() async {
+    if (_rolSeleccionado == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Por favor selecciona un rol")),
+      );
+      return;
+    }
+
     final result = await _api.registrarUsuario(
       idUsuario: idController.text,
       nombre: nombreController.text,
       password: passwordController.text,
-      rol: "usuario",
+      rol: _rolSeleccionado!,
     );
 
     if (result["success"]) {

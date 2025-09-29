@@ -49,9 +49,9 @@ class AtributoDetalle {
 
 class ComponenteServiceAtributo {
   final String url =
-      "http://192.168.8.14/proyecto_web/backend/procedimientoAlm/atributosComponente/listarcomponenAtri.php";
+      "http://192.168.18.23/proyecto_web/backend/procedimientoAlm/atributosComponente/listarcomponenAtri.php";
   final String urlCrud =
-      "http://192.168.8.14/proyecto_web/backend/procedimientoAlm/atributosComponente/crudAtri.php";
+      "http://192.168.18.23/proyecto_web/backend/procedimientoAlm/atributosComponente/crudAtri.php";
   Future<List<ComponenteAtributo>> listarComponentes({
     int limit = 10,
     int offset = 0,

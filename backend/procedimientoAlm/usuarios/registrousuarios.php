@@ -19,7 +19,7 @@ $accion = isset($data["accion"]) ? $data["accion"] : "";
 if ($accion === "registrarUsuario") {
     $id_usuario = $data["id_usuario"] ?? null;
     $nombre     = $data["nombre"] ?? null;
-    $password   = $data["password"] ?? null;
+    $password   = $data["password_hash"] ?? null;
     $rol        = $data["rol"] ?? null;
 
     if ($id_usuario && $nombre && $password && $rol) {
