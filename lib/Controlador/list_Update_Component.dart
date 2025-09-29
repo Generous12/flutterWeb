@@ -77,7 +77,7 @@ class ComponenteUpdate {
 
 class ComponenteUpdateService {
   final String url =
-      "http://192.168.137.1/proyecto_web/backend/procedimientoAlm/list_update_component.php";
+      "http://192.168.8.14/proyecto_web/backend/procedimientoAlm/list_update_component.php";
 
   Future<List<ComponenteUpdate>> listar({
     String busqueda = '',

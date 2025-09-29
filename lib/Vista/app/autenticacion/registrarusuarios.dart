@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proyecto_web/Controlador/Usuarios/usuariosservice.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/dropdownbutton.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
@@ -14,8 +15,44 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
   final TextEditingController idController = TextEditingController();
   final TextEditingController nombreController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
+  final _api = ApiService();
   String? _rolSeleccionado;
+  @override
+  void initState() {
+    super.initState();
+
+    nombreController.addListener(() {
+      if (nombreController.text.isNotEmpty) {
+        final String codigoGenerado = _generarCodigo(nombreController.text);
+        setState(() {
+          idController.text = codigoGenerado;
+        });
+      } else {
+        setState(() {
+          idController.text = "";
+        });
+      }
+    });
+  }
+
+  Future<void> _registrarUsuario() async {
+    final result = await _api.registrarUsuario(
+      idUsuario: idController.text,
+      nombre: nombreController.text,
+      password: passwordController.text,
+      rol: "usuario",
+    );
+
+    if (result["success"]) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result["message"])));
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: ${result["message"]}")));
+    }
+  }
 
   @override
   void dispose() {
@@ -23,6 +60,14 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
     nombreController.dispose();
     passwordController.dispose();
     super.dispose();
+  }
+
+  String _generarCodigo(String nombre) {
+    final iniciales = nombre.isNotEmpty
+        ? nombre.trim().split(" ").map((e) => e[0].toUpperCase()).join()
+        : "USR";
+    final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+    return "$iniciales-$timestamp";
   }
 
   @override
@@ -37,6 +82,7 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
               controller: idController,
               hintText: "Se genera automáticamente",
               label: "ID Usuario",
+              enabled: false,
             ),
             const SizedBox(height: 16),
             CustomTextField(
@@ -69,7 +115,9 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
               icon: Icons.person_add,
               backgroundColor: const Color.fromARGB(255, 0, 0, 0),
               textColor: Colors.white,
-              onPressedLogic: () async {},
+              onPressedLogic: () async {
+                _registrarUsuario();
+              },
             ),
           ],
         ),
