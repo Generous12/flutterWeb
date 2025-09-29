@@ -1,148 +1,98 @@
 import 'package:flutter/material.dart';
-import 'package:proyecto_web/Vista/app/principal/inicio.dart';
-import 'package:proyecto_web/Widgets/navegator.dart';
+import 'package:iconsax/iconsax.dart';
+import 'package:proyecto_web/Widgets/boton.dart';
+import 'package:proyecto_web/Widgets/textfield.dart';
 
-class LoginScreenApp extends StatefulWidget {
-  const LoginScreenApp({super.key});
-
+class LoginScreen extends StatefulWidget {
   @override
-  State<LoginScreenApp> createState() => _LoginScreenAppState();
+  _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _LoginScreenAppState extends State<LoginScreenApp> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool isLoading = false;
 
-  void _login() {
-    if (_formKey.currentState!.validate()) {
-      final email = _emailController.text;
-      final password = _passwordController.text;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Email: $email\nPassword: $password')),
-      );
-      navegarConSlideDerecha(context, InicioScreen());
-
-      _emailController.clear();
-      _passwordController.clear();
-    }
+  @override
+  void initState() {
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blueAccent, Colors.purpleAccent],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Container(
-              padding: const EdgeInsets.all(24.0),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      behavior: HitTestBehavior.translucent,
+      child: Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        body: Stack(
+          children: [
+            SafeArea(
+              child: SingleChildScrollView(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(30.0),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20.0),
+                        Image.asset(
+                          'assets/images/logo.png',
+                          height: 230.0,
+                          fit: BoxFit.fitWidth,
+                        ),
+
+                        CustomTextField(
+                          controller: emailController,
+                          hintText: "Ingresar correo electrónico",
+                          prefixIcon: Iconsax.sms,
+                          label: "Correo electronico",
+                        ),
+                        const SizedBox(height: 20.0),
+                        CustomTextField(
+                          controller: passwordController,
+                          label: "Contraseña",
+                          prefixIcon: Iconsax.lock,
+                          obscureText: true,
+                        ),
+                        const SizedBox(height: 20.0),
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            LoadingOverlayButton(
+                              text: 'Iniciar Sesión',
+                              onPressedLogic: () async {},
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20.0),
+                        InkWell(
+                          onTap: () {},
+                          child: Text(
+                            '¿Deseas pedir ayuda? Contactanos',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontSize: 14,
+                              color: theme.textTheme.bodyLarge?.color,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20.0),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Bienvenido',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        labelText: "Correo electrónico",
-                        prefixIcon: Icon(Icons.email),
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Ingresa tu correo';
-                        }
-                        if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
-                          return 'Correo inválido';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: "Contraseña",
-                        prefixIcon: Icon(Icons.lock),
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Ingresa tu contraseña';
-                        }
-                        if (value.length < 6) {
-                          return 'La contraseña debe tener al menos 6 caracteres';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 30),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: _login,
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          backgroundColor: const Color(0xFF7C4DFF),
-                        ),
-                        child: const Text(
-                          "Iniciar sesión",
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Color.fromARGB(255, 255, 255, 255),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    TextButton(
-                      onPressed: () {},
-                      child: const Text(
-                        "¿Olvidaste tu contraseña?",
-                        style: TextStyle(color: Colors.deepPurpleAccent),
-                      ),
-                    ),
-                  ],
                 ),
               ),
             ),
-          ),
+            if (isLoading)
+              Container(
+                color: Colors.black54,
+                child: Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
+              ),
+          ],
         ),
       ),
     );

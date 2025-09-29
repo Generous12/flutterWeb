@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:proyecto_web/Vista/app/autenticacion/registrarusuarios.dart';
 import 'package:proyecto_web/Vista/app/principal/Areas/crearAreas.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/menu.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
@@ -40,13 +41,22 @@ class CustomDrawer extends StatelessWidget {
               },
             ),
             ListTile(
+              leading: const Icon(Iconsax.user, color: Colors.black),
+              title: const Text(
+                "Usuarios",
+                style: TextStyle(color: Colors.black),
+              ),
+              onTap: () {
+                navegarConSlideDerecha(context, RegistroUsuarioScreen());
+              },
+            ),
+            ListTile(
               leading: const Icon(Iconsax.cpu, color: Colors.black),
               title: const Text(
                 "Componentes",
                 style: TextStyle(color: Colors.black),
               ),
               onTap: () {
-                Navigator.pop(context);
                 navegarConSlideDerecha(context, MenuComponentesScreen());
               },
             ),
@@ -54,7 +64,6 @@ class CustomDrawer extends StatelessWidget {
               leading: const Icon(Iconsax.setting_2, color: Colors.black),
               title: const Text("Areas", style: TextStyle(color: Colors.black)),
               onTap: () {
-                Navigator.pop(context);
                 navegarConSlideDerecha(context, CrearAreaScreen());
               },
             ),
