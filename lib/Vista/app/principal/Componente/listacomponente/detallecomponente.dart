@@ -62,7 +62,8 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
   bool get huboCambio {
     if (nombreController.text != widget.componente.nombreTipo ||
         codigoController.text != widget.componente.codigoInventario ||
-        stockController.text != widget.componente.cantidad.toString()) {
+        stockController.text != widget.componente.cantidad.toString() ||
+        _tipoSeleccionado != widget.componente.tipoNombre) {
       return true;
     }
     for (var img in _imagenesNuevas) {
