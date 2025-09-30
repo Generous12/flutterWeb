@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:proyecto_web/Controlador/Usuarios/usuariosservice.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
@@ -275,6 +276,14 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
                   onPressedLogic: () async {
                     _registrarUsuario();
                   },
+                ),
+                const SizedBox(height: 20),
+                LoadingOverlayButtonHabilitar(
+                  text: "Ver usuarios",
+                  icon: Iconsax.document,
+                  backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+                  textColor: Colors.white,
+                  onPressedLogic: () async {},
                 ),
               ],
             ),
