@@ -205,13 +205,13 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
                   label: "Se genera automáticamente el ID",
                   enabled: false,
                 ),
-                const SizedBox(height: 16),
+
                 CustomTextField(
                   controller: nombreController,
                   hintText: "Ingresa tu nombre",
                   label: "Nombre",
                 ),
-                const SizedBox(height: 16),
+
                 CustomTextField(
                   controller: passwordController,
                   label: "Ingrese una contraseña",

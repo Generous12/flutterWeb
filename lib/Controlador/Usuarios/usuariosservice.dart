@@ -52,9 +52,7 @@ class ApiService {
     required String nombre,
     required String password,
   }) async {
-    final url = Uri.parse(
-      "$baseUrl/validacionlogin.php",
-    ); // archivo PHP del login
+    final url = Uri.parse("$baseUrl/validacionlogin.php");
 
     final body = {"accion": "login", "nombre": nombre, "password": password};
 
