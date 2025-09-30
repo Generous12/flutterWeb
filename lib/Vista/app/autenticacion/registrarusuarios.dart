@@ -24,6 +24,7 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
   final PasswordValidator _passwordValidator = PasswordValidator();
   final _api = ApiService();
   String? _rolSeleccionado;
+
   @override
   void initState() {
     super.initState();

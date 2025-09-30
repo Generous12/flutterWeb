@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Provider/componentService.dart';
-import 'package:proyecto_web/Vista/app/principal/inicio.dart';
+import 'package:proyecto_web/Vista/app/autenticacion/loginapp.dart';
 import 'package:proyecto_web/Vista/web/login.dart';
 
 void main() {
@@ -76,9 +76,9 @@ class ResponsiveWrapper extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth > 800) {
-          return const LoginScreenWeb();
+          return LoginScreenWeb();
         } else {
-          return const InicioScreen();
+          return LoginScreen(); //LoginScreen   InicioScreen
         }
       },
     );

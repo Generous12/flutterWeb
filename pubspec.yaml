@@ -49,6 +49,7 @@ dependencies:
   swipeable_tile: ^2.0.1
   dismissible_page: ^1.0.2
   infinite_scroll_pagination: ^5.1.1
+  crypto: ^3.0.6
 
 
 dev_dependencies:

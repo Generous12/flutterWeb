@@ -47,4 +47,40 @@ class ApiService {
       return {"success": false, "message": "Error: $e"};
     }
   }
+
+  Future<Map<String, dynamic>> loginUsuario({
+    required String nombre,
+    required String password,
+  }) async {
+    final url = Uri.parse(
+      "$baseUrl/validacionlogin.php",
+    ); // archivo PHP del login
+
+    final body = {"accion": "login", "nombre": nombre, "password": password};
+
+    print("📤 Enviando petición a: $url");
+    print("📦 Datos enviados: ${jsonEncode(body)}");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      print("📥 Código de respuesta: ${response.statusCode}");
+      print("📥 Respuesta cruda: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        print("✅ Respuesta decodificada: $decoded");
+        return decoded;
+      } else {
+        return {"success": false, "message": "Error ${response.statusCode}"};
+      }
+    } catch (e) {
+      print("❌ Error en la petición: $e");
+      return {"success": false, "message": "Error: $e"};
+    }
+  }
 }

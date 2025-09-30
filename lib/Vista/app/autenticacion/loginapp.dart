@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:proyecto_web/Controlador/Usuarios/usuariosservice.dart';
+import 'package:proyecto_web/Vista/app/principal/inicio.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
+import 'package:proyecto_web/Widgets/navegator.dart';
+import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,6 +20,45 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+  }
+
+  Future<void> _login() async {
+    final nombre = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (nombre.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Por favor ingresa correo y contraseña")),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      final apiService = ApiService();
+      final respuesta = await apiService.loginUsuario(
+        nombre: nombre,
+        password: password,
+      );
+
+      if (respuesta["success"]) {
+        navegarYRemoverConSlideDerecha(context, InicioScreen());
+      } else {
+        SnackBarUtil.mostrarSnackBarPersonalizado(
+          context: context,
+          mensaje: respuesta["message"] ?? "Error en login",
+          icono: Iconsax.alarm,
+          duracion: const Duration(seconds: 2),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    } finally {
+      setState(() => isLoading = false);
+    }
   }
 
   @override
@@ -63,7 +106,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             LoadingOverlayButton(
                               text: 'Iniciar Sesión',
-                              onPressedLogic: () async {},
+                              onPressedLogic: () async {
+                                _login();
+                              },
                             ),
                           ],
                         ),
