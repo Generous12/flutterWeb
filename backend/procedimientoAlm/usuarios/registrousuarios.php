@@ -32,11 +32,10 @@ if ($accion === "registrarUsuario") {
             $stmt->close();
 
             $accionHistorial = "Registro de nuevo usuario";
-            $entidad = "Usuario";
             $id_entidad = $id_usuario;
 
             $stmtHist = $conn->prepare("CALL RegistrarHistorial(?, ?, ?, ?)");
-            $stmtHist->bind_param("ssss", $id_usuario, $accionHistorial, $entidad, $id_entidad);
+            $stmtHist->bind_param("ssss", $id_usuario, $accionHistorial, $rol , $id_entidad);
             $stmtHist->execute();
             $stmtHist->close();
 

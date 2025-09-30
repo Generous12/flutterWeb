@@ -27,28 +27,28 @@ if ($accion === "login") {
         $row = $result->fetch_assoc();
         $stmt->close();
 
-       if ($row && password_verify($password, $row['password_hash'])) {
-         $stmt2 = $conn->prepare("SELECT id_usuario FROM Usuario WHERE nombre = ?");
-         $stmt2->bind_param("s", $nombre);
-         $stmt2->execute();
-         $result2 = $stmt2->get_result();
-         $row2 = $result2->fetch_assoc();
-       $stmt2->close();
+        if ($row && password_verify($password, $row['password_hash'])) {
+            $stmt2 = $conn->prepare("SELECT id_usuario, rol FROM Usuario WHERE nombre = ?");
+            $stmt2->bind_param("s", $nombre);
+            $stmt2->execute();
+            $result2 = $stmt2->get_result();
+            $row2 = $result2->fetch_assoc();
+            $stmt2->close();
 
-        $response = [
-        "success" => true,
-        "message" => "Login exitoso",
-        "id_usuario" => $row2['id_usuario']  
-    ];
-} else {
-    $response = ["success" => false, "message" => "Usuario o contraseña incorrectos"];
-}
+            $response = [
+                "success" => true,
+                "message" => "Login exitoso",
+                "id_usuario" => $row2['id_usuario'],
+                "rol" => $row2['rol'] ?? ""
+            ];
+        } else {
+            $response = ["success" => false, "message" => "Usuario o contraseña incorrectos"];
+        }
 
     } else {
         $response = ["success" => false, "message" => "Faltan datos"];
     }
 }
-
 
 echo json_encode($response);
 ?>

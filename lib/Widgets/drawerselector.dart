@@ -29,22 +29,42 @@ class CustomDrawer extends StatelessWidget {
                     Consumer<UsuarioProvider>(
                       builder: (context, usuarioProvider, child) {
                         final id = usuarioProvider.idUsuario ?? "U";
-                        return Initicon(
-                          text: id,
-                          backgroundColor: Colors.white,
-                          style: const TextStyle(color: Colors.black),
-                          size: 40,
+                        final rol =
+                            usuarioProvider.rol ?? "Sin rol"; // 👈 Traer rol
+
+                        return Row(
+                          children: [
+                            Initicon(
+                              text: id,
+                              backgroundColor: Colors.white,
+                              style: const TextStyle(color: Colors.black),
+                              size: 40,
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  "Menú",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  rol, // 👈 Mostrar rol aquí
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         );
                       },
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      "Menú",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
                     ),
                   ],
                 ),

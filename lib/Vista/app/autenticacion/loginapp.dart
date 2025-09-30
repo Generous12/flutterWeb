@@ -49,7 +49,10 @@ class _LoginScreenState extends State<LoginScreen> {
           context,
           listen: false,
         );
-        await usuarioProvider.setUsuario(respuesta["id_usuario"]);
+        await usuarioProvider.setUsuario(
+          respuesta["id_usuario"],
+          respuesta["rol"],
+        );
 
         navegarYRemoverConSlideDerecha(context, InicioScreen());
       } else {
