@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
+import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
 import 'package:proyecto_web/Controlador/Usuarios/usuariosservice.dart';
 import 'package:proyecto_web/Vista/app/principal/inicio.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
@@ -43,6 +45,12 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (respuesta["success"]) {
+        final usuarioProvider = Provider.of<UsuarioProvider>(
+          context,
+          listen: false,
+        );
+        await usuarioProvider.setUsuario(respuesta["id_usuario"]);
+
         navegarYRemoverConSlideDerecha(context, InicioScreen());
       } else {
         SnackBarUtil.mostrarSnackBarPersonalizado(
