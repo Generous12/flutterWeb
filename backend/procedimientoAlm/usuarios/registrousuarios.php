@@ -19,23 +19,23 @@ $accion = isset($data["accion"]) ? $data["accion"] : "";
 if ($accion === "registrarUsuario") {
     $id_usuario = $data["id_usuario"] ?? null;
     $nombre     = $data["nombre"] ?? null;
-    $password   = $data["password_hash"] ?? null;
+    $password   = $data["password"] ?? null; 
     $rol        = $data["rol"] ?? null;
 
     if ($id_usuario && $nombre && $password && $rol) {
         try {
-            // 1. Registrar usuario
-            $stmt = $conexion->prepare("CALL RegistrarUsuario(?, ?, ?, ?)");
-            $stmt->bind_param("ssss", $id_usuario, $nombre, $password, $rol);
+            $passwordHash = password_hash($password, PASSWORD_BCRYPT);
+
+            $stmt = $conn->prepare("CALL RegistrarUsuario(?, ?, ?, ?)");
+            $stmt->bind_param("ssss", $id_usuario, $nombre, $passwordHash, $rol);
             $stmt->execute();
             $stmt->close();
 
-            // 2. Registrar historial (acción automática)
             $accionHistorial = "Registro de nuevo usuario";
             $entidad = "Usuario";
             $id_entidad = $id_usuario;
 
-            $stmtHist = $conexion->prepare("CALL RegistrarHistorial(?, ?, ?, ?)");
+            $stmtHist = $conn->prepare("CALL RegistrarHistorial(?, ?, ?, ?)");
             $stmtHist->bind_param("ssss", $id_usuario, $accionHistorial, $entidad, $id_entidad);
             $stmtHist->execute();
             $stmtHist->close();
