@@ -102,8 +102,6 @@ class CustomDrawer extends StatelessWidget {
                   ),
                   onTap: () async {
                     await usuarioProvider.logout();
-
-                    // Navegar al Login
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(builder: (_) => LoginScreen()),
