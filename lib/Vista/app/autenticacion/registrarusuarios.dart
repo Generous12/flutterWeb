@@ -3,6 +3,8 @@ import 'package:proyecto_web/Controlador/Usuarios/usuariosservice.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/dropdownbutton.dart';
+import 'package:proyecto_web/Widgets/passwordvalidator.dart';
+import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
 
 class RegistroUsuarioScreen extends StatefulWidget {
@@ -16,6 +18,9 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
   final TextEditingController idController = TextEditingController();
   final TextEditingController nombreController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController repeatPasswordController =
+      TextEditingController();
+  final PasswordValidator _passwordValidator = PasswordValidator();
   final _api = ApiService();
   String? _rolSeleccionado;
   @override
@@ -33,6 +38,12 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
           idController.text = "";
         });
       }
+    });
+  }
+
+  void _onPasswordChanged(String password) {
+    setState(() {
+      _passwordValidator.checkPasswordRequirements(password);
     });
   }
 
@@ -60,31 +71,45 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
 
   Future<void> _registrarUsuario() async {
     if (idController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Por favor ingresa un ID de usuario")),
-      );
-      return;
-    }
-    if (nombreController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Por favor ingresa un nombre")),
-      );
-      return;
-    }
-    if (passwordController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Por favor ingresa una contraseña")),
-      );
-      return;
-    }
-    if (_rolSeleccionado == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Por favor selecciona un rol")),
+      SnackBarUtil.mostrarSnackBarPersonalizado(
+        context: context,
+        mensaje: "Por favor ingresa un ID de usuario",
+        icono: Icons.badge,
+        colorFondo: const Color.fromARGB(255, 0, 0, 0),
       );
       return;
     }
 
-    // 🔹 Paso 1: Confirmar acción
+    if (nombreController.text.trim().isEmpty) {
+      SnackBarUtil.mostrarSnackBarPersonalizado(
+        context: context,
+        mensaje: "Por favor ingresa un nombre",
+        icono: Icons.person,
+        colorFondo: const Color.fromARGB(255, 0, 0, 0),
+      );
+      return;
+    }
+
+    if (passwordController.text.trim().isEmpty) {
+      SnackBarUtil.mostrarSnackBarPersonalizado(
+        context: context,
+        mensaje: "Por favor ingresa una contraseña",
+        icono: Icons.lock,
+        colorFondo: const Color.fromARGB(255, 0, 0, 0),
+      );
+      return;
+    }
+
+    if (_rolSeleccionado == null) {
+      SnackBarUtil.mostrarSnackBarPersonalizado(
+        context: context,
+        mensaje: "Por favor selecciona un rol",
+        icono: Icons.assignment_ind,
+        colorFondo: const Color.fromARGB(255, 0, 0, 0),
+      );
+      return;
+    }
+
     final confirmado = await showCustomDialog(
       context: context,
       title: "Confirmar",
@@ -165,11 +190,11 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
             title: const Text("Usuarios"),
             backgroundColor: Colors.black,
             foregroundColor: Colors.white,
-            elevation: 6,
+            elevation: 0,
             centerTitle: true,
           ),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
             child: Column(
               children: [
                 CustomTextField(
@@ -187,9 +212,47 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
                 const SizedBox(height: 16),
                 CustomTextField(
                   controller: passwordController,
-                  hintText: "Ingresa tu contraseña",
-                  label: "Contraseña",
+                  label: "Ingrese una contraseña",
+                  prefixIcon: Icons.lock,
                   obscureText: true,
+                  onChanged: _onPasswordChanged,
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Checkbox(
+                          value: _passwordValidator.hasMinLength,
+                          onChanged: null,
+                        ),
+                        Text('Min 6 caracteres'),
+                        const SizedBox(width: 12),
+                        Checkbox(
+                          value: _passwordValidator.hasLowercase,
+                          onChanged: null,
+                        ),
+                        Text('Una minúscula'),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Checkbox(
+                          value: _passwordValidator.hasUppercase,
+                          onChanged: null,
+                        ),
+                        Text('Una mayúscula'),
+                        const SizedBox(width: 20),
+                        Checkbox(
+                          value: _passwordValidator.hasNumber,
+                          onChanged: null,
+                        ),
+                        Text('Un número'),
+                      ],
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 CustomDropdownSelector(
