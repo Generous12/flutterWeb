@@ -138,9 +138,17 @@ class _HistorialScreenState extends State<HistorialScreen> {
         appBar: AppBar(
           toolbarHeight: 48,
           backgroundColor: Colors.black,
-          title: const Text(
-            "Historial de acciones",
-            style: TextStyle(color: Colors.white),
+          title: Text(
+            seleccionados.isNotEmpty
+                ? "${seleccionados.length} seleccionados"
+                : "Historial de acciones",
+            style: const TextStyle(color: Colors.white),
+          ),
+          leading: IconButton(
+            icon: const Icon(Iconsax.arrow_left, color: Colors.white),
+            onPressed: () {
+              Navigator.pop(context);
+            },
           ),
           actions: [
             if (seleccionados.isNotEmpty)
@@ -150,11 +158,12 @@ class _HistorialScreenState extends State<HistorialScreen> {
               ),
           ],
         ),
+
         body: RefreshIndicator(
           onRefresh: () => _cargarHistorial(reset: true),
           child: ListView.builder(
             controller: _scrollController,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(0),
             itemCount: historial.length + (_isLoadingMore ? 1 : 0),
             itemBuilder: (context, index) {
               if (index == historial.length) {
@@ -181,14 +190,14 @@ class _HistorialScreenState extends State<HistorialScreen> {
               }
 
               return Card(
-                margin: const EdgeInsets.symmetric(vertical: 6),
+                margin: const EdgeInsets.symmetric(vertical: 2),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 2,
+                elevation: 0,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(12),
-                  onTap: () {
+                  onLongPress: () {
                     setState(() {
                       if (seleccionado) {
                         seleccionados.remove(id);
@@ -197,17 +206,30 @@ class _HistorialScreenState extends State<HistorialScreen> {
                       }
                     });
                   },
-                  child: Padding(
+                  onTap: () {
+                    if (seleccionados.isNotEmpty) {
+                      setState(() {
+                        if (seleccionado) {
+                          seleccionados.remove(id);
+                        } else {
+                          seleccionados.add(id);
+                        }
+                      });
+                    }
+                  },
+
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: seleccionado
+                          ? Colors.blue.withOpacity(0.2)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     padding: const EdgeInsets.all(12),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          seleccionado ? Iconsax.tick_square : Iconsax.d_square,
-                          color: seleccionado ? Colors.blue : Colors.grey,
-                          size: 28,
-                        ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 5),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
