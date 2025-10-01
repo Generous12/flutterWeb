@@ -18,14 +18,26 @@ $accion = isset($data["accion"]) ? $data["accion"] : "";
 $id_usuario = isset($data["id_usuario"]) ? $data["id_usuario"] : null;
 $nuevo_rol = isset($data["nuevo_rol"]) ? $data["nuevo_rol"] : null;
 $nuevo_estado = isset($data["nuevo_estado"]) ? $data["nuevo_estado"] : null;
+$busqueda = isset($data["busqueda"]) ? $data["busqueda"] : null;
+$estado_filtro = isset($data["estado_filtro"]) ? $data["estado_filtro"] : null;
+$pagina = isset($data["pagina"]) ? intval($data["pagina"]) : 1;
 
 try {
     if (strtoupper($accion) === "ACTUALIZAR" || strtoupper($accion) === "ELIMINAR") {
         $conn->begin_transaction();
     }
 
-    $stmt = $conn->prepare("CALL sp_gestion_usuarios(?, ?, ?, ?)");
-    $stmt->bind_param("ssss", $accion, $id_usuario, $nuevo_rol, $nuevo_estado);
+    $stmt = $conn->prepare("CALL sp_gestion_usuarios(?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param(
+        "ssssssi",
+        $accion,
+        $id_usuario,
+        $nuevo_rol,
+        $nuevo_estado,
+        $busqueda,
+        $estado_filtro,
+        $pagina
+    );
     $stmt->execute();
 
     if (strtoupper($accion) === "LISTAR") {
@@ -41,13 +53,15 @@ try {
         $response = ["success" => true, "data" => $usuarios];
     } else {
         $response = ["success" => true, "message" => ucfirst(strtolower($accion)) . " ejecutado correctamente"];
-        $conn->commit(); 
+        if (strtoupper($accion) === "ACTUALIZAR" || strtoupper($accion) === "ELIMINAR") {
+            $conn->commit();
+        }
     }
 
     $stmt->close();
 } catch (Exception $e) {
     if (strtoupper($accion) === "ACTUALIZAR" || strtoupper($accion) === "ELIMINAR") {
-        $conn->rollback(); 
+        $conn->rollback();
     }
     $response = ["success" => false, "message" => $e->getMessage()];
 }

@@ -5,9 +5,18 @@ class GestiousuarioService {
   final String baseUrl =
       "http://192.168.18.21/proyecto_web/backend/procedimientoAlm/usuarios/gestionusuarios.php";
 
-  // Listar todos los usuarios
-  Future<List<Map<String, dynamic>>> listarUsuarios() async {
-    final body = jsonEncode({"accion": "LISTAR"});
+  // Listar usuarios con búsqueda, filtro y paginación
+  Future<List<Map<String, dynamic>>> listarUsuarios({
+    String? busqueda,
+    String? estadoFiltro,
+    int pagina = 1,
+  }) async {
+    final body = jsonEncode({
+      "accion": "LISTAR",
+      "busqueda": busqueda ?? "",
+      "estado_filtro": estadoFiltro ?? "",
+      "pagina": pagina,
+    });
     print("LISTAR: Enviando request a $baseUrl con body: $body");
 
     final response = await http.post(
