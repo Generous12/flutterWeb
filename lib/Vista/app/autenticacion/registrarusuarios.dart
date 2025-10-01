@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:provider/provider.dart';
-import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
 import 'package:proyecto_web/Controlador/Usuarios/usuariosservice.dart';
 import 'package:proyecto_web/Vista/app/autenticacion/gestionarusuarios.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
@@ -135,12 +133,6 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
       );
 
       if (result["success"]) {
-        final usuarioProvider = Provider.of<UsuarioProvider>(
-          context,
-          listen: false,
-        );
-        await usuarioProvider.setUsuario(idController.text, _rolSeleccionado);
-
         final continuar = await showCustomDialog(
           context: context,
           title: "Éxito",
