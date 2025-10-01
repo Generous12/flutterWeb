@@ -35,7 +35,7 @@ if ($accion === "registrarUsuario") {
             $id_entidad = $id_usuario;
 
             $stmtHist = $conn->prepare("CALL RegistrarHistorial(?, ?, ?, ?)");
-            $stmtHist->bind_param("ssss", $id_usuario, $accionHistorial, $rol , $id_entidad);
+            $stmtHist->bind_param("ssss", $id_usuario, $rol , $accionHistorial, $id_entidad);
             $stmtHist->execute();
             $stmtHist->close();
 
