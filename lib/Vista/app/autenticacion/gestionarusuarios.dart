@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
 import 'package:proyecto_web/Controlador/Usuarios/gestiousuario.dart';
 import 'package:proyecto_web/Vista/app/autenticacion/registrarusuarios.dart';
+import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/dropdownbutton.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
@@ -231,26 +232,14 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                             if (modoSeleccion) {
                               if (seleccionados.isEmpty) return;
 
-                              final confirmar = await showDialog<bool>(
+                              final confirmar = await showCustomDialog(
                                 context: context,
-                                builder: (_) => AlertDialog(
-                                  title: const Text("Confirmar eliminación"),
-                                  content: Text(
+                                title: "Confirmar eliminación",
+                                message:
                                     "¿Deseas eliminar los ${seleccionados.length} usuarios seleccionados?",
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, false),
-                                      child: const Text("No"),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, true),
-                                      child: const Text("Sí"),
-                                    ),
-                                  ],
-                                ),
+                                confirmButtonText: "Sí",
+                                cancelButtonText: "No",
+                                confirmButtonColor: Colors.red,
                               );
 
                               if (confirmar == true) {
@@ -364,7 +353,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                             usuario['id_usuario']?.toString() ?? '';
 
                         return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 6),
+                          margin: const EdgeInsets.symmetric(vertical: 2),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),

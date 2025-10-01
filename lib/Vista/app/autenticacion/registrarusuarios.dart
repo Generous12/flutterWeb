@@ -195,7 +195,10 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
         child: Scaffold(
           appBar: AppBar(
             toolbarHeight: 48,
-            title: const Text("Usuarios"),
+            title: const Text(
+              "Registrar usuarios",
+              style: TextStyle(fontSize: 18),
+            ),
             backgroundColor: Colors.black,
             foregroundColor: Colors.white,
             elevation: 0,
