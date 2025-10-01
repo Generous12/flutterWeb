@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
+import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
 import 'package:proyecto_web/Controlador/Usuarios/usuariosservice.dart';
 import 'package:proyecto_web/Vista/app/autenticacion/gestionarusuarios.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
@@ -122,47 +124,59 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
       cancelButtonText: "No",
     );
 
-    if (confirmado == true) {
-      print("➡️ Usuario confirmó, intentando registrar en backend...");
+    if (confirmado != true) {
+      print("⏹️ Usuario canceló la acción");
+      return;
+    }
 
-      final result = await _api.registrarUsuario(
-        idUsuario: idController.text,
-        nombre: nombreController.text,
-        password: passwordController.text,
-        rol: _rolSeleccionado!,
+    print("➡️ Usuario confirmó, intentando registrar en backend...");
+
+    // Obtener los datos del creador desde el provider
+    final usuarioProvider = Provider.of<UsuarioProvider>(
+      context,
+      listen: false,
+    );
+
+    final result = await _api.registrarUsuario(
+      idUsuario: idController.text,
+      nombre: nombreController.text,
+      password: passwordController.text,
+      rol: _rolSeleccionado!,
+      idUsuarioCreador: usuarioProvider.idUsuario ?? "",
+      rolCreador: usuarioProvider.rol ?? "",
+    );
+
+    if (result["success"]) {
+      // Guardar el usuario recién creado en provider si quieres (opcional)
+      await usuarioProvider.setUsuario(idController.text, _rolSeleccionado);
+
+      final continuar = await showCustomDialog(
+        context: context,
+        title: "Éxito",
+        message: "${result["message"]}\n\n¿Deseas registrar otro usuario?",
+        confirmButtonText: "Sí",
+        cancelButtonText: "No",
       );
 
-      if (result["success"]) {
-        final continuar = await showCustomDialog(
-          context: context,
-          title: "Éxito",
-          message: "${result["message"]}\n\n¿Deseas registrar otro usuario?",
-          confirmButtonText: "Sí",
-          cancelButtonText: "No",
-        );
-
-        if (continuar == true) {
-          print("🔄 Usuario quiere seguir registrando");
-          idController.clear();
-          nombreController.clear();
-          passwordController.clear();
-          setState(() {
-            _rolSeleccionado = null;
-          });
-        } else {
-          print("🏠 Usuario quiere volver al inicio");
-          Navigator.pop(context);
-        }
+      if (continuar == true) {
+        print("🔄 Usuario quiere seguir registrando");
+        idController.clear();
+        nombreController.clear();
+        passwordController.clear();
+        setState(() {
+          _rolSeleccionado = null;
+        });
       } else {
-        await showCustomDialog(
-          context: context,
-          title: "Error",
-          message: "Error: ${result["message"]}",
-          confirmButtonText: "Cerrar",
-        );
+        print("🏠 Usuario quiere volver al inicio");
+        Navigator.pop(context);
       }
     } else {
-      print("⏹️ Usuario canceló la acción");
+      await showCustomDialog(
+        context: context,
+        title: "Error",
+        message: "Error: ${result["message"]}",
+        confirmButtonText: "Cerrar",
+      );
     }
   }
 

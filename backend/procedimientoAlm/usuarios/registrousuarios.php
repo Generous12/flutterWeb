@@ -2,6 +2,7 @@
 ob_start();
 include __DIR__ . "/../../mysqlConexion.php"; 
 include __DIR__ . "/../../funciones.php"; 
+
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
@@ -17,12 +18,15 @@ $response = ["success" => false, "message" => "Acción no válida"];
 $accion = isset($data["accion"]) ? $data["accion"] : "";
 
 if ($accion === "registrarUsuario") {
-    $id_usuario = $data["id_usuario"] ?? null;
-    $nombre     = $data["nombre"] ?? null;
-    $password   = $data["password"] ?? null; 
-    $rol        = $data["rol"] ?? null;
+    $id_usuario        = $data["id_usuario"] ?? null;
+    $nombre            = $data["nombre"] ?? null;
+    $password          = $data["password"] ?? null; 
+    $rol               = $data["rol"] ?? null;
 
-    if ($id_usuario && $nombre && $password && $rol) {
+    $id_usuario_creador = $data["id_usuario_creador"] ?? null;
+    $rol_creador        = $data["rol_creador"] ?? null;
+
+    if ($id_usuario && $nombre && $password && $rol && $id_usuario_creador && $rol_creador) {
         try {
             $passwordHash = password_hash($password, PASSWORD_BCRYPT);
 
@@ -32,9 +36,8 @@ if ($accion === "registrarUsuario") {
             $stmt->close();
 
             $accionHistorial = "Registro de nuevo usuario";
-            $id_entidad = $id_usuario;
-
-          registrarHistorial($conn, $id_usuario, $rol, $accionHistorial, $id_entidad);
+            $id_entidad = $id_usuario; 
+            registrarHistorial($conn, $id_usuario_creador, $rol_creador, $accionHistorial, $id_entidad);
 
             $response = [
                 "success" => true,

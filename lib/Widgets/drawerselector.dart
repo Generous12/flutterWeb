@@ -7,6 +7,7 @@ import 'package:proyecto_web/Vista/app/autenticacion/loginapp.dart';
 import 'package:proyecto_web/Vista/app/autenticacion/registrarusuarios.dart';
 import 'package:proyecto_web/Vista/app/principal/Areas/crearAreas.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/menu.dart';
+import 'package:proyecto_web/Vista/app/principal/Historial/gestionarhistorial.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -16,7 +17,6 @@ class CustomDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       child: SafeArea(
-        // <- Agregado SafeArea
         child: Container(
           color: Colors.white,
           child: ListView(
@@ -110,6 +110,16 @@ class CustomDrawer extends StatelessWidget {
                 ),
                 onTap: () {
                   navegarConSlideDerecha(context, CrearAreaScreen());
+                },
+              ),
+              ListTile(
+                leading: const Icon(Iconsax.archive, color: Colors.black),
+                title: const Text(
+                  "Historial de acciones",
+                  style: TextStyle(color: Colors.black),
+                ),
+                onTap: () {
+                  navegarConSlideDerecha(context, HistorialScreen());
                 },
               ),
               const Divider(),

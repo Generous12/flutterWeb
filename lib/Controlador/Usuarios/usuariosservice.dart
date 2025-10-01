@@ -10,16 +10,19 @@ class ApiService {
     required String nombre,
     required String password,
     required String rol,
+    required String idUsuarioCreador,
+    required String rolCreador,
   }) async {
     final url = Uri.parse("$baseUrl/registrousuarios.php");
 
-    // Datos que se van a enviar
     final body = {
       "accion": "registrarUsuario",
       "id_usuario": idUsuario,
       "nombre": nombre,
       "password": password,
       "rol": rol,
+      "id_usuario_creador": idUsuarioCreador,
+      "rol_creador": rolCreador,
     };
 
     print("📤 Enviando petición a: $url");
