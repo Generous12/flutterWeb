@@ -95,6 +95,19 @@ class _HistorialScreenState extends State<HistorialScreen> {
       return;
     }
 
+    // 🔹 Confirmar antes de eliminar
+    final confirmar = await showCustomDialog(
+      context: context,
+      title: "Confirmar eliminación",
+      message:
+          "¿Deseas eliminar los ${seleccionados.length} registros seleccionados?",
+      confirmButtonText: "Sí",
+      cancelButtonText: "No",
+      confirmButtonColor: Colors.red, // opcional
+    );
+
+    if (confirmar != true) return;
+
     setState(() => cargando = true);
 
     try {
@@ -103,16 +116,16 @@ class _HistorialScreenState extends State<HistorialScreen> {
       );
 
       if (ok) {
-        showCustomDialog(
+        await showCustomDialog(
           context: context,
-          title: "Exito",
+          title: "Éxito",
           message: "Historial eliminado correctamente",
           confirmButtonText: "Cerrar",
         );
         seleccionados.clear();
         _cargarHistorial(reset: true);
       } else {
-        showCustomDialog(
+        await showCustomDialog(
           context: context,
           title: "Espera",
           message: "No se pudo eliminar correctamente",
@@ -120,10 +133,10 @@ class _HistorialScreenState extends State<HistorialScreen> {
         );
       }
     } catch (e) {
-      showCustomDialog(
+      await showCustomDialog(
         context: context,
-        title: "Espera",
-        message: "No se pudo eliminar correctamente php",
+        title: "Error",
+        message: "Ocurrió un error al intentar eliminar",
         confirmButtonText: "Cerrar",
       );
     } finally {
@@ -189,14 +202,23 @@ class _HistorialScreenState extends State<HistorialScreen> {
                   rolColor = Colors.grey.shade200;
               }
 
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 2),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              return Container(
+                margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+                decoration: BoxDecoration(
+                  color: seleccionado
+                      ? Colors.blue.withOpacity(0.15)
+                      : Colors.white.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-                elevation: 0,
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                   onLongPress: () {
                     setState(() {
                       if (seleccionado) {
@@ -217,49 +239,63 @@ class _HistorialScreenState extends State<HistorialScreen> {
                       });
                     }
                   },
-
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: seleccionado
-                          ? Colors.blue.withOpacity(0.2)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.all(12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(width: 5),
+                        // 🔹 Ícono decorativo lateral
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: seleccionado
+                                ? Colors.blue.withOpacity(0.3)
+                                : Colors.grey.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.history,
+                            color: Colors.black54,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // 🔹 Contenido expandido
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // Acción principal
                               Text(
                                 item['accion'],
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                                  fontSize: 15,
                                 ),
                               ),
                               const SizedBox(height: 6),
+
+                              // Usuario + Rol
                               Row(
                                 children: [
                                   Text(
-                                    " ${item['id_usuario']}",
+                                    "Usuario: ${item['id_usuario']}",
                                     style: TextStyle(
-                                      color: Colors.grey[700],
+                                      color: Colors.grey[800],
                                       fontSize: 13,
                                     ),
                                   ),
                                   const SizedBox(width: 10),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
+                                      horizontal: 8,
+                                      vertical: 3,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: rolColor,
-                                      borderRadius: BorderRadius.circular(6),
+                                      color: rolColor.withOpacity(0.9),
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
                                       item['rol'],
@@ -272,17 +308,21 @@ class _HistorialScreenState extends State<HistorialScreen> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 6),
+
+                              // Entidad afectada
                               Text(
-                                "Entidad afectada: ${item['id_entidad']}",
+                                "Entidad: ${item['id_entidad']}",
                                 style: TextStyle(
-                                  color: Colors.grey[600],
+                                  color: Colors.grey[700],
                                   fontSize: 12,
                                 ),
                               ),
-                              const SizedBox(height: 2),
+                              const SizedBox(height: 4),
+
+                              // Fecha formateada
                               Text(
-                                "Realizado ${timeago.format(DateTime.parse(item['fecha']), locale: 'es')}",
+                                "Hace ${timeago.format(DateTime.parse(item['fecha']), locale: 'es')}",
                                 style: TextStyle(
                                   color: Colors.grey[500],
                                   fontSize: 12,
