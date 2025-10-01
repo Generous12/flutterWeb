@@ -18,7 +18,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
   Set<String> seleccionados = {};
   bool cargando = false;
 
-  // Paginación
   int _page = 1;
   final int _limit = 30;
   bool _isLoadingMore = false;
