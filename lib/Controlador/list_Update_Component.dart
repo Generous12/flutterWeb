@@ -143,6 +143,8 @@ class ComponenteUpdateService {
     String? nuevoCodigo,
     String? nuevoNombreTipo,
     String? nuevoTipoNombre,
+    required String idUsuarioCreador,
+    required String rolCreador,
   }) async {
     final List<String?> imagenesFinal = List.generate(4, (i) {
       if (i < imagenesNuevas.length && imagenesNuevas[i] != null) {
@@ -172,7 +174,11 @@ class ComponenteUpdateService {
       }
     }
 
-    final Map<String, dynamic> cambios = {"identificador": identificador};
+    final Map<String, dynamic> cambios = {
+      "identificador": identificador,
+      "id_usuario": idUsuarioCreador,
+      "rol": rolCreador,
+    };
     if (cantidad != null) cambios["cantidad"] = cantidad;
     if (imagenesFinal.any((img) => img != null))
       cambios["imagenes"] = imagenesFinal;

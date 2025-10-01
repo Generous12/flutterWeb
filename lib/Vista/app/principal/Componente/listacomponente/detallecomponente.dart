@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
 import 'package:proyecto_web/Controlador/list_Update_Component.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
@@ -222,6 +224,11 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
 
     setState(() => isLoading = true);
     try {
+      final usuarioProvider = Provider.of<UsuarioProvider>(
+        context,
+        listen: false,
+      );
+
       final success = await service.actualizarComponente(
         identificador: identificador,
         cantidad: cantidadActualizada,
@@ -229,6 +236,8 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
         nuevoCodigo: nuevoCodigo,
         nuevoNombreTipo: nuevoNombreTipo,
         nuevoTipoNombre: nuevoTipoNombre,
+        idUsuarioCreador: usuarioProvider.idUsuario ?? "",
+        rolCreador: usuarioProvider.rol ?? "",
       );
 
       print("✅ Respuesta del backend: $success");

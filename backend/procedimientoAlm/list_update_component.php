@@ -83,13 +83,13 @@ try {
     $row['imagenes'] = $imagenesNum;
     $componentes[] = $row;
 }
-
-
-    $response = ["success" => true, "data" => $componentes];
+  $response = ["success" => true, "data" => $componentes];
 }
  elseif ($action == 'actualizar') {
     $nuevo_codigo = $data['nuevo_codigo'] ?? null;
     $nuevo_nombre_tipo = $data['nuevo_nombre_tipo'] ?? null;
+    $idUsuarioCreador = $data['id_usuario'] ?? null;
+    $rolCreador       = $data['rol'] ?? null;
     $imagenes = array_pad($imagenes, 4, null);
     $stmtSel = $conn->prepare("SELECT cantidad, imagenes, codigo_inventario, id_tipo, tipo_nombre FROM Componente WHERE codigo_inventario = ?");
     $stmtSel->bind_param("s", $identificador);
@@ -123,6 +123,15 @@ try {
         $stmtTipo = $conn->prepare("UPDATE Tipo_Componente SET nombre_tipo = ? WHERE id_tipo = ?");
         $stmtTipo->bind_param("si", $nuevo_nombre_tipo, $row['id_tipo']);
         $stmtTipo->execute();
+    }
+       if ($idUsuarioCreador && $rolCreador) {
+        $accion = "Actualizó el componente con código " . $identificador;
+        $idEntidad = $identificador;
+
+        // Llamar al procedimiento almacenado
+        $stmtHistorial = $conn->prepare("CALL RegistrarHistorial(?, ?, ?, ?)");
+        $stmtHistorial->bind_param("ssss", $idUsuarioCreador, $rolCreador, $accion, $idEntidad);
+        $stmtHistorial->execute();
     }
     $response = ["success" => true, "message" => "Componente actualizado correctamente"];
 }
