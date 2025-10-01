@@ -129,9 +129,6 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
       return;
     }
 
-    print("➡️ Usuario confirmó, intentando registrar en backend...");
-
-    // Obtener los datos del creador desde el provider
     final usuarioProvider = Provider.of<UsuarioProvider>(
       context,
       listen: false,
@@ -147,9 +144,6 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
     );
 
     if (result["success"]) {
-      // Guardar el usuario recién creado en provider si quieres (opcional)
-      await usuarioProvider.setUsuario(idController.text, _rolSeleccionado);
-
       final continuar = await showCustomDialog(
         context: context,
         title: "Éxito",
