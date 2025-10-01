@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_initicon/flutter_initicon.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:proyecto_web/Controlador/Usuarios/gestiousuario.dart';
 import 'package:proyecto_web/Widgets/dropdownbutton.dart';
 
@@ -19,12 +20,9 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
   bool modoSeleccion = false;
   List<String> seleccionados = [];
   final TextEditingController _searchController = TextEditingController();
-
   bool hasMore = true;
-
   String busqueda = '';
   String estadoFiltro = '';
-
   final ScrollController _scrollController = ScrollController();
 
   final List<String> roles = ['Admin', 'Practicante'];
@@ -134,8 +132,6 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
       child: Scaffold(
         body: Column(
           children: [
-            // Búsqueda y filtro
-            // Búsqueda y filtro con lógica avanzada
             Container(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Column(
@@ -193,7 +189,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                                             },
                                           )
                                         : const Icon(
-                                            Icons.search,
+                                            Iconsax.search_normal,
                                             color: Colors.black,
                                           ),
                                   ),
@@ -202,15 +198,14 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                         IconButton(
                           icon: Icon(
                             modoSeleccion
-                                ? Icons.delete
+                                ? Iconsax.trash
                                 : estadoFiltro.isEmpty
-                                ? Icons.filter_alt
+                                ? Iconsax.filter
                                 : Icons.close,
                             color: Colors.black,
                           ),
                           onPressed: () async {
                             if (modoSeleccion) {
-                              // Lógica de eliminación múltiple
                               if (seleccionados.isEmpty) return;
 
                               final confirmar = await showDialog<bool>(
@@ -261,7 +256,6 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                                 });
                                 await fetchUsuarios(reset: true);
                               } else {
-                                // Mostrar modal de filtrado avanzado
                                 showModalBottomSheet(
                                   context: context,
                                   shape: const RoundedRectangleBorder(
@@ -334,7 +328,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                   ? const Center(child: CircularProgressIndicator())
                   : ListView.builder(
                       controller: _scrollController,
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(0),
                       itemCount: usuarios.length + (loadingMore ? 1 : 0),
                       itemBuilder: (context, index) {
                         if (index >= usuarios.length) {
@@ -344,77 +338,153 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                           );
                         }
                         final usuario = usuarios[index];
+                        final usuarioId =
+                            usuario['id_usuario']?.toString() ?? '';
+
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 6),
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: Row(
-                              children: [
-                                Initicon(
-                                  text: usuario['nombre'],
-                                  backgroundColor: Colors.blue,
-                                  size: 50,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                          child: Stack(
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    if (modoSeleccion) {
+                                      if (seleccionados.contains(usuarioId)) {
+                                        seleccionados.remove(usuarioId);
+                                      } else {
+                                        seleccionados.add(usuarioId);
+                                      }
+                                      if (seleccionados.isEmpty) {
+                                        modoSeleccion = false;
+                                      }
+                                    }
+                                  });
+                                },
+                                onLongPress: () {
+                                  setState(() {
+                                    if (!modoSeleccion) {
+                                      modoSeleccion = true;
+                                      if (usuarioId.isNotEmpty) {
+                                        seleccionados.add(usuarioId);
+                                      }
+                                    }
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        modoSeleccion &&
+                                            seleccionados.contains(usuarioId)
+                                        ? Colors.blue.withOpacity(0.1)
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
                                     children: [
-                                      Text(
-                                        usuario['nombre'],
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
+                                      Initicon(
+                                        text: usuario['nombre'],
+                                        backgroundColor: Colors.blue,
+                                        size: 50,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              usuario['nombre'],
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              ' ${usuario['rol']}',
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                            Text(
+                                              'Registrado: ${usuario['fecha_registro']}',
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: CustomDropdownSelector(
+                                                    labelText: 'Rol',
+                                                    hintText: 'Selecciona rol',
+                                                    value: usuario['rol'],
+                                                    items: roles,
+                                                    onChanged: (value) {
+                                                      actualizarUsuario(
+                                                        index,
+                                                        value,
+                                                        usuario['estado'],
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 10),
+                                                Expanded(
+                                                  child: CustomDropdownSelector(
+                                                    labelText: 'Estado',
+                                                    hintText:
+                                                        'Selecciona estado',
+                                                    value: usuario['estado'],
+                                                    items: estados,
+                                                    onChanged: (value) {
+                                                      actualizarUsuario(
+                                                        index,
+                                                        usuario['rol'],
+                                                        value,
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text('Rol: ${usuario['rol']}'),
-                                      Text('Estado: ${usuario['estado']}'),
-                                      Text(
-                                        'Registrado: ${usuario['fecha_registro']}',
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: CustomDropdownSelector(
-                                              labelText: 'Rol',
-                                              hintText: 'Selecciona rol',
-                                              value: usuario['rol'],
-                                              items: roles,
-                                              onChanged: (value) {
-                                                actualizarUsuario(
-                                                  index,
-                                                  value,
-                                                  usuario['estado'],
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: CustomDropdownSelector(
-                                              labelText: 'Estado',
-                                              hintText: 'Selecciona estado',
-                                              value: usuario['estado'],
-                                              items: estados,
-                                              onChanged: (value) {
-                                                actualizarUsuario(
-                                                  index,
-                                                  usuario['rol'],
-                                                  value,
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        ],
                                       ),
                                     ],
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                              Positioned(
+                                top: 12,
+                                right: 12,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: usuario['estado'] == 'Activo'
+                                        ? Colors.green.withOpacity(0.7)
+                                        : Colors.red.withOpacity(0.7),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    usuario['estado'],
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         );
                       },
