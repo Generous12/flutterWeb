@@ -42,7 +42,6 @@ class GestiousuarioService {
     }
   }
 
-  // Actualizar rol y estado de un usuario
   Future<bool> actualizarUsuario(
     String idUsuario,
     String nuevoRol,
@@ -74,7 +73,6 @@ class GestiousuarioService {
     }
   }
 
-  // Eliminar uno o varios usuarios
   Future<bool> eliminarUsuarios(List<String> ids) async {
     String idsStr = ids.map((id) => "'$id'").join(',');
     final body = jsonEncode({"accion": "ELIMINAR", "id_usuario": idsStr});

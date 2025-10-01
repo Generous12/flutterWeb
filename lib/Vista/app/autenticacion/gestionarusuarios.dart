@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_initicon/flutter_initicon.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
+import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
 import 'package:proyecto_web/Controlador/Usuarios/gestiousuario.dart';
 import 'package:proyecto_web/Widgets/dropdownbutton.dart';
+import 'package:proyecto_web/Widgets/snackbar.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class UsuariosScreen extends StatefulWidget {
   const UsuariosScreen({Key? key}) : super(key: key);
@@ -32,6 +36,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
   void initState() {
     super.initState();
     fetchUsuarios();
+    timeago.setLocaleMessages('es', timeago.EsMessages());
     _scrollController.addListener(_scrollListener);
   }
 
@@ -115,13 +120,29 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
           usuarios[index]['rol'] = nuevoRol;
           usuarios[index]['estado'] = nuevoEstado;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Usuario actualizado correctamente')),
+        final usuarioProvider = Provider.of<UsuarioProvider>(
+          context,
+          listen: false,
+        );
+        if (usuarios[index]['id_usuario'] == usuarioProvider.idUsuario) {
+          await usuarioProvider.setUsuario(
+            usuarioProvider.idUsuario!,
+            nuevoRol,
+          );
+        }
+        SnackBarUtil.mostrarSnackBarPersonalizado(
+          context: context,
+          mensaje: "Cambios guardados correctamente",
+          icono: Iconsax.chart_success,
+          duracion: const Duration(seconds: 1),
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al actualizar usuario: $e')),
+      SnackBarUtil.mostrarSnackBarPersonalizado(
+        context: context,
+        mensaje: "Error al actualizar",
+        icono: Iconsax.warning_2,
+        duracion: const Duration(seconds: 1),
       );
     }
   }
@@ -245,7 +266,6 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                                 await fetchUsuarios(reset: true);
                               }
                             } else {
-                              // Filtro por estado
                               if (estadoFiltro.isNotEmpty) {
                                 setState(() {
                                   estadoFiltro = '';
@@ -384,78 +404,78 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                                         : Colors.transparent,
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: Row(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Initicon(
-                                        text: usuario['nombre'],
-                                        backgroundColor: Colors.blue,
-                                        size: 50,
+                                      Row(
+                                        children: [
+                                          Initicon(
+                                            text: usuario['nombre'],
+                                            backgroundColor: Colors.blue,
+                                            size: 50,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                usuario['nombre'],
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Registrado ${timeago.format(DateTime.parse(usuario['fecha_registro']), locale: 'es')}',
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              usuario['nombre'],
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+
+                                      const SizedBox(height: 12),
+
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: CustomDropdownSelector(
+                                              labelText: 'Rol',
+                                              hintText: 'Selecciona rol',
+                                              value: usuario['rol'],
+                                              items: roles,
+                                              onChanged: (value) {
+                                                actualizarUsuario(
+                                                  index,
+                                                  value,
+                                                  usuario['estado'],
+                                                );
+                                              },
                                             ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              ' ${usuario['rol']}',
-                                              style: const TextStyle(
-                                                fontSize: 13,
-                                              ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: CustomDropdownSelector(
+                                              labelText: 'Estado',
+                                              hintText: 'Selecciona estado',
+                                              value: usuario['estado'],
+                                              items: estados,
+                                              onChanged: (value) {
+                                                actualizarUsuario(
+                                                  index,
+                                                  usuario['rol'],
+                                                  value,
+                                                );
+                                              },
                                             ),
-                                            Text(
-                                              'Registrado: ${usuario['fecha_registro']}',
-                                              style: const TextStyle(
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Row(
-                                              children: [
-                                                Expanded(
-                                                  child: CustomDropdownSelector(
-                                                    labelText: 'Rol',
-                                                    hintText: 'Selecciona rol',
-                                                    value: usuario['rol'],
-                                                    items: roles,
-                                                    onChanged: (value) {
-                                                      actualizarUsuario(
-                                                        index,
-                                                        value,
-                                                        usuario['estado'],
-                                                      );
-                                                    },
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 10),
-                                                Expanded(
-                                                  child: CustomDropdownSelector(
-                                                    labelText: 'Estado',
-                                                    hintText:
-                                                        'Selecciona estado',
-                                                    value: usuario['estado'],
-                                                    items: estados,
-                                                    onChanged: (value) {
-                                                      actualizarUsuario(
-                                                        index,
-                                                        usuario['rol'],
-                                                        value,
-                                                      );
-                                                    },
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
