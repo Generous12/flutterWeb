@@ -16,6 +16,10 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
   bool loading = true;
   bool loadingMore = false;
   int paginaActual = 1;
+  bool modoSeleccion = false;
+  List<String> seleccionados = [];
+  final TextEditingController _searchController = TextEditingController();
+
   bool hasMore = true;
 
   String busqueda = '';
@@ -31,6 +35,14 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
     super.initState();
     fetchUsuarios();
     _scrollController.addListener(_scrollListener);
+  }
+
+  void _onSearchChanged(String value) {
+    busqueda = value;
+    paginaActual = 1;
+    usuarios.clear();
+    hasMore = true;
+    fetchUsuarios(reset: true);
   }
 
   @override
@@ -118,143 +130,298 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Listado de Usuarios')),
-      body: Column(
-        children: [
-          // Búsqueda y filtro
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'Buscar por nombre o código',
-                      border: OutlineInputBorder(),
+    return SafeArea(
+      child: Scaffold(
+        body: Column(
+          children: [
+            // Búsqueda y filtro
+            // Búsqueda y filtro con lógica avanzada
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 238, 238, 238),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    onChanged: (value) {
-                      busqueda = value;
-                      fetchUsuarios(reset: true);
-                    },
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'Filtrar por estado',
-                      border: OutlineInputBorder(),
-                    ),
-                    value: estadoFiltro.isEmpty ? null : estadoFiltro,
-                    items: [
-                      const DropdownMenuItem(value: '', child: Text('Todos')),
-                      ...estados
-                          .map(
-                            (e) => DropdownMenuItem(value: e, child: Text(e)),
-                          )
-                          .toList(),
-                    ],
-                    onChanged: (value) {
-                      estadoFiltro = value ?? '';
-                      fetchUsuarios(reset: true);
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: loading && usuarios.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(10),
-                    itemCount: usuarios.length + (loadingMore ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index >= usuarios.length) {
-                        return const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      }
-                      final usuario = usuarios[index];
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 6),
-                        child: Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: Row(
-                            children: [
-                              Initicon(
-                                text: usuario['nombre'],
-                                backgroundColor: Colors.blue,
-                                size: 50,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      usuario['nombre'],
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Row(
+                      children: [
+                        if (modoSeleccion)
+                          IconButton(
+                            icon: const Icon(Icons.close, color: Colors.black),
+                            onPressed: () {
+                              setState(() {
+                                seleccionados.clear();
+                                modoSeleccion = false;
+                              });
+                            },
+                          ),
+                        Expanded(
+                          child: modoSeleccion
+                              ? Text(
+                                  "Seleccionados ${seleccionados.length}",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              : TextField(
+                                  controller: _searchController,
+                                  onChanged: _onSearchChanged,
+                                  decoration: InputDecoration(
+                                    hintText: 'Buscar por nombre o código',
+                                    border: InputBorder.none,
+                                    prefixIcon: IconButton(
+                                      icon: const Icon(
+                                        Icons.arrow_back,
+                                        color: Colors.black,
                                       ),
+                                      onPressed: () => Navigator.pop(context),
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text('Rol: ${usuario['rol']}'),
-                                    Text('Estado: ${usuario['estado']}'),
-                                    Text(
-                                      'Registrado: ${usuario['fecha_registro']}',
+                                    suffixIcon:
+                                        _searchController.text.isNotEmpty
+                                        ? IconButton(
+                                            icon: const Icon(
+                                              Icons.clear,
+                                              color: Colors.black,
+                                            ),
+                                            onPressed: () {
+                                              _searchController.clear();
+                                              _onSearchChanged('');
+                                            },
+                                          )
+                                        : const Icon(
+                                            Icons.search,
+                                            color: Colors.black,
+                                          ),
+                                  ),
+                                ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            modoSeleccion
+                                ? Icons.delete
+                                : estadoFiltro.isEmpty
+                                ? Icons.filter_alt
+                                : Icons.close,
+                            color: Colors.black,
+                          ),
+                          onPressed: () async {
+                            if (modoSeleccion) {
+                              // Lógica de eliminación múltiple
+                              if (seleccionados.isEmpty) return;
+
+                              final confirmar = await showDialog<bool>(
+                                context: context,
+                                builder: (_) => AlertDialog(
+                                  title: const Text("Confirmar eliminación"),
+                                  content: Text(
+                                    "¿Deseas eliminar los ${seleccionados.length} usuarios seleccionados?",
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                      child: const Text("No"),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: CustomDropdownSelector(
-                                            labelText: 'Rol',
-                                            hintText: 'Selecciona rol',
-                                            value: usuario['rol'],
-                                            items: roles,
-                                            onChanged: (value) {
-                                              actualizarUsuario(
-                                                index,
-                                                value,
-                                                usuario['estado'],
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: CustomDropdownSelector(
-                                            labelText: 'Estado',
-                                            hintText: 'Selecciona estado',
-                                            value: usuario['estado'],
-                                            items: estados,
-                                            onChanged: (value) {
-                                              actualizarUsuario(
-                                                index,
-                                                usuario['rol'],
-                                                value,
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ],
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true),
+                                      child: const Text("Sí"),
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
-                          ),
+                              );
+
+                              if (confirmar == true) {
+                                await usuarioService.eliminarUsuarios(
+                                  seleccionados,
+                                );
+                                setState(() {
+                                  seleccionados.clear();
+                                  modoSeleccion = false;
+                                  usuarios.clear();
+                                  paginaActual = 1;
+                                  hasMore = true;
+                                  loading = true;
+                                });
+                                await fetchUsuarios(reset: true);
+                              }
+                            } else {
+                              // Filtro por estado
+                              if (estadoFiltro.isNotEmpty) {
+                                setState(() {
+                                  estadoFiltro = '';
+                                  usuarios.clear();
+                                  paginaActual = 1;
+                                  hasMore = true;
+                                  loading = true;
+                                });
+                                await fetchUsuarios(reset: true);
+                              } else {
+                                // Mostrar modal de filtrado avanzado
+                                showModalBottomSheet(
+                                  context: context,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(20),
+                                    ),
+                                  ),
+                                  builder: (BuildContext context) {
+                                    return SafeArea(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            ListTile(
+                                              title: const Text("Activo"),
+                                              onTap: () async {
+                                                Navigator.pop(context);
+                                                if (estadoFiltro != 'Activo') {
+                                                  setState(() {
+                                                    estadoFiltro = 'Activo';
+                                                    usuarios.clear();
+                                                    paginaActual = 1;
+                                                    hasMore = true;
+                                                    loading = true;
+                                                  });
+                                                  await fetchUsuarios(
+                                                    reset: true,
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                            ListTile(
+                                              title: const Text("Inactivo"),
+                                              onTap: () async {
+                                                Navigator.pop(context);
+                                                if (estadoFiltro !=
+                                                    'Inactivo') {
+                                                  setState(() {
+                                                    estadoFiltro = 'Inactivo';
+                                                    usuarios.clear();
+                                                    paginaActual = 1;
+                                                    hasMore = true;
+                                                    loading = true;
+                                                  });
+                                                  await fetchUsuarios(
+                                                    reset: true,
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              }
+                            }
+                          },
                         ),
-                      );
-                    },
+                      ],
+                    ),
                   ),
-          ),
-        ],
+                ],
+              ),
+            ),
+            Expanded(
+              child: loading && usuarios.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(10),
+                      itemCount: usuarios.length + (loadingMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index >= usuarios.length) {
+                          return const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                        final usuario = usuarios[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 6),
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Row(
+                              children: [
+                                Initicon(
+                                  text: usuario['nombre'],
+                                  backgroundColor: Colors.blue,
+                                  size: 50,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        usuario['nombre'],
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text('Rol: ${usuario['rol']}'),
+                                      Text('Estado: ${usuario['estado']}'),
+                                      Text(
+                                        'Registrado: ${usuario['fecha_registro']}',
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: CustomDropdownSelector(
+                                              labelText: 'Rol',
+                                              hintText: 'Selecciona rol',
+                                              value: usuario['rol'],
+                                              items: roles,
+                                              onChanged: (value) {
+                                                actualizarUsuario(
+                                                  index,
+                                                  value,
+                                                  usuario['estado'],
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: CustomDropdownSelector(
+                                              labelText: 'Estado',
+                                              hintText: 'Selecciona estado',
+                                              value: usuario['estado'],
+                                              items: estados,
+                                              onChanged: (value) {
+                                                actualizarUsuario(
+                                                  index,
+                                                  usuario['rol'],
+                                                  value,
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
