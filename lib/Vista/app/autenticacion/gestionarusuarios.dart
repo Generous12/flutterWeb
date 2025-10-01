@@ -4,7 +4,9 @@ import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
 import 'package:proyecto_web/Controlador/Usuarios/gestiousuario.dart';
+import 'package:proyecto_web/Vista/app/autenticacion/registrarusuarios.dart';
 import 'package:proyecto_web/Widgets/dropdownbutton.dart';
+import 'package:proyecto_web/Widgets/navegator.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -439,9 +441,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                                           ),
                                         ],
                                       ),
-
                                       const SizedBox(height: 12),
-
                                       Row(
                                         children: [
                                           Expanded(
@@ -511,6 +511,14 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                     ),
             ),
           ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.black,
+          shape: const CircleBorder(),
+          onPressed: () {
+            navegarConSlideDerecha(context, RegistroUsuarioScreen());
+          },
+          child: const Icon(Iconsax.add, color: Colors.white, size: 28),
         ),
       ),
     );

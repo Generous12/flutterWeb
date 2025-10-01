@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
 import 'package:proyecto_web/Controlador/Usuarios/usuariosservice.dart';
-import 'package:proyecto_web/Vista/app/autenticacion/gestionarusuarios.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/dropdownbutton.dart';
-import 'package:proyecto_web/Widgets/navegator.dart';
 import 'package:proyecto_web/Widgets/passwordvalidator.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
@@ -285,16 +282,6 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
                   textColor: Colors.white,
                   onPressedLogic: () async {
                     _registrarUsuario();
-                  },
-                ),
-                const SizedBox(height: 20),
-                LoadingOverlayButtonHabilitar(
-                  text: "Ver usuarios",
-                  icon: Iconsax.document,
-                  backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-                  textColor: Colors.white,
-                  onPressedLogic: () async {
-                    navegarConSlideDerecha(context, UsuariosScreen());
                   },
                 ),
               ],

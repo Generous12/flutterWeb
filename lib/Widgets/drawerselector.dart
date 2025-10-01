@@ -3,8 +3,8 @@ import 'package:flutter_initicon/flutter_initicon.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
+import 'package:proyecto_web/Vista/app/autenticacion/gestionarusuarios.dart';
 import 'package:proyecto_web/Vista/app/autenticacion/loginapp.dart';
-import 'package:proyecto_web/Vista/app/autenticacion/registrarusuarios.dart';
 import 'package:proyecto_web/Vista/app/principal/Areas/crearAreas.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/menu.dart';
 import 'package:proyecto_web/Vista/app/principal/Historial/gestionarhistorial.dart';
@@ -89,7 +89,7 @@ class CustomDrawer extends StatelessWidget {
                   style: TextStyle(color: Colors.black),
                 ),
                 onTap: () {
-                  navegarConSlideDerecha(context, RegistroUsuarioScreen());
+                  navegarConSlideDerecha(context, UsuariosScreen());
                 },
               ),
               ListTile(
