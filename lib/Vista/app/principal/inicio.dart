@@ -28,17 +28,17 @@ class _InicioScreenState extends State<InicioScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Inicio"),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        toolbarHeight: 48,
-        elevation: 0,
-      ),
-      drawer: const CustomDrawer(),
-      body: SafeArea(
-        child: SingleChildScrollView(
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Inicio"),
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          toolbarHeight: 48,
+          elevation: 0,
+        ),
+        drawer: const CustomDrawer(),
+        body: SingleChildScrollView(
           padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

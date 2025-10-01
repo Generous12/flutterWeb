@@ -136,377 +136,386 @@ class _ComponentesListState extends State<ComponentesList> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
-            child: Column(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 238, 238, 238),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Row(
-                    children: [
-                      if (modoSeleccion)
-                        IconButton(
-                          icon: const Icon(
-                            Iconsax.close_circle,
-                            color: Colors.black,
+    return SafeArea(
+      child: Scaffold(
+        body: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
+              child: Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 238, 238, 238),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Row(
+                      children: [
+                        if (modoSeleccion)
+                          IconButton(
+                            icon: const Icon(
+                              Iconsax.close_circle,
+                              color: Colors.black,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                seleccionados.clear();
+                                modoSeleccion = false;
+                              });
+                            },
                           ),
-                          onPressed: () {
-                            setState(() {
-                              seleccionados.clear();
-                              modoSeleccion = false;
-                            });
-                          },
-                        ),
-                      Expanded(
-                        child: modoSeleccion
-                            ? Text(
-                                "Seleccionados ${seleccionados.length}",
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              )
-                            : TextField(
-                                controller: _searchController,
-                                onChanged: _onSearchChanged,
-                                decoration: InputDecoration(
-                                  hintText: 'Buscar componente',
-                                  border: InputBorder.none,
-                                  prefixIcon: IconButton(
-                                    icon: const Icon(
-                                      Iconsax.arrow_left,
-                                      color: Colors.black,
-                                    ),
-                                    onPressed: () => Navigator.pop(context),
+                        Expanded(
+                          child: modoSeleccion
+                              ? Text(
+                                  "Seleccionados ${seleccionados.length}",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  suffixIcon: _searchController.text.isNotEmpty
-                                      ? IconButton(
-                                          icon: const Icon(
-                                            LucideIcons.eraser,
+                                )
+                              : TextField(
+                                  controller: _searchController,
+                                  onChanged: _onSearchChanged,
+                                  decoration: InputDecoration(
+                                    hintText: 'Buscar componente',
+                                    border: InputBorder.none,
+                                    prefixIcon: IconButton(
+                                      icon: const Icon(
+                                        Iconsax.arrow_left,
+                                        color: Colors.black,
+                                      ),
+                                      onPressed: () => Navigator.pop(context),
+                                    ),
+                                    suffixIcon:
+                                        _searchController.text.isNotEmpty
+                                        ? IconButton(
+                                            icon: const Icon(
+                                              LucideIcons.eraser,
+                                              color: Colors.black,
+                                            ),
+                                            onPressed: () {
+                                              _searchController.clear();
+                                              _onSearchChanged('');
+                                            },
+                                          )
+                                        : const Icon(
+                                            Iconsax.search_normal,
                                             color: Colors.black,
                                           ),
-                                          onPressed: () {
-                                            _searchController.clear();
-                                            _onSearchChanged('');
-                                          },
-                                        )
-                                      : const Icon(
-                                          Iconsax.search_normal,
-                                          color: Colors.black,
-                                        ),
+                                  ),
                                 ),
-                              ),
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          modoSeleccion
-                              ? Iconsax.trash
-                              : filtroTipo == "General"
-                              ? Iconsax.filter
-                              : Iconsax.close_circle,
-                          color: Colors.black,
                         ),
-                        onPressed: () async {
-                          if (modoSeleccion) {
-                            if (seleccionados.isEmpty) return;
+                        IconButton(
+                          icon: Icon(
+                            modoSeleccion
+                                ? Iconsax.trash
+                                : filtroTipo == "General"
+                                ? Iconsax.filter
+                                : Iconsax.close_circle,
+                            color: Colors.black,
+                          ),
+                          onPressed: () async {
+                            if (modoSeleccion) {
+                              if (seleccionados.isEmpty) return;
 
-                            final confirmar = await showCustomDialog(
-                              context: context,
-                              title: "Confirmar eliminación",
-                              message:
-                                  "¿Deseas eliminar los ${seleccionados.length} componentes seleccionados?",
-                              confirmButtonText: "Sí",
-                              cancelButtonText: "No",
-                            );
-
-                            if (confirmar == true) {
-                              final service = EliminarComponenteService();
-                              final idsTipo = seleccionados
-                                  .map(
-                                    (id) => componentes
-                                        .firstWhere((c) => c.id == id)
-                                        .idTipo,
-                                  )
-                                  .toSet()
-                                  .toList();
-
-                              final result = await service.eliminarTipos(
-                                idsTipo,
-                              );
-
-                              await showCustomDialog(
+                              final confirmar = await showCustomDialog(
                                 context: context,
-                                title: result['success'] ? "Éxito" : "Error",
-                                message: result['message'],
-                                confirmButtonText: "Cerrar",
+                                title: "Confirmar eliminación",
+                                message:
+                                    "¿Deseas eliminar los ${seleccionados.length} componentes seleccionados?",
+                                confirmButtonText: "Sí",
+                                cancelButtonText: "No",
                               );
 
-                              if (result['success']) {
+                              if (confirmar == true) {
+                                final service = EliminarComponenteService();
+                                final idsTipo = seleccionados
+                                    .map(
+                                      (id) => componentes
+                                          .firstWhere((c) => c.id == id)
+                                          .idTipo,
+                                    )
+                                    .toSet()
+                                    .toList();
+
+                                final result = await service.eliminarTipos(
+                                  idsTipo,
+                                );
+
+                                await showCustomDialog(
+                                  context: context,
+                                  title: result['success'] ? "Éxito" : "Error",
+                                  message: result['message'],
+                                  confirmButtonText: "Cerrar",
+                                );
+
+                                if (result['success']) {
+                                  setState(() {
+                                    seleccionados.clear();
+                                    modoSeleccion = false;
+                                    componentes.clear();
+                                    loading = true;
+                                  });
+                                  await fetchComponentes(reset: true);
+                                }
+                              }
+                            } else {
+                              if (filtroTipo != "General") {
                                 setState(() {
-                                  seleccionados.clear();
-                                  modoSeleccion = false;
+                                  filtroTipo = "General";
+                                  offset = 0;
+                                  allLoaded = false;
                                   componentes.clear();
                                   loading = true;
                                 });
                                 await fetchComponentes(reset: true);
+                              } else {
+                                showModalBottomSheet(
+                                  context: context,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(20),
+                                    ),
+                                  ),
+                                  builder: (BuildContext context) {
+                                    return SafeArea(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            ListTile(
+                                              leading: const Icon(
+                                                Iconsax.mouse,
+                                              ),
+                                              title: const Text("Periféricos"),
+                                              onTap: () async {
+                                                Navigator.pop(context);
+                                                if (filtroTipo !=
+                                                    "Periféricos") {
+                                                  setState(() {
+                                                    filtroTipo = "Periféricos";
+                                                    offset = 0;
+                                                    allLoaded = false;
+                                                    componentes.clear();
+                                                    loading = true;
+                                                  });
+                                                  await fetchComponentes(
+                                                    reset: true,
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                            ListTile(
+                                              leading: const Icon(Iconsax.cpu),
+                                              title: const Text("Componentes"),
+                                              onTap: () async {
+                                                Navigator.pop(context);
+                                                if (filtroTipo !=
+                                                    "Componentes") {
+                                                  setState(() {
+                                                    filtroTipo = "Componentes";
+                                                    offset = 0;
+                                                    allLoaded = false;
+                                                    componentes.clear();
+                                                    loading = true;
+                                                  });
+                                                  await fetchComponentes(
+                                                    reset: true,
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
                               }
                             }
-                          } else {
-                            if (filtroTipo != "General") {
-                              setState(() {
-                                filtroTipo = "General";
-                                offset = 0;
-                                allLoaded = false;
-                                componentes.clear();
-                                loading = true;
-                              });
-                              await fetchComponentes(reset: true);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: loading && componentes.isEmpty
+                  ? const Center(
+                      child: CircularProgressIndicator(color: Colors.blue),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: () => fetchComponentes(reset: true),
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.all(0),
+                        itemCount: componentes.length + (loadingMore ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index < componentes.length) {
+                            final c = componentes[index];
+                            Color stockColor;
+                            String stockTexto;
+                            if (c.cantidad <= 5) {
+                              stockColor = const Color.fromARGB(
+                                255,
+                                255,
+                                137,
+                                129,
+                              );
+                              stockTexto = 'Bajo Stock';
+                            } else if (c.cantidad <= 20) {
+                              stockColor = const Color.fromARGB(
+                                255,
+                                255,
+                                242,
+                                124,
+                              );
+                              stockTexto = 'Medio Stock';
                             } else {
-                              showModalBottomSheet(
-                                context: context,
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(20),
+                              stockColor = const Color.fromARGB(
+                                255,
+                                123,
+                                180,
+                                125,
+                              );
+                              stockTexto = 'Stock Disponible';
+                            }
+                            return Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(0),
+                              ),
+                              elevation: 0,
+                              margin: const EdgeInsets.symmetric(vertical: 0),
+                              color: seleccionados.contains(c.id)
+                                  ? Colors.blue.withOpacity(0.2)
+                                  : Colors.white,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(15),
+                                onTap: () {
+                                  if (modoSeleccion) {
+                                    setState(() {
+                                      if (seleccionados.contains(c.id)) {
+                                        seleccionados.remove(c.id);
+                                        if (seleccionados.isEmpty)
+                                          modoSeleccion = false;
+                                      } else {
+                                        seleccionados.add(c.id);
+                                      }
+                                    });
+                                  } else {
+                                    navegarConSlideDerecha(
+                                      context,
+                                      ComponenteDetail(componente: c),
+                                      onVolver: () {
+                                        setState(() {
+                                          fetchComponentes(reset: true);
+                                        });
+                                      },
+                                    );
+                                  }
+                                },
+                                onLongPress: () {
+                                  setState(() {
+                                    modoSeleccion = true;
+                                    seleccionados.add(c.id);
+                                  });
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Row(
+                                    children: [
+                                      c.imagenesBase64.isEmpty
+                                          ? const Icon(
+                                              Iconsax.folder5,
+                                              color: Colors.black,
+                                              size: 50,
+                                            )
+                                          : _buildFirstImage(c),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              c.nombreTipo,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              c.codigoInventario,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.black54,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 4,
+                                                    horizontal: 8,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: stockColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(90),
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    stockTexto,
+                                                    style: const TextStyle(
+                                                      fontSize: 14,
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '${c.cantidad}',
+                                                    style: const TextStyle(
+                                                      fontSize: 14,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const Icon(
+                                        Iconsax.arrow_right_3,
+                                        color: Colors.black,
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                builder: (BuildContext context) {
-                                  return SafeArea(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(20),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          ListTile(
-                                            leading: const Icon(Iconsax.mouse),
-                                            title: const Text("Periféricos"),
-                                            onTap: () async {
-                                              Navigator.pop(context);
-                                              if (filtroTipo != "Periféricos") {
-                                                setState(() {
-                                                  filtroTipo = "Periféricos";
-                                                  offset = 0;
-                                                  allLoaded = false;
-                                                  componentes.clear();
-                                                  loading = true;
-                                                });
-                                                await fetchComponentes(
-                                                  reset: true,
-                                                );
-                                              }
-                                            },
-                                          ),
-                                          ListTile(
-                                            leading: const Icon(Iconsax.cpu),
-                                            title: const Text("Componentes"),
-                                            onTap: () async {
-                                              Navigator.pop(context);
-                                              if (filtroTipo != "Componentes") {
-                                                setState(() {
-                                                  filtroTipo = "Componentes";
-                                                  offset = 0;
-                                                  allLoaded = false;
-                                                  componentes.clear();
-                                                  loading = true;
-                                                });
-                                                await fetchComponentes(
-                                                  reset: true,
-                                                );
-                                              }
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                            }
+                              ),
+                            );
+                          } else {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 10),
+                              child: Center(child: CircularProgressIndicator()),
+                            );
                           }
                         },
                       ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: loading && componentes.isEmpty
-                ? const Center(
-                    child: CircularProgressIndicator(color: Colors.blue),
-                  )
-                : RefreshIndicator(
-                    onRefresh: () => fetchComponentes(reset: true),
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(0),
-                      itemCount: componentes.length + (loadingMore ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (index < componentes.length) {
-                          final c = componentes[index];
-                          Color stockColor;
-                          String stockTexto;
-                          if (c.cantidad <= 5) {
-                            stockColor = const Color.fromARGB(
-                              255,
-                              255,
-                              137,
-                              129,
-                            );
-                            stockTexto = 'Bajo Stock';
-                          } else if (c.cantidad <= 20) {
-                            stockColor = const Color.fromARGB(
-                              255,
-                              255,
-                              242,
-                              124,
-                            );
-                            stockTexto = 'Medio Stock';
-                          } else {
-                            stockColor = const Color.fromARGB(
-                              255,
-                              123,
-                              180,
-                              125,
-                            );
-                            stockTexto = 'Stock Disponible';
-                          }
-                          return Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(0),
-                            ),
-                            elevation: 0,
-                            margin: const EdgeInsets.symmetric(vertical: 0),
-                            color: seleccionados.contains(c.id)
-                                ? Colors.blue.withOpacity(0.2)
-                                : Colors.white,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(15),
-                              onTap: () {
-                                if (modoSeleccion) {
-                                  setState(() {
-                                    if (seleccionados.contains(c.id)) {
-                                      seleccionados.remove(c.id);
-                                      if (seleccionados.isEmpty)
-                                        modoSeleccion = false;
-                                    } else {
-                                      seleccionados.add(c.id);
-                                    }
-                                  });
-                                } else {
-                                  navegarConSlideDerecha(
-                                    context,
-                                    ComponenteDetail(componente: c),
-                                    onVolver: () {
-                                      setState(() {
-                                        fetchComponentes(reset: true);
-                                      });
-                                    },
-                                  );
-                                }
-                              },
-                              onLongPress: () {
-                                setState(() {
-                                  modoSeleccion = true;
-                                  seleccionados.add(c.id);
-                                });
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Row(
-                                  children: [
-                                    c.imagenesBase64.isEmpty
-                                        ? const Icon(
-                                            Iconsax.folder5,
-                                            color: Colors.black,
-                                            size: 50,
-                                          )
-                                        : _buildFirstImage(c),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            c.nombreTipo,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            c.codigoInventario,
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.black54,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 4,
-                                              horizontal: 8,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: stockColor,
-                                              borderRadius:
-                                                  BorderRadius.circular(90),
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(
-                                                  stockTexto,
-                                                  style: const TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  '${c.cantidad}',
-                                                  style: const TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const Icon(
-                                      Iconsax.arrow_right_3,
-                                      color: Colors.black,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        } else {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 10),
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        }
-                      },
                     ),
-                  ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
