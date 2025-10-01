@@ -1,7 +1,7 @@
 <?php
 ob_start();
 include __DIR__ . "/../../mysqlConexion.php"; 
-
+include __DIR__ . "/../../funciones.php"; 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
@@ -34,10 +34,7 @@ if ($accion === "registrarUsuario") {
             $accionHistorial = "Registro de nuevo usuario";
             $id_entidad = $id_usuario;
 
-            $stmtHist = $conn->prepare("CALL RegistrarHistorial(?, ?, ?, ?)");
-            $stmtHist->bind_param("ssss", $id_usuario, $rol , $accionHistorial, $id_entidad);
-            $stmtHist->execute();
-            $stmtHist->close();
+          registrarHistorial($conn, $id_usuario, $rol, $accionHistorial, $id_entidad);
 
             $response = [
                 "success" => true,

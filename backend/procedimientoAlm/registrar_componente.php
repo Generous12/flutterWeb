@@ -11,8 +11,6 @@ error_reporting(E_ERROR | E_PARSE);
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 $data = json_decode(file_get_contents("php://input"), true);
-
-// Validar parámetros
 $missingParams = [];
 if (!isset($data['nombre_tipo'])) $missingParams[] = 'nombre_tipo';
 if (!isset($data['atributos']) || !is_array($data['atributos'])) $missingParams[] = 'atributos';
