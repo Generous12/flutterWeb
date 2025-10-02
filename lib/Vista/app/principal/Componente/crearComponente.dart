@@ -689,7 +689,6 @@ class ComponenteForm extends StatefulWidget {
   State<ComponenteForm> createState() => _ComponenteFormState();
 }
 
-//IMAGENES INCLUIDAS
 class _ComponenteFormState extends State<ComponenteForm> {
   final TextEditingController codigoController = TextEditingController();
   final TextEditingController cantidadController = TextEditingController();
