@@ -491,7 +491,6 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
         final valor = attr["controllerValor"].text.trim();
         final tipo = attr["tipo"];
 
-        // ===== NUEVO ATRIBUTO =====
         if (attr["esNuevo"] == true) {
           final insertado = await _service.insertarAtributo(
             _cabecera!["id_tipo"],
@@ -521,8 +520,6 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
           } else {
             throw Exception("No se pudo insertar el nuevo atributo");
           }
-
-          // ===== ATRIBUTO EXISTENTE =====
         } else {
           final int? idAtributo = attr["id_atributo"];
           if (idAtributo == null) {
