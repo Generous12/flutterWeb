@@ -124,6 +124,7 @@ try {
         $stmtTipo->bind_param("si", $nuevo_nombre_tipo, $row['id_tipo']);
         $stmtTipo->execute();
     }
+    //COPIAR
        if ($idUsuarioCreador && $rolCreador) {
         $accion = "Actualizó el componente con código " . $identificador;
         $idEntidad = $identificador;

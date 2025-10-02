@@ -98,7 +98,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: 230.0,
                             fit: BoxFit.fitWidth,
                           ),
-
                           CustomTextField(
                             controller: emailController,
                             hintText: "Ingresar correo electrónico",
