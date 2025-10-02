@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:provider/provider.dart';
 import 'package:proyecto_web/Clases/plantillasComponente.dart';
 import 'package:proyecto_web/Controlador/Atributos/atriListar_componente.dart';
+import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
@@ -358,8 +360,15 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                               },
                             );
                           } else {
+                            final usuarioProvider =
+                                Provider.of<UsuarioProvider>(
+                                  context,
+                                  listen: false,
+                                );
                             final resp = await _service.eliminarAtributo(
                               eliminado["id_atributo"],
+                              idUsuarioCreador: usuarioProvider.idUsuario ?? "",
+                              rolCreador: usuarioProvider.rol ?? "",
                             );
                             if (resp["success"] == true) {
                               SnackBarUtil.mostrarSnackBarPersonalizado(
@@ -486,6 +495,10 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
     bool huboCambio = false;
 
     try {
+      final usuarioProvider = Provider.of<UsuarioProvider>(
+        context,
+        listen: false,
+      );
       for (var attr in atributos) {
         final nombre = attr["controllerNombre"].text.trim();
         final valor = attr["controllerValor"].text.trim();
@@ -506,6 +519,8 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
               _cabecera!["id_componente"],
               nuevoId,
               valor,
+              idUsuarioCreador: usuarioProvider.idUsuario ?? "",
+              rolCreador: usuarioProvider.rol ?? "",
             );
 
             if (valorGuardado["success"] == true) {
@@ -535,6 +550,8 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
               idAtributo,
               nombre,
               tipo,
+              idUsuarioCreador: usuarioProvider.idUsuario ?? "",
+              rolCreador: usuarioProvider.rol ?? "",
             );
 
             if (actualizado["success"] == true) {
@@ -549,6 +566,8 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
               _cabecera!["id_componente"],
               idAtributo,
               valor,
+              idUsuarioCreador: usuarioProvider.idUsuario ?? "",
+              rolCreador: usuarioProvider.rol ?? "",
             );
 
             if (valorGuardado["success"] == true) {

@@ -147,8 +147,10 @@ class ComponenteServiceAtributo {
   Future<Map<String, dynamic>> actualizarAtributo(
     int idAtributo,
     String nombre,
-    String tipoDato,
-  ) async {
+    String tipoDato, {
+    required String idUsuarioCreador,
+    required String rolCreador,
+  }) async {
     final response = await http.post(
       Uri.parse(urlCrud),
       headers: {"Content-Type": "application/json"},
@@ -157,6 +159,8 @@ class ComponenteServiceAtributo {
         "id_atributo": idAtributo,
         "nombre_atributo": nombre,
         "tipo_dato": tipoDato,
+        "id_usuario": idUsuarioCreador,
+        "rol": rolCreador,
       }),
     );
 
@@ -166,8 +170,10 @@ class ComponenteServiceAtributo {
   Future<Map<String, dynamic>> guardarValor(
     int idComponente,
     int idAtributo,
-    String valor,
-  ) async {
+    String valor, {
+    required String idUsuarioCreador,
+    required String rolCreador,
+  }) async {
     final response = await http.post(
       Uri.parse(urlCrud),
       headers: {"Content-Type": "application/json"},
@@ -176,6 +182,8 @@ class ComponenteServiceAtributo {
         "id_componente": idComponente,
         "id_atributo": idAtributo,
         "valor": valor,
+        "id_usuario": idUsuarioCreador,
+        "rol": rolCreador,
       }),
     );
 
@@ -183,13 +191,19 @@ class ComponenteServiceAtributo {
   }
 
   // 4️⃣ Eliminar atributo
-  Future<Map<String, dynamic>> eliminarAtributo(int idAtributo) async {
+  Future<Map<String, dynamic>> eliminarAtributo(
+    int idAtributo, {
+    required String idUsuarioCreador,
+    required String rolCreador,
+  }) async {
     final response = await http.post(
       Uri.parse(urlCrud),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         "accion": "eliminar_atributo",
         "id_atributo": idAtributo,
+        "id_usuario": idUsuarioCreador,
+        "rol": rolCreador,
       }),
     );
 

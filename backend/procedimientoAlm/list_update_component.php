@@ -1,7 +1,7 @@
 <?php
 ob_start();
 include __DIR__ . "/../mysqlConexion.php"; 
-
+include __DIR__ . "/../funciones.php"; 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
@@ -124,12 +124,10 @@ try {
         $stmtTipo->bind_param("si", $nuevo_nombre_tipo, $row['id_tipo']);
         $stmtTipo->execute();
     }
-    //COPIAR
        if ($idUsuarioCreador && $rolCreador) {
         $accion = "Actualizó el componente con código " . $identificador;
         $idEntidad = $identificador;
 
-        // Llamar al procedimiento almacenado
         $stmtHistorial = $conn->prepare("CALL RegistrarHistorial(?, ?, ?, ?)");
         $stmtHistorial->bind_param("ssss", $idUsuarioCreador, $rolCreador, $accion, $idEntidad);
         $stmtHistorial->execute();
