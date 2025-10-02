@@ -33,7 +33,6 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
   bool puedeContinuar = false;
 
   final tipoComponenteKey = GlobalKey<_TipoYAtributoFormState>();
-
   final componenteFormKey = GlobalKey<_ComponenteFormState>();
   final valorAtributoFormKey = GlobalKey<_ValorAtributoFormState>();
 
@@ -73,18 +72,15 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
           });
         },
       ),
+      _ResumenComponente(),
     ];
   }
 
   void siguientePaso() {
     if (pasoActual < pasosWidgets.length - 1) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() {
-            pasoActual++;
-            puedeContinuar = false;
-          });
-        }
+      setState(() {
+        pasoActual++;
+        puedeContinuar = pasoActual == pasosWidgets.length - 1 ? true : false;
       });
     }
   }
@@ -114,6 +110,58 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
       case 2:
         valorAtributoFormKey.currentState?.guardar(provider);
         break;
+    }
+  }
+
+  Future<void> _guardarComponenteFinal() async {
+    print("🖱️ Botón Finalizado presionado, mostrando diálogo de confirmación");
+    final confirmado = await showCustomDialog(
+      context: context,
+      title: "Confirmar",
+      message: "¿Deseas guardar el componente?",
+      confirmButtonText: "Sí",
+      cancelButtonText: "No",
+    );
+
+    if (confirmado != true) {
+      print("⏹️ Usuario canceló la acción");
+      return;
+    }
+
+    print("➡️ Usuario confirmó, intentando guardar en backend");
+    final exito = await Provider.of<ComponentService>(
+      context,
+      listen: false,
+    ).guardarEnBackendB();
+
+    if (!exito) {
+      await showCustomDialog(
+        context: context,
+        title: "Error",
+        message: "Componente no guardado",
+        confirmButtonText: "Cerrar",
+      );
+      return;
+    }
+
+    final continuar = await showCustomDialog(
+      context: context,
+      title: "Éxito",
+      message: "Componente guardado correctamente.\n\n¿Deseas registrar otro?",
+      confirmButtonText: "Sí",
+      cancelButtonText: "No",
+    );
+
+    final provider = Provider.of<ComponentService>(context, listen: false);
+
+    if (continuar == true) {
+      print("🔄 Usuario quiere seguir registrando");
+      provider.reset();
+      navegarYRemoverConSlideIzquierda(context, const FlujoCrearComponente());
+    } else {
+      print("🏠 Usuario quiere volver al inicio");
+      provider.reset();
+      navegarYRemoverConSlideIzquierda(context, const InicioScreen());
     }
   }
 
@@ -225,20 +273,16 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
                         text: pasoActual == pasosWidgets.length - 1
                             ? "Finalizado"
                             : "Continuar",
-                        enabled: puedeContinuar,
+                        enabled: pasoActual == pasosWidgets.length - 1
+                            ? true
+                            : puedeContinuar,
                         onPressedLogic: () async {
-                          if (!puedeContinuar) return;
-
-                          await guardarPaso();
-
                           if (pasoActual < pasosWidgets.length - 1) {
+                            if (!puedeContinuar) return;
+                            await guardarPaso();
                             siguientePaso();
                           } else {
-                            debugPrint("✅ Flujo finalizado");
-                            navegarConSlideDerecha(
-                              context,
-                              const VisualizarComponenteScreen(),
-                            );
+                            await _guardarComponenteFinal();
                           }
                         },
                       ),
@@ -249,6 +293,129 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ResumenComponente extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final provider = Provider.of<ComponentService>(context);
+
+    if (provider.tipoSeleccionado == null) {
+      return const Center(
+        child: Text(
+          "No hay componente creado todavía",
+          style: TextStyle(fontSize: 18, color: Colors.black54),
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(0.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _InfoCard(
+            icon: LucideIcons.package,
+            title: "Tipo de Componente",
+            subtitle: provider.tipoSeleccionado!.nombre,
+            color: Colors.blue,
+          ),
+          if (provider.componenteCreado != null)
+            _InfoCard(
+              icon: LucideIcons.layers,
+              title: "Componente Creado",
+              subtitle:
+                  "Código: ${provider.componenteCreado!.codigoInventario}\n"
+                  "Cantidad: ${provider.componenteCreado!.cantidad}",
+              color: Colors.black87,
+            ),
+          if (provider.componenteCreado != null)
+            _InfoCard(
+              icon: LucideIcons.package,
+              title: "Tipo Guardado",
+              subtitle: provider.componenteCreado!.tipoNombre,
+              color: Colors.blueGrey,
+            ),
+
+          const SizedBox(height: 24),
+
+          // **Alineamos el texto "Atributos"**
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(
+              "Atributos",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          ...provider.atributos.map((attr) {
+            final valor = provider.valoresAtributos[attr.id!] ?? "(Sin valor)";
+            return Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 6.0,
+                horizontal: 16,
+              ),
+              child: _AttributeCard(
+                icon: LucideIcons.settings,
+                nombre: attr.nombre,
+                tipo: attr.tipoDato,
+                valor: valor,
+              ),
+            );
+          }).toList(),
+
+          if (provider.componenteCreado != null &&
+              provider.componenteCreado!.imagenes != null &&
+              provider.componenteCreado!.imagenes!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 24),
+                  const Text(
+                    "Imágenes",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 120,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: provider.componenteCreado!.imagenes!.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                      itemBuilder: (context, index) {
+                        final file =
+                            provider.componenteCreado!.imagenes![index];
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(
+                            file,
+                            width: 120,
+                            height: 120,
+                            fit: BoxFit.cover,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -1085,227 +1252,6 @@ class _ValorAtributoFormState extends State<ValorAtributoForm> {
   }
 }
 
-class VisualizarComponenteScreen extends StatelessWidget {
-  const VisualizarComponenteScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final provider = Provider.of<ComponentService>(context);
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        toolbarHeight: 48,
-        title: const Text("Crear Componente"),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft),
-          onPressed: () async {
-            final provider = Provider.of<ComponentService>(
-              context,
-              listen: false,
-            );
-
-            if (provider.tipoSeleccionado != null) {
-              final salir = await showCustomDialog(
-                context: context,
-                title: "Confirmar salida",
-                message:
-                    "Hay un tipo de componente en proceso: '${provider.tipoSeleccionado!.nombre}'. ¿Deseas salir y perder los cambios?",
-                confirmButtonText: "Sí",
-                cancelButtonText: "No",
-              );
-
-              if (salir == true) {
-                provider.reset();
-                Provider.of<ComponentService>(context, listen: false).reset();
-                navegarYRemoverConSlideIzquierda(context, const InicioScreen());
-              }
-            } else {
-              Navigator.pop(context);
-            }
-          },
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: provider.tipoSeleccionado == null
-            ? const Center(
-                child: Text(
-                  "No hay componente creado todavía",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black54,
-                  ),
-                ),
-              )
-            : SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _InfoCard(
-                      icon: LucideIcons.package,
-                      title: "Tipo de Componente",
-                      subtitle: provider.tipoSeleccionado!.nombre,
-                      color: Colors.blue,
-                    ),
-                    if (provider.componenteCreado != null)
-                      _InfoCard(
-                        icon: LucideIcons.layers,
-                        title: "Componente Creado",
-                        subtitle:
-                            "Código: ${provider.componenteCreado!.codigoInventario}\n"
-                            "Cantidad: ${provider.componenteCreado!.cantidad}",
-                        color: Colors.black87,
-                      ),
-                    if (provider.componenteCreado != null)
-                      _InfoCard(
-                        icon: LucideIcons.package,
-                        title: "Tipo Guardado",
-                        subtitle: provider.componenteCreado!.tipoNombre,
-                        color: Colors.blueGrey,
-                      ),
-                    const Text(
-                      "Atributos",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ...provider.atributos.map((attr) {
-                      final valor =
-                          provider.valoresAtributos[attr.id!] ?? "(Sin valor)";
-
-                      return _AttributeCard(
-                        icon: LucideIcons.settings,
-                        nombre: attr.nombre,
-                        tipo: attr.tipoDato,
-                        valor: valor,
-                      );
-                    }).toList(),
-                    if (provider.componenteCreado != null &&
-                        provider.componenteCreado!.imagenes != null &&
-                        provider.componenteCreado!.imagenes!.isNotEmpty)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 24),
-                          const Text(
-                            "Imágenes",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            height: 120,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount:
-                                  provider.componenteCreado!.imagenes!.length,
-                              separatorBuilder: (_, __) =>
-                                  const SizedBox(width: 12),
-                              itemBuilder: (context, index) {
-                                final file =
-                                    provider.componenteCreado!.imagenes![index];
-                                return ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image.file(
-                                    file,
-                                    width: 120,
-                                    height: 120,
-                                    fit: BoxFit.cover,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-              ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: LoadingOverlayButtonHabilitar(
-            text: "Registrar",
-            enabled: true,
-            onPressedLogic: () async {
-              print("🖱️ Botón presionado, mostrando diálogo de confirmación");
-
-              final confirmado = await showCustomDialog(
-                context: context,
-                title: "Confirmar",
-                message: "¿Deseas guardar el componente?",
-                confirmButtonText: "Sí",
-                cancelButtonText: "No",
-              );
-
-              if (confirmado == true) {
-                print("➡️ Usuario confirmó, intentando guardar en backend");
-                final exito = await Provider.of<ComponentService>(
-                  context,
-                  listen: false,
-                ).guardarEnBackendB();
-
-                if (exito) {
-                  final continuar = await showCustomDialog(
-                    context: context,
-                    title: "Éxito",
-                    message:
-                        "Componente guardado correctamente.\n\n¿Deseas registrar otro?",
-                    confirmButtonText: "Sí",
-                    cancelButtonText: "No",
-                  );
-
-                  if (continuar == true) {
-                    print("🔄 Usuario quiere seguir registrando");
-                    Provider.of<ComponentService>(
-                      context,
-                      listen: false,
-                    ).reset();
-                    navegarYRemoverConSlideIzquierda(
-                      context,
-                      const FlujoCrearComponente(),
-                    );
-                  } else {
-                    print("🏠 Usuario quiere volver al inicio");
-                    Provider.of<ComponentService>(
-                      context,
-                      listen: false,
-                    ).reset();
-                    navegarYRemoverConSlideIzquierda(
-                      context,
-                      const InicioScreen(),
-                    );
-                  }
-                } else {
-                  showCustomDialog(
-                    context: context,
-                    title: "Error",
-                    message: "Componente no guardado",
-                    confirmButtonText: "Cerrar",
-                  );
-                }
-              } else {
-                print("⏹️ Usuario canceló la acción");
-              }
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _InfoCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -1326,22 +1272,38 @@ class _InfoCard extends StatelessWidget {
       elevation: 3,
       shadowColor: Colors.black26,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: color.withOpacity(0.15),
-          child: Icon(icon, color: color, size: 22),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: Colors.black87,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: const TextStyle(fontSize: 14, color: Colors.black54),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              backgroundColor: color.withOpacity(0.15),
+              radius: 20,
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1364,33 +1326,50 @@ class _AttributeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
+      margin: EdgeInsets.zero,
       color: Colors.white,
       elevation: 1.5,
       shadowColor: Colors.black12,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.blue.withOpacity(0.15),
-          child: Icon(icon, color: Colors.blue, size: 20),
-        ),
-        title: Text(
-          nombre,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        subtitle: Text(
-          "Tipo: $tipo",
-          style: const TextStyle(fontSize: 12, color: Colors.black54),
-        ),
-        trailing: Text(
-          valor,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.blue,
-          ),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              backgroundColor: Colors.blue.withOpacity(0.15),
+              radius: 18,
+              child: Icon(icon, color: Colors.blue, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    nombre,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    "Tipo: $tipo",
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              valor,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+              ),
+            ),
+          ],
         ),
       ),
     );

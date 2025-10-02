@@ -59,7 +59,7 @@ class _ComponentesPageAtributoState extends State<ComponentesPageAtributo> {
     }
 
     if (!_hayMas) return;
-
+    if (!mounted) return;
     setState(() => _cargando = true);
 
     try {
@@ -68,7 +68,7 @@ class _ComponentesPageAtributoState extends State<ComponentesPageAtributo> {
         offset: _offset,
         busqueda: _busqueda.isEmpty ? null : _busqueda,
       );
-
+      if (!mounted) return;
       setState(() {
         _componentes.addAll(lista);
         _offset += lista.length;
@@ -77,6 +77,7 @@ class _ComponentesPageAtributoState extends State<ComponentesPageAtributo> {
     } catch (e) {
       debugPrint("Error al cargar componentes: $e");
     } finally {
+      if (!mounted) return;
       setState(() => _cargando = false);
     }
   }
