@@ -133,7 +133,6 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
                 context,
                 listen: false,
               );
-
               if (provider.tipoSeleccionado != null) {
                 final salir = await showCustomDialog(
                   context: context,
@@ -155,7 +154,6 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
             },
           ),
         ),
-
         body: SafeArea(
           child: Column(
             children: [
