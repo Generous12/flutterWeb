@@ -94,6 +94,7 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
   bool _cargando = true;
   bool huboCambio = false;
   String? _error;
+  List<String?> errores = [];
 
   final List<String> tipos = ["Texto", "Número", "Fecha"];
   final Map<String, String> abreviaturas = {
@@ -199,17 +200,63 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
   }
 
   void _addAtributo() {
+    final controllerNombre = TextEditingController();
+    final controllerValor = TextEditingController();
+
+    final errorTextNotifier = ValueNotifier<String?>(null);
+
+    controllerNombre.addListener(() {
+      _validarDuplicados();
+    });
+
     atributos.add({
       "id_atributo": null,
-      "controllerNombre": TextEditingController(),
-      "controllerValor": TextEditingController(),
+      "controllerNombre": controllerNombre,
+      "controllerValor": controllerValor,
       "tipo": tipos[0],
       "esNuevo": true,
       "originalNombre": "",
       "originalTipo": tipos[0],
       "originalValor": "",
+      "errorNotifier": errorTextNotifier,
     });
+
     setState(() {});
+  }
+
+  bool _validarDuplicados({bool retornar = false}) {
+    final nombres = <String, int>{};
+
+    for (var attr in atributos) {
+      attr["errorNotifier"] ??= ValueNotifier<String?>(null);
+    }
+
+    for (var attr in atributos) {
+      final nombre = attr["controllerNombre"].text.trim().toLowerCase();
+      if (nombre.isNotEmpty) {
+        nombres[nombre] = (nombres[nombre] ?? 0) + 1;
+      }
+    }
+
+    bool hayDuplicados = false;
+
+    for (var attr in atributos) {
+      final nombre = attr["controllerNombre"].text.trim().toLowerCase();
+      final nuevoError = (nombre.isNotEmpty && nombres[nombre]! > 1)
+          ? "El atributo '$nombre' está duplicado"
+          : null;
+
+      final errorNotifier = attr["errorNotifier"] as ValueNotifier<String?>;
+      if (errorNotifier.value != nuevoError) {
+        errorNotifier.value = nuevoError; // ✅ Solo cambia el error
+      }
+
+      if (nuevoError != null) {
+        hayDuplicados = true;
+      }
+    }
+
+    return retornar ? hayDuplicados : false;
   }
 
   Future<void> _seleccionarTipo(Map<String, dynamic> attr) async {
@@ -267,14 +314,12 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                 onPressed: _addAtributo,
                 icon: const Icon(Icons.add, color: Colors.blueAccent),
               ),
-              // ===== NUEVO ICONO PARA PLANTILLAS =====
               IconButton(
                 onPressed: () async {
                   final plantillaSeleccionada = await mostrarModalPlantilla(
                     context,
                   );
                   if (plantillaSeleccionada != null) {
-                    // Agregar atributos de la plantilla a la lista
                     setState(() {
                       for (var attr in plantillaSeleccionada.atributos) {
                         atributos.add({
@@ -289,10 +334,7 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                     });
                   }
                 },
-                icon: const Icon(
-                  Icons.grid_view,
-                  color: Colors.blueAccent,
-                ), // icono de plantilla
+                icon: const Icon(Icons.grid_view, color: Colors.blueAccent),
                 tooltip: "Seleccionar plantilla",
               ),
             ],
@@ -405,11 +447,24 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                CustomTextField(
-                                  controller: attr["controllerNombre"],
-                                  hintText: "Nombre del atributo",
-                                  label: "Atributo",
+                                ValueListenableBuilder<String?>(
+                                  valueListenable:
+                                      (attr["errorNotifier"] ??
+                                              ValueNotifier<String?>(null))
+                                          as ValueNotifier<String?>,
+                                  builder: (context, errorText, _) {
+                                    return CustomTextField(
+                                      controller: attr["controllerNombre"],
+                                      hintText: "Nombre del atributo",
+                                      label: "Atributo",
+                                      errorText: errorText,
+                                      onChanged: (value) {
+                                        _validarDuplicados();
+                                      },
+                                    );
+                                  },
                                 ),
+
                                 CustomTextField(
                                   controller: attr["controllerValor"],
                                   hintText: "Valor del atributo",
@@ -492,8 +547,30 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
   }
 
   Future<void> _guardarAtributos() async {
+    final hayDuplicados = _validarDuplicados(retornar: true);
+    if (hayDuplicados) {
+      showCustomDialog(
+        context: context,
+        title: "Error",
+        message:
+            "Existen atributos duplicados. Corrige los errores antes de guardar.",
+        confirmButtonText: "Cerrar",
+      );
+      return;
+    }
     bool huboCambio = false;
+    final confirmado = await showCustomDialog(
+      context: context,
+      title: "Confirmar",
+      message: "¿Deseas guardar los cambios?",
+      confirmButtonText: "Sí",
+      cancelButtonText: "No",
+    );
 
+    if (confirmado != true) {
+      print("⏹️ Usuario canceló la acción");
+      return;
+    }
     try {
       final usuarioProvider = Provider.of<UsuarioProvider>(
         context,
@@ -578,13 +655,15 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
         }
       }
 
-      // ===== MENSAJES FINALES =====
       if (huboCambio) {
         showCustomDialog(
           context: context,
           title: "Éxito",
           message: "Se registraron los cambios correctamente",
           confirmButtonText: "Cerrar",
+          onConfirm: () {
+            Navigator.of(context).pop(true);
+          },
         );
       } else {
         showCustomDialog(

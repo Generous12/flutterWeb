@@ -17,6 +17,7 @@ class CustomTextField extends StatefulWidget {
   final bool enabled;
   final String? initialValue;
   final Widget? suffixIcon;
+  final String? errorText;
   const CustomTextField({
     Key? key,
     this.enabled = true,
@@ -34,6 +35,7 @@ class CustomTextField extends StatefulWidget {
     this.showCounter = false,
     this.initialValue,
     this.suffixIcon,
+    this.errorText,
   }) : super(key: key);
 
   @override
@@ -149,6 +151,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                         },
                       )
                     : null),
+            errorText: widget.errorText,
           ),
         ),
       ),
