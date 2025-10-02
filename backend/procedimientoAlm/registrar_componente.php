@@ -1,6 +1,7 @@
 <?php
 ob_start();
 include __DIR__ . "/../mysqlConexion.php";
+include __DIR__ . "/../funciones.php";
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
@@ -16,7 +17,8 @@ if (!isset($data['nombre_tipo'])) $missingParams[] = 'nombre_tipo';
 if (!isset($data['atributos']) || !is_array($data['atributos'])) $missingParams[] = 'atributos';
 if (!isset($data['codigo_inventario'])) $missingParams[] = 'codigo_inventario';
 if (!isset($data['cantidad'])) $missingParams[] = 'cantidad';
-
+if (!isset($data['id_usuario'])) $missingParams[] = 'id_usuario';
+if (!isset($data['rol'])) $missingParams[] = 'rol';
 if (!empty($missingParams)) {
     $msg = "Faltan parámetros: " . implode(", ", $missingParams);
     error_log("❌ $msg");
@@ -26,7 +28,8 @@ if (!empty($missingParams)) {
     ]);
     exit;
 }
-
+$id_usuario = $data['id_usuario'];
+$rol = $data['rol'];
 $nombre_tipo = $data['nombre_tipo'];
 $atributos = $data['atributos'];
 $codigo_inventario = $data['codigo_inventario'];
@@ -78,15 +81,19 @@ try {
     $stmt = $conn->prepare("CALL sp_crearComponenteInCan(?,?,?,?,?, @id_componente)");
     if (!$stmt) { error_log("❌ Error prepare Componente: ".$conn->error); }
 
-    // Tipos: i = INT, s = STRING
-    // id_tipo -> i, codigo_inventario -> s, cantidad -> i, imagenes_json -> s
     $stmt->bind_param("isiss", $id_tipo, $codigo_inventario, $cantidad, $imagenes_json, $tipo_nombre);
 
     $stmt->execute();
     $stmt->close();
     $result = $conn->query("SELECT @id_componente as id_componente");
     $id_componente = $result->fetch_assoc()['id_componente'];
-
+    registrarHistorial(
+            $conn,
+            $id_usuario,
+            $rol,
+            "Creó el componente con código $codigo_inventario (ID $id_componente)",
+            $id_componente
+        );
     // 4️ Crear Valores de Atributos
     foreach ($atributos_db as $attr) {
         if (!empty($attr['valor'])) {
@@ -96,6 +103,7 @@ try {
             $stmt->bind_param("iis", $id_componente, $attr['id_atributo'], $attr['valor']);
             $stmt->execute();
             $stmt->close();
+          
         }
     }
 

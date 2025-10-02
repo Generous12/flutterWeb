@@ -128,7 +128,10 @@ class ComponentService extends ChangeNotifier {
 
   int? getDbIdAtributo(int tempId) => atributoIdDBMap[tempId];
 
-  Future<bool> guardarEnBackendB() async {
+  Future<bool> guardarEnBackendB({
+    required String idUsuarioCreador,
+    required String rolCreador,
+  }) async {
     print("🔹 Iniciando guardarEnBackendB()");
 
     if (tipoSeleccionado == null || componenteCreado == null) {
@@ -173,6 +176,8 @@ class ComponentService extends ChangeNotifier {
       "atributos": atributosJson,
       "imagenes": imagenesBase64,
       "tipo_nombre": componenteCreado!.tipoNombre,
+      "id_usuario": idUsuarioCreador,
+      "rol": rolCreador,
     });
 
     print("🚀 Body enviado al backend: $body");
@@ -183,16 +188,9 @@ class ComponentService extends ChangeNotifier {
         headers: {"Content-Type": "application/json"},
         body: body,
       );
-
-      print("📶 Status code: ${response.statusCode}");
-      print("📦 Respuesta raw: ${response.body}");
-
       final data = jsonDecode(response.body);
-      print("📦 Respuesta parseada: $data");
 
       if (data['success'] == true) {
-        print("✅ Componente registrado correctamente");
-
         tipoSeleccionado = TipoComponente(
           id: int.parse(data['id_tipo'].toString()),
           nombre: tipoSeleccionado!.nombre,

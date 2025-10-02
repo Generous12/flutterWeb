@@ -11,6 +11,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Clases/plantillasComponente.dart';
 import 'package:proyecto_web/Controlador/Provider/componentService.dart';
+import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
 import 'package:proyecto_web/Vista/app/principal/inicio.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/cropper.dart';
@@ -129,10 +130,15 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
     }
 
     print("➡️ Usuario confirmó, intentando guardar en backend");
-    final exito = await Provider.of<ComponentService>(
+    final usuarioProvider = Provider.of<UsuarioProvider>(
       context,
       listen: false,
-    ).guardarEnBackendB();
+    );
+    final exito = await Provider.of<ComponentService>(context, listen: false)
+        .guardarEnBackendB(
+          idUsuarioCreador: usuarioProvider.idUsuario ?? "",
+          rolCreador: usuarioProvider.rol ?? "",
+        );
 
     if (!exito) {
       await showCustomDialog(
