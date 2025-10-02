@@ -53,10 +53,10 @@ class _ComponentesListState extends State<ComponentesList> {
     }
 
     if (allLoaded) return;
-
+    final isInitialLoad = offset == 0;
     setState(() {
-      loading = offset == 0;
-      loadingMore = offset != 0;
+      loading = isInitialLoad;
+      loadingMore = !isInitialLoad;
     });
 
     try {
@@ -68,7 +68,6 @@ class _ComponentesListState extends State<ComponentesList> {
       );
 
       if (!mounted) return;
-
       setState(() {
         if (reset) {
           componentes = nuevos;
@@ -76,19 +75,19 @@ class _ComponentesListState extends State<ComponentesList> {
           componentes.addAll(nuevos);
         }
         offset += nuevos.length;
-        if (nuevos.length < limit) allLoaded = true;
+        allLoaded = nuevos.length < limit;
+        loading = false;
+        loadingMore = false;
       });
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
-    } finally {
       if (!mounted) return;
       setState(() {
         loading = false;
         loadingMore = false;
       });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
     }
   }
 
@@ -290,40 +289,32 @@ class _ComponentesListState extends State<ComponentesList> {
                                                 Iconsax.mouse,
                                               ),
                                               title: const Text("Periféricos"),
-                                              onTap: () async {
+                                              onTap: () {
                                                 Navigator.pop(context);
                                                 if (filtroTipo !=
                                                     "Periféricos") {
-                                                  setState(() {
-                                                    filtroTipo = "Periféricos";
-                                                    offset = 0;
-                                                    allLoaded = false;
-                                                    componentes.clear();
-                                                    loading = true;
-                                                  });
-                                                  await fetchComponentes(
-                                                    reset: true,
-                                                  );
+                                                  // Actualizamos solo el filtro y reiniciamos variables
+                                                  filtroTipo = "Periféricos";
+                                                  offset = 0;
+                                                  allLoaded = false;
+
+                                                  // Llamamos a fetchComponentes sin bloquear la UI
+                                                  fetchComponentes(reset: true);
                                                 }
                                               },
                                             ),
                                             ListTile(
                                               leading: const Icon(Iconsax.cpu),
                                               title: const Text("Componentes"),
-                                              onTap: () async {
+                                              onTap: () {
                                                 Navigator.pop(context);
                                                 if (filtroTipo !=
                                                     "Componentes") {
-                                                  setState(() {
-                                                    filtroTipo = "Componentes";
-                                                    offset = 0;
-                                                    allLoaded = false;
-                                                    componentes.clear();
-                                                    loading = true;
-                                                  });
-                                                  await fetchComponentes(
-                                                    reset: true,
-                                                  );
+                                                  filtroTipo = "Componentes";
+                                                  offset = 0;
+                                                  allLoaded = false;
+
+                                                  fetchComponentes(reset: true);
                                                 }
                                               },
                                             ),

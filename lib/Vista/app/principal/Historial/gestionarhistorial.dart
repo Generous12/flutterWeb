@@ -244,7 +244,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 🔹 Ícono decorativo lateral
                         Container(
                           width: 40,
                           height: 40,
@@ -262,12 +261,10 @@ class _HistorialScreenState extends State<HistorialScreen> {
                         ),
                         const SizedBox(width: 12),
 
-                        // 🔹 Contenido expandido
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Acción principal
                               Text(
                                 item['accion'],
                                 style: const TextStyle(
@@ -276,12 +273,10 @@ class _HistorialScreenState extends State<HistorialScreen> {
                                 ),
                               ),
                               const SizedBox(height: 6),
-
-                              // Usuario + Rol
                               Row(
                                 children: [
                                   Text(
-                                    "Usuario: ${item['id_usuario']}",
+                                    "${item['id_usuario']}",
                                     style: TextStyle(
                                       color: Colors.grey[800],
                                       fontSize: 13,
