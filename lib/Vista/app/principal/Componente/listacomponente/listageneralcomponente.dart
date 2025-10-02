@@ -293,12 +293,9 @@ class _ComponentesListState extends State<ComponentesList> {
                                                 Navigator.pop(context);
                                                 if (filtroTipo !=
                                                     "Periféricos") {
-                                                  // Actualizamos solo el filtro y reiniciamos variables
                                                   filtroTipo = "Periféricos";
                                                   offset = 0;
                                                   allLoaded = false;
-
-                                                  // Llamamos a fetchComponentes sin bloquear la UI
                                                   fetchComponentes(reset: true);
                                                 }
                                               },
@@ -572,7 +569,6 @@ extension ComponenteUpdateExtension on ComponenteUpdate {
 
       return base64Decode(base64Str);
     } catch (e) {
-      print("❌ Imagen[$index] inválida, se usará placeholder: $e");
       return null;
     }
   }

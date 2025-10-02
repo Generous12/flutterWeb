@@ -196,15 +196,10 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
       if (nuevo != null) {
         huboCambio = true;
         if (nuevo.isEmpty) {
-          print("📸 Imagen slot $i: ELIMINAR");
-        } else {
-          print(
-            "📸 Imagen slot $i: NUEVA/ACTUALIZADA (base64, len=${nuevo.length})",
-          );
-        }
+        } else {}
         return nuevo;
       }
-      print("📸 Imagen slot $i: NO TOCAR");
+
       return null;
     });
 
@@ -217,10 +212,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
       );
       return;
     }
-
-    print(
-      "✅ Payload a enviar:\n identificador=$identificador\n cantidad=$cantidadActualizada\n nuevoCodigo=$nuevoCodigo\n nuevoNombreTipo=$nuevoNombreTipo\n imagenes=[${imagenesFinal.map((e) => e == null ? 'NO TOCAR' : (e.isEmpty ? 'ELIMINAR' : 'BASE64(${e.length})')).join(', ')}]",
-    );
 
     setState(() => isLoading = true);
     try {
@@ -240,7 +231,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
         rolCreador: usuarioProvider.rol ?? "",
       );
 
-      print("✅ Respuesta del backend: $success");
       setState(() => isLoading = false);
 
       if (success) {
@@ -262,7 +252,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
         );
       }
     } catch (e) {
-      print("❌ Error en _guardarCambios: $e");
       showCustomDialog(
         context: context,
         title: "Error",
@@ -546,7 +535,6 @@ extension ComponenteUpdateExtension on ComponenteUpdate {
       }
       return base64Decode(normalized);
     } catch (e) {
-      print('❌ Error decodificando imagen $index: $e');
       return null;
     }
   }
