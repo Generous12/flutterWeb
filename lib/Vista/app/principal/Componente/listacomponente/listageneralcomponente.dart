@@ -28,6 +28,7 @@ class _ComponentesListState extends State<ComponentesList> {
   Set<int> seleccionados = {};
   bool modoSeleccion = false;
   String busqueda = '';
+  int _lastRequestId = 0;
   int offset = 0;
   final int limit = 20;
   String filtroTipo = 'General';
@@ -46,6 +47,8 @@ class _ComponentesListState extends State<ComponentesList> {
   }
 
   Future<void> fetchComponentes({bool reset = false}) async {
+    final currentRequestId = ++_lastRequestId;
+
     if (reset) {
       offset = 0;
       allLoaded = false;
@@ -67,6 +70,8 @@ class _ComponentesListState extends State<ComponentesList> {
         limit: limit,
       );
 
+      if (currentRequestId != _lastRequestId) return;
+
       if (!mounted) return;
       setState(() {
         if (reset) {
@@ -80,6 +85,7 @@ class _ComponentesListState extends State<ComponentesList> {
         loadingMore = false;
       });
     } catch (e) {
+      if (currentRequestId != _lastRequestId) return;
       if (!mounted) return;
       setState(() {
         loading = false;
@@ -336,170 +342,165 @@ class _ComponentesListState extends State<ComponentesList> {
                   ? const Center(
                       child: CircularProgressIndicator(color: Colors.blue),
                     )
-                  : RefreshIndicator(
-                      onRefresh: () => fetchComponentes(reset: true),
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.all(0),
-                        itemCount: componentes.length + (loadingMore ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index < componentes.length) {
-                            final c = componentes[index];
-                            Color stockColor;
-                            String stockTexto;
-                            if (c.cantidad <= 5) {
-                              stockColor = const Color.fromARGB(
-                                255,
-                                255,
-                                137,
-                                129,
-                              );
-                              stockTexto = 'Bajo Stock';
-                            } else if (c.cantidad <= 20) {
-                              stockColor = const Color.fromARGB(
-                                255,
-                                255,
-                                242,
-                                124,
-                              );
-                              stockTexto = 'Medio Stock';
-                            } else {
-                              stockColor = const Color.fromARGB(
-                                255,
-                                123,
-                                180,
-                                125,
-                              );
-                              stockTexto = 'Stock Disponible';
-                            }
-                            return Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(0),
-                              ),
-                              elevation: 0,
-                              margin: const EdgeInsets.symmetric(vertical: 0),
-                              color: seleccionados.contains(c.id)
-                                  ? Colors.blue.withOpacity(0.2)
-                                  : Colors.white,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(15),
-                                onTap: () {
-                                  if (modoSeleccion) {
-                                    setState(() {
-                                      if (seleccionados.contains(c.id)) {
-                                        seleccionados.remove(c.id);
-                                        if (seleccionados.isEmpty)
-                                          modoSeleccion = false;
-                                      } else {
-                                        seleccionados.add(c.id);
-                                      }
-                                    });
-                                  } else {
-                                    navegarConSlideDerecha(
-                                      context,
-                                      ComponenteDetail(componente: c),
-                                      onVolver: () {
-                                        setState(() {
-                                          fetchComponentes(reset: true);
-                                        });
-                                      },
-                                    );
-                                  }
-                                },
-                                onLongPress: () {
+                  : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(0),
+                      itemCount: componentes.length + (loadingMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index < componentes.length) {
+                          final c = componentes[index];
+                          Color stockColor;
+                          String stockTexto;
+                          if (c.cantidad <= 5) {
+                            stockColor = const Color.fromARGB(
+                              255,
+                              255,
+                              137,
+                              129,
+                            );
+                            stockTexto = 'Bajo Stock';
+                          } else if (c.cantidad <= 20) {
+                            stockColor = const Color.fromARGB(
+                              255,
+                              255,
+                              242,
+                              124,
+                            );
+                            stockTexto = 'Medio Stock';
+                          } else {
+                            stockColor = const Color.fromARGB(
+                              255,
+                              123,
+                              180,
+                              125,
+                            );
+                            stockTexto = 'Stock Disponible';
+                          }
+                          return Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(0),
+                            ),
+                            elevation: 0,
+                            margin: const EdgeInsets.symmetric(vertical: 0),
+                            color: seleccionados.contains(c.id)
+                                ? Colors.blue.withOpacity(0.2)
+                                : Colors.white,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(15),
+                              onTap: () {
+                                if (modoSeleccion) {
                                   setState(() {
-                                    modoSeleccion = true;
-                                    seleccionados.add(c.id);
+                                    if (seleccionados.contains(c.id)) {
+                                      seleccionados.remove(c.id);
+                                      if (seleccionados.isEmpty)
+                                        modoSeleccion = false;
+                                    } else {
+                                      seleccionados.add(c.id);
+                                    }
                                   });
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Row(
-                                    children: [
-                                      c.imagenesBase64.isEmpty
-                                          ? const Icon(
-                                              Iconsax.folder5,
-                                              color: Colors.black,
-                                              size: 50,
-                                            )
-                                          : _buildFirstImage(c),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              c.nombreTipo,
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                } else {
+                                  navegarConSlideDerecha(
+                                    context,
+                                    ComponenteDetail(componente: c),
+                                    onVolver: () {
+                                      setState(() {
+                                        fetchComponentes(reset: true);
+                                      });
+                                    },
+                                  );
+                                }
+                              },
+                              onLongPress: () {
+                                setState(() {
+                                  modoSeleccion = true;
+                                  seleccionados.add(c.id);
+                                });
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
+                                  children: [
+                                    c.imagenesBase64.isEmpty
+                                        ? const Icon(
+                                            Iconsax.folder5,
+                                            color: Colors.black,
+                                            size: 50,
+                                          )
+                                        : _buildFirstImage(c),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            c.nombreTipo,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
                                             ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              c.codigoInventario,
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.black54,
-                                              ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            c.codigoInventario,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.black54,
                                             ),
-                                            const SizedBox(height: 6),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 4,
-                                                    horizontal: 8,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: stockColor,
-                                                borderRadius:
-                                                    BorderRadius.circular(90),
-                                              ),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Text(
-                                                    stockTexto,
-                                                    style: const TextStyle(
-                                                      fontSize: 14,
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    '${c.cantidad}',
-                                                    style: const TextStyle(
-                                                      fontSize: 14,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 4,
+                                              horizontal: 8,
                                             ),
-                                          ],
-                                        ),
+                                            decoration: BoxDecoration(
+                                              color: stockColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(90),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                  stockTexto,
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  '${c.cantidad}',
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      const Icon(
-                                        Iconsax.arrow_right_3,
-                                        color: Colors.black,
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                    const Icon(
+                                      Iconsax.arrow_right_3,
+                                      color: Colors.black,
+                                    ),
+                                  ],
                                 ),
                               ),
-                            );
-                          } else {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 10),
-                              child: Center(child: CircularProgressIndicator()),
-                            );
-                          }
-                        },
-                      ),
+                            ),
+                          );
+                        } else {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 10),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                      },
                     ),
             ),
           ],
