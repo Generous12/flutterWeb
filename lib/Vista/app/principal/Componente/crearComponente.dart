@@ -174,129 +174,161 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text("Crear Componente", style: TextStyle(fontSize: 20)),
-          backgroundColor: Colors.black,
-          toolbarHeight: 48,
-          foregroundColor: Colors.white,
-          leading: IconButton(
-            icon: const Icon(LucideIcons.arrowLeft),
-            onPressed: () async {
-              final provider = Provider.of<ComponentService>(
-                context,
-                listen: false,
-              );
-              if (provider.tipoSeleccionado != null) {
-                final salir = await showCustomDialog(
-                  context: context,
-                  title: "Confirmar salida",
-                  message:
-                      "Hay un tipo de componente en proceso: '${provider.tipoSeleccionado!.nombre}'. ¿Deseas salir y perder los cambios?",
-                  confirmButtonText: "Sí",
-                  cancelButtonText: "No",
-                );
+      child: WillPopScope(
+        onWillPop: () async {
+          final provider = Provider.of<ComponentService>(
+            context,
+            listen: false,
+          );
 
-                if (salir == true) {
+          if (provider.tipoSeleccionado != null) {
+            final salir = await showCustomDialog(
+              context: context,
+              title: "Confirmar salida",
+              message:
+                  "Hay un tipo de componente en proceso: '${provider.tipoSeleccionado!.nombre}'. ¿Deseas salir y perder los cambios?",
+              confirmButtonText: "Sí",
+              cancelButtonText: "No",
+            );
+
+            if (salir == true) {
+              provider.reset();
+              return true; // Permite salir
+            } else {
+              return false; // Cancela salida
+            }
+          } else {
+            provider.reset();
+            return true; // Permite salir
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text(
+              "Crear Componente",
+              style: TextStyle(fontSize: 20),
+            ),
+            backgroundColor: Colors.black,
+            toolbarHeight: 48,
+            foregroundColor: Colors.white,
+            leading: IconButton(
+              icon: const Icon(LucideIcons.arrowLeft),
+              onPressed: () async {
+                final provider = Provider.of<ComponentService>(
+                  context,
+                  listen: false,
+                );
+                if (provider.tipoSeleccionado != null) {
+                  final salir = await showCustomDialog(
+                    context: context,
+                    title: "Confirmar salida",
+                    message:
+                        "Hay un tipo de componente en proceso: '${provider.tipoSeleccionado!.nombre}'. ¿Deseas salir y perder los cambios?",
+                    confirmButtonText: "Sí",
+                    cancelButtonText: "No",
+                  );
+
+                  if (salir == true) {
+                    provider.reset();
+                    Navigator.pop(context);
+                  }
+                } else {
                   provider.reset();
                   Navigator.pop(context);
                 }
-              } else {
-                provider.reset();
-                Navigator.pop(context);
-              }
-            },
+              },
+            ),
           ),
-        ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              SizedBox(
-                height: 60,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  shrinkWrap: true,
-                  itemCount: pasosWidgets.length,
-                  itemBuilder: (context, index) {
-                    return SizedBox(
-                      width: 100,
-                      child: TimelineTile(
-                        axis: TimelineAxis.horizontal,
-                        alignment: TimelineAlign.center,
-                        isFirst: index == 0,
-                        isLast: index == pasosWidgets.length - 1,
-                        indicatorStyle: IndicatorStyle(
-                          width: 30,
-                          height: 30,
-                          indicator: Container(
-                            decoration: BoxDecoration(
-                              color: index < pasoActual
-                                  ? const Color(0xFF2196F3)
-                                  : index == pasoActual
-                                  ? const Color(0xFF448AFF)
-                                  : Colors.grey.shade300,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: Text(
-                                "${index + 1}",
-                                style: TextStyle(
-                                  color: index <= pasoActual
-                                      ? Colors.white
-                                      : Colors.black,
-                                  fontWeight: FontWeight.bold,
+          body: SafeArea(
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 60,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    shrinkWrap: true,
+                    itemCount: pasosWidgets.length,
+                    itemBuilder: (context, index) {
+                      return SizedBox(
+                        width: 100,
+                        child: TimelineTile(
+                          axis: TimelineAxis.horizontal,
+                          alignment: TimelineAlign.center,
+                          isFirst: index == 0,
+                          isLast: index == pasosWidgets.length - 1,
+                          indicatorStyle: IndicatorStyle(
+                            width: 30,
+                            height: 30,
+                            indicator: Container(
+                              decoration: BoxDecoration(
+                                color: index < pasoActual
+                                    ? const Color(0xFF2196F3)
+                                    : index == pasoActual
+                                    ? const Color(0xFF448AFF)
+                                    : Colors.grey.shade300,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "${index + 1}",
+                                  style: TextStyle(
+                                    color: index <= pasoActual
+                                        ? Colors.white
+                                        : Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
 
-              Expanded(
-                child: SingleChildScrollView(child: pasosWidgets[pasoActual]),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Row(
-                  children: [
-                    if (pasoActual > 0)
+                Expanded(
+                  child: SingleChildScrollView(child: pasosWidgets[pasoActual]),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Row(
+                    children: [
+                      if (pasoActual > 0)
+                        Expanded(
+                          child: LoadingOverlayButtonHabilitar(
+                            text: "Volver",
+                            enabled: true,
+                            onPressedLogic: () async {
+                              anteriorPaso();
+                            },
+                          ),
+                        ),
+                      if (pasoActual > 0) const SizedBox(width: 12),
                       Expanded(
                         child: LoadingOverlayButtonHabilitar(
-                          text: "Volver",
-                          enabled: true,
+                          text: pasoActual == pasosWidgets.length - 1
+                              ? "Finalizado"
+                              : "Continuar",
+                          enabled: pasoActual == pasosWidgets.length - 1
+                              ? true
+                              : puedeContinuar,
                           onPressedLogic: () async {
-                            anteriorPaso();
+                            if (pasoActual < pasosWidgets.length - 1) {
+                              if (!puedeContinuar) return;
+                              await guardarPaso();
+                              siguientePaso();
+                            } else {
+                              await _guardarComponenteFinal();
+                            }
                           },
                         ),
                       ),
-                    if (pasoActual > 0) const SizedBox(width: 12),
-                    Expanded(
-                      child: LoadingOverlayButtonHabilitar(
-                        text: pasoActual == pasosWidgets.length - 1
-                            ? "Finalizado"
-                            : "Continuar",
-                        enabled: pasoActual == pasosWidgets.length - 1
-                            ? true
-                            : puedeContinuar,
-                        onPressedLogic: () async {
-                          if (pasoActual < pasosWidgets.length - 1) {
-                            if (!puedeContinuar) return;
-                            await guardarPaso();
-                            siguientePaso();
-                          } else {
-                            await _guardarComponenteFinal();
-                          }
-                        },
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
