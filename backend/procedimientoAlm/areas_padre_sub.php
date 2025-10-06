@@ -12,72 +12,142 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 $data = json_decode(file_get_contents("php://input"), true);
 $response = ["success" => false, "message" => "Acción no válida"];
+
 if (!$conn) {
     echo json_encode(["success" => false, "message" => "❌ Error de conexión"]);
     exit;
 }
 
+$accion = $data["accion"] ?? "";
+
 try {
-    if ($_SERVER["REQUEST_METHOD"] === "POST") {
-        $accion = $data["accion"] ?? "";    if ($accion === "crearAreaPadre") {
-            $nombre = $data["nombre_area"] ?? null;
+    // ✅ CREAR ÁREA PADRE
+    if ($accion === "crearAreaPadre") {
+        $nombre = $data["nombre_area"] ?? "";
+        $stmt = $conn->prepare("CALL sp_crearAreaPadre(?, @id_area)");
+        $stmt->bind_param("s", $nombre);
+        $stmt->execute();
 
-            if ($nombre) {
-                $stmt = $conn->prepare("CALL sp_crearAreaPadre(?, @id_area)");
-                $stmt->bind_param("s", $nombre);
-                $stmt->execute();
-                $stmt->close();
+        $result = $conn->query("SELECT @id_area AS id_area");
+        $id_area = $result->fetch_assoc()["id_area"];
 
-                $result = $conn->query("SELECT @id_area AS id_area");
-                $row = $result->fetch_assoc();
+        $response = ["success" => true, "message" => "Área padre creada ✅", "id_area" => $id_area];
+    }
 
-                $response = [
-                    "success" => true,
-                    "message" => "Área padre creada correctamente",
-                    "id_area" => $row["id_area"]
-                ];
-            } else {
-                $response = ["success" => false, "message" => "Nombre de área requerido"];
-            }
-        }
-        elseif ($accion === "crearSubArea") {
-            $nombre = $data["nombre_area"] ?? null;
-            $idPadre = $data["id_area_padre"] ?? null;
+    // ✅ CREAR SUBÁREA
+    elseif ($accion === "crearSubArea") {
+        $nombre = $data["nombre_area"] ?? "";
+        $id_padre = $data["id_area_padre"] ?? 0;
 
-            if ($nombre && $idPadre) {
-                $stmt = $conn->prepare("CALL sp_crearSubArea(?, ?, @id_area)");
-                $stmt->bind_param("si", $nombre, $idPadre);
-                $stmt->execute();
-                $stmt->close();
+        $stmt = $conn->prepare("CALL sp_crearSubArea(?, ?, @id_area)");
+        $stmt->bind_param("si", $nombre, $id_padre);
+        $stmt->execute();
 
-                $result = $conn->query("SELECT @id_area AS id_area");
-                $row = $result->fetch_assoc();
+        $result = $conn->query("SELECT @id_area AS id_area");
+        $id_area = $result->fetch_assoc()["id_area"];
 
-                if ($row["id_area"]) {
-                    $response = [
-                        "success" => true,
-                        "message" => "Subárea creada correctamente",
-                        "id_area" => $row["id_area"]
-                    ];
-                } else {
-                    $response = ["success" => false, "message" => "El área padre no existe"];
-                }
-            } else {
-                $response = ["success" => false, "message" => "Nombre e id_area_padre requeridos"];
-            }
-        }  elseif ($accion === "listarAreasPadres") {
-            $result = $conn->query("CALL sp_listarAreasPadres()");
-            $areas = [];
-
-            while ($row = $result->fetch_assoc()) {
-                $areas[] = $row;
-            }
-
-            $response = ["success" => true, "areas" => $areas];
+        if ($id_area) {
+            $response = ["success" => true, "message" => "Subárea creada ✅", "id_area" => $id_area];
+        } else {
+            $response = ["success" => false, "message" => "❌ Área padre no existe"];
         }
     }
+
+    // ✅ LISTAR ÁREAS PADRES
+    elseif ($accion === "listarAreasPadres") {
+        $result = $conn->query("CALL sp_listarAreasPadres()");
+        $areas = $result->fetch_all(MYSQLI_ASSOC);
+
+        $response = ["success" => true, "areas" => $areas];
+    }
+
+    // ✅ LISTAR ÁREAS PADRES GENERAL
+elseif ($accion === "listarAreasPadresGeneral") {
+    $limit = $data["limit"] ?? 10;
+    $offset = $data["offset"] ?? 0;
+    $busqueda = $data["busqueda"] ?? null;
+
+    // Si la búsqueda está vacía, la pasamos como NULL
+    if ($busqueda === "") {
+        $busqueda = null;
+    }
+
+    $stmt = $conn->prepare("CALL sp_listarAreasPadresGeneral(?, ?, ?)");
+    $stmt->bind_param("iis", $limit, $offset, $busqueda);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+    $areas = $result->fetch_all(MYSQLI_ASSOC);
+
+    $response = ["success" => true, "areas" => $areas];
+}
+
+elseif ($accion === "listarSubAreasPorPadre") {
+    $id_padre = $data["id_area_padre"] ?? 0;
+
+    $stmt = $conn->prepare("CALL sp_listarSubAreasPorPadre(?)");
+    $stmt->bind_param("i", $id_padre);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+    $subareas = $result->fetch_all(MYSQLI_ASSOC);
+
+    $response = ["success" => true, "subareas" => $subareas];
+}
+
+
+
+    // ✅ DETALLE DE UN ÁREA PADRE
+  elseif ($accion === "detalleAreaPadre") {
+    $id_padre = $data["id_area_padre"] ?? 0;
+    $limit = $data["limit"] ?? 10;
+    $offset = $data["offset"] ?? 0;
+
+    $stmt = $conn->prepare("CALL sp_detalleAreaPadre(?, ?, ?)");
+    $stmt->bind_param("iii", $id_padre, $limit, $offset);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+    $areas = $result->fetch_all(MYSQLI_ASSOC);
+
+    // 🔹 Agregar tipo de área según jerarquía
+    foreach ($areas as &$a) {
+        if ($a["id_area_padre"] == $id_padre) {
+            $a["tipo_area"] = "Subárea";
+        } else {
+            $a["tipo_area"] = "Sub-Subárea";
+        }
+    }
+
+    $response = ["success" => true, "areas" => $areas];
+}
+
+
+    // ✅ QUITAR ASIGNACIÓN DE UN ÁREA
+    elseif ($accion === "quitarAsignacionArea") {
+        $id_area = $data["id_area"] ?? 0;
+
+        $stmt = $conn->prepare("CALL sp_quitarAsignacionArea(?)");
+        $stmt->bind_param("i", $id_area);
+        $stmt->execute();
+
+        $response = ["success" => true, "message" => "Asignación eliminada ✅"];
+    }// ✅ ASIGNAR UN ÁREA EXISTENTE COMO SUBÁREA O SUB-SUBÁREA
+elseif ($accion === "asignarAreaPadre") {
+    $id_area = $data["id_area"] ?? 0;
+    $id_area_padre = $data["id_area_padre"] ?? 0;
+
+    $stmt = $conn->prepare("CALL sp_asignarAreaPadre(?, ?)");
+    $stmt->bind_param("ii", $id_area, $id_area_padre);
+    $stmt->execute();
+
+    $response = ["success" => true, "message" => "Área asignada correctamente ✅"];
+}
+
+
 } catch (Exception $e) {
-    $response = ["success" => false, "message" => "Error: " . $e->getMessage()];
+    $response = ["success" => false, "message" => "⚠️ Error: " . $e->getMessage()];
 }
 
 echo json_encode($response, JSON_UNESCAPED_UNICODE);
+$conn->close();
