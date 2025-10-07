@@ -118,11 +118,11 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
     }
   }
 
-  /// 🔹 Reasignar un área existente como subárea o sub-subárea
   Future<void> _reasignarAreaExistente() async {
     final todasAreas = await _areaService.listarAreasPadresGeneral(limit: 100);
 
-    // 🔹 Filtramos solo las áreas que NO tienen subáreas ni sub-subáreas
+    if (!mounted) return;
+
     final areasDisponibles = todasAreas.where((a) {
       final totalSub = int.tryParse(a["total_subareas"].toString()) ?? 0;
       final totalSubSub = int.tryParse(a["total_subsubareas"].toString()) ?? 0;
@@ -152,8 +152,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                 title: Text(area["nombre_area"]),
                 subtitle: Text("ID: ${area["id_area"]}"),
                 onTap: () async {
-                  Navigator.pop(context);
-
                   if (_idSubAreaSeleccionada != null ||
                       _idAreaPadreSeleccionada != null) {
                     final idPadre =
@@ -164,11 +162,16 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                       idPadre!,
                     );
 
+                    if (!mounted) return;
+
                     showCustomDialog(
                       context: context,
                       title: resp["success"] ? "Éxito" : "Error",
                       message: resp["message"],
                       confirmButtonText: "Cerrar",
+                      onConfirm: () {
+                        Navigator.of(context).pop();
+                      },
                     );
                   } else {
                     SnackBarUtil.mostrarSnackBarPersonalizado(
@@ -367,12 +370,10 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                   int idPadre;
 
                   if (_idAreaPadreSeleccionada != null) {
-                    // Si hay subárea seleccionada, se convierte en sub-sub-área
                     idPadre =
                         _idSubAreaSeleccionada ?? _idAreaPadreSeleccionada!;
                     print("🟢 Creando bajo ID padre: $idPadre");
                   } else {
-                    // Crear nueva área padre
                     final respPadre = await _areaService.crearAreaPadre(
                       _nombreController.text.trim(),
                     );
@@ -391,7 +392,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                     print("✅ Área padre creada con ID: $idPadre");
                   }
 
-                  // 🔹 Crear subáreas (o sub-subáreas)
                   for (final controller in _subareaControllers) {
                     final nombreSub = controller.text.trim();
                     if (nombreSub.isNotEmpty) {
@@ -400,10 +400,10 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                         idPadre,
                       );
                       if (respSub["success"] == true) {
-                        print("   ↳ Subárea creada: $nombreSub ✅");
+                        print("   ↳ Subárea creada: $nombreSub");
                       } else {
                         print(
-                          "   ⚠️ Error al crear subárea: ${respSub["message"]}",
+                          "⚠️ Error al crear subárea: ${respSub["message"]}",
                         );
                       }
                     }
