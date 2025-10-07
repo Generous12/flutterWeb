@@ -125,7 +125,13 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
     final areasDisponibles = todasAreas.where((a) {
       final totalSub = int.tryParse(a["total_subareas"].toString()) ?? 0;
       final totalSubSub = int.tryParse(a["total_subsubareas"].toString()) ?? 0;
-      return totalSub == 0 && totalSubSub == 0;
+
+      // Excluir áreas que ya tienen subáreas o sub-subáreas
+      // y también excluir el área padre seleccionada
+      final idArea = int.tryParse(a["id_area"].toString());
+      return totalSub == 0 &&
+          totalSubSub == 0 &&
+          idArea != _idAreaPadreSeleccionada;
     }).toList();
 
     if (areasDisponibles.isEmpty) {
@@ -219,7 +225,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
               ),
               const SizedBox(height: 6),
               ListTile(
-                leading: const Icon(Iconsax.building_41),
+                leading: const Icon(Iconsax.building),
                 title: Text(
                   _idAreaPadreSeleccionada == null
                       ? "Seleccionar Área Padre existente"
@@ -300,7 +306,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                 controller: _nombreController,
                 hintText: "Ejemplo: Área de Producción",
                 label: "Crear una Area nueva",
-                prefixIcon: Iconsax.building_41,
               ),
               const SizedBox(height: 20),
               Row(
