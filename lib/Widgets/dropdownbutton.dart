@@ -7,6 +7,7 @@ class CustomDropdownSelector extends StatelessWidget {
   final String? value;
   final List<String> items;
   final Function(String) onChanged;
+  final VoidCallback? onClear; // 👈 Nuevo: para limpiar selección
   final Map<String, VoidCallback>? itemActions;
 
   const CustomDropdownSelector({
@@ -16,6 +17,7 @@ class CustomDropdownSelector extends StatelessWidget {
     required this.value,
     required this.items,
     required this.onChanged,
+    this.onClear,
     this.itemActions,
   }) : super(key: key);
 
@@ -61,6 +63,18 @@ class CustomDropdownSelector extends StatelessWidget {
         ),
         elevation: 4,
       ),
+      iconStyleData: IconStyleData(
+        icon: value == null
+            ? const Icon(Icons.arrow_drop_down)
+            : GestureDetector(
+                onTap: onClear,
+                child: const Icon(
+                  Icons.close,
+                  color: Color.fromARGB(255, 0, 0, 0),
+                ),
+              ),
+        iconSize: 22,
+      ),
       hint: Text(
         hintText,
         style: TextStyle(
@@ -74,27 +88,22 @@ class CustomDropdownSelector extends StatelessWidget {
           .map(
             (item) => DropdownMenuItem<String>(
               value: item,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    item,
-                    textAlign: TextAlign.start,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDarkMode ? Colors.white : Colors.black,
-                    ),
-                  ),
-                ],
+              child: Text(
+                item,
+                textAlign: TextAlign.start,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
               ),
             ),
           )
           .toList(),
-      onChanged: (value) {
-        if (value != null) {
-          onChanged(value);
-          if (itemActions != null && itemActions!.containsKey(value)) {
-            itemActions![value]!();
+      onChanged: (selectedValue) {
+        if (selectedValue != null) {
+          onChanged(selectedValue);
+          if (itemActions != null && itemActions!.containsKey(selectedValue)) {
+            itemActions![selectedValue]!();
           }
         }
       },

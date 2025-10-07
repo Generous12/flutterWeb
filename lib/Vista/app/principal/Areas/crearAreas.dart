@@ -4,6 +4,7 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:proyecto_web/Controlador/areasService.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
+import 'package:proyecto_web/Widgets/dropdownbutton.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
 
@@ -22,6 +23,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
   int? _idSubAreaSeleccionada;
   List<dynamic> _subareasDisponibles = [];
 
+  String? _nombreSubareaSeleccionada;
   final AreaService _areaService = AreaService();
 
   @override
@@ -203,9 +205,9 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
             TextButton.icon(
               onPressed: _agregarSubarea,
               icon: const Icon(Iconsax.add, color: Colors.white),
-              label: const Text(
-                "Subárea",
-                style: TextStyle(color: Colors.white),
+              label: Text(
+                _idSubAreaSeleccionada != null ? " Sub Subárea" : " Subárea",
+                style: const TextStyle(color: Colors.white),
               ),
             ),
           ],
@@ -230,30 +232,35 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
               if (_subareasDisponibles.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: DropdownButtonFormField<int>(
-                      decoration: const InputDecoration(
-                        labelText: "Seleccionar Subárea (opcional)",
-                        border: OutlineInputBorder(),
-                      ),
-                      value: _idSubAreaSeleccionada,
-                      items: _subareasDisponibles
-                          .map<DropdownMenuItem<int>>(
-                            (subarea) => DropdownMenuItem(
-                              value: int.parse(subarea["id_area"].toString()),
-                              child: Text(subarea["nombre_area"]),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _idSubAreaSeleccionada = value;
-                        });
-                      },
-                    ),
+                  child: CustomDropdownSelector(
+                    labelText: "Seleccionar Subárea (opcional)",
+                    hintText: "Selecciona una subárea",
+                    value: _nombreSubareaSeleccionada,
+                    items: _subareasDisponibles
+                        .map<String>(
+                          (subarea) => subarea["nombre_area"].toString(),
+                        )
+                        .toList(),
+                    onChanged: (selectedName) {
+                      setState(() {
+                        _nombreSubareaSeleccionada = selectedName;
+                        final selectedSubarea = _subareasDisponibles.firstWhere(
+                          (s) => s["nombre_area"] == selectedName,
+                        );
+                        _idSubAreaSeleccionada = int.parse(
+                          selectedSubarea["id_area"].toString(),
+                        );
+                      });
+                    },
+                    onClear: () {
+                      setState(() {
+                        _nombreSubareaSeleccionada = null;
+                        _idSubAreaSeleccionada = null;
+                      });
+                    },
                   ),
                 ),
+
               ListTile(
                 leading: const Icon(
                   Iconsax.refresh_circle,
@@ -266,8 +273,8 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
 
               CustomTextField(
                 controller: _nombreController,
-                hintText: "Agregar el Área",
-                label: "Nombre del Área",
+                hintText: "Agregar un nombre al Area Padre",
+                label: "Nombre del Área Padre",
                 prefixIcon: Iconsax.building,
               ),
 
