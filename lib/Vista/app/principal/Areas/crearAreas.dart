@@ -22,7 +22,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
   int? _idAreaPadreSeleccionada;
   int? _idSubAreaSeleccionada;
   List<dynamic> _subareasDisponibles = [];
-
+  String? _nombreAreaPadreSeleccionada;
   String? _nombreSubareaSeleccionada;
   final AreaService _areaService = AreaService();
 
@@ -56,7 +56,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
     });
   }
 
-  /// 🔹 Mostrar lista de áreas padres
   void _mostrarAreasPadres() async {
     final areas = await _areaService.listarAreasPadres();
 
@@ -86,12 +85,11 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                     _idAreaPadreSeleccionada = int.parse(
                       area["id_area"].toString(),
                     );
-                    _nombreController.text = area["nombre_area"] ?? "";
+                    _nombreAreaPadreSeleccionada = area["nombre_area"];
                     _idSubAreaSeleccionada = null;
                     _subareasDisponibles.clear();
                   });
 
-                  // 🔹 Cargar subáreas del área padre seleccionada
                   await _cargarSubAreas(_idAreaPadreSeleccionada!);
                   Navigator.pop(context);
                 },
@@ -103,7 +101,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
     );
   }
 
-  /// 🔹 Cargar subáreas de un área padre
   Future<void> _cargarSubAreas(int idAreaPadre) async {
     try {
       final resp = await _areaService.listarSubAreasPorPadre(idAreaPadre);
@@ -152,7 +149,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
               return ListTile(
                 leading: const Icon(Iconsax.diagram),
                 title: Text(area["nombre_area"]),
-                subtitle: Text("ID: ${area["id_area"]}"),
                 onTap: () async {
                   if (_idSubAreaSeleccionada != null ||
                       _idAreaPadreSeleccionada != null) {
@@ -213,103 +209,128 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
           ],
         ),
         body: Padding(
-          padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
+          padding: const EdgeInsets.symmetric(horizontal: 15),
           child: ListView(
             children: [
-              const SizedBox(height: 5),
-
+              const SizedBox(height: 15),
+              const Text(
+                "Selecciona o crea un área padre",
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 6),
               ListTile(
-                leading: const Icon(Iconsax.building),
+                leading: const Icon(Iconsax.building_41),
                 title: Text(
                   _idAreaPadreSeleccionada == null
-                      ? "Seleccionar Área Padre (opcional)"
-                      : "Área Padre ID: $_idAreaPadreSeleccionada",
+                      ? "Seleccionar Área Padre existente"
+                      : "$_nombreAreaPadreSeleccionada",
                 ),
-                trailing: const Icon(Iconsax.arrow_down_1),
-                onTap: _mostrarAreasPadres,
+                trailing: IconButton(
+                  icon: Icon(
+                    _idAreaPadreSeleccionada == null
+                        ? Iconsax.arrow_down_1
+                        : Icons.close,
+                  ),
+                  onPressed: () {
+                    if (_idAreaPadreSeleccionada != null) {
+                      setState(() {
+                        _idAreaPadreSeleccionada = null;
+                        _nombreAreaPadreSeleccionada = null;
+                        _idSubAreaSeleccionada = null;
+                        _subareasDisponibles.clear();
+                      });
+                    } else {
+                      _mostrarAreasPadres();
+                    }
+                  },
+                ),
+                onTap: _idAreaPadreSeleccionada == null
+                    ? _mostrarAreasPadres
+                    : null,
               ),
 
-              if (_subareasDisponibles.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: CustomDropdownSelector(
-                    labelText: "Seleccionar Subárea (opcional)",
-                    hintText: "Selecciona una subárea",
-                    value: _nombreSubareaSeleccionada,
-                    items: _subareasDisponibles
-                        .map<String>(
-                          (subarea) => subarea["nombre_area"].toString(),
-                        )
-                        .toList(),
-                    onChanged: (selectedName) {
-                      setState(() {
-                        _nombreSubareaSeleccionada = selectedName;
-                        final selectedSubarea = _subareasDisponibles.firstWhere(
-                          (s) => s["nombre_area"] == selectedName,
-                        );
-                        _idSubAreaSeleccionada = int.parse(
-                          selectedSubarea["id_area"].toString(),
-                        );
-                      });
-                    },
-                    onClear: () {
-                      setState(() {
-                        _nombreSubareaSeleccionada = null;
-                        _idSubAreaSeleccionada = null;
-                      });
-                    },
-                  ),
+              if (_subareasDisponibles.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                CustomDropdownSelector(
+                  labelText: "Subárea (opcional)",
+                  hintText: "Selecciona una subárea",
+                  value: _nombreSubareaSeleccionada,
+                  items: _subareasDisponibles
+                      .map<String>((s) => s["nombre_area"].toString())
+                      .toList(),
+                  onChanged: (selectedName) {
+                    setState(() {
+                      _nombreSubareaSeleccionada = selectedName;
+                      final s = _subareasDisponibles.firstWhere(
+                        (x) => x["nombre_area"] == selectedName,
+                      );
+                      _idSubAreaSeleccionada = int.parse(
+                        s["id_area"].toString(),
+                      );
+                    });
+                  },
+                  onClear: () {
+                    setState(() {
+                      _nombreSubareaSeleccionada = null;
+                      _idSubAreaSeleccionada = null;
+                    });
+                  },
                 ),
-
+              ],
+              const Text(
+                "Reasignar Areas libres existentes",
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               ListTile(
                 leading: const Icon(
                   Iconsax.refresh_circle,
                   color: Colors.black,
                 ),
-                title: const Text("Reasignar área existente"),
+                title: const Text("Seleccionar una Area"),
                 trailing: const Icon(Iconsax.arrow_down_1),
                 onTap: _reasignarAreaExistente,
               ),
-
+              const Divider(height: 25),
+              const Text(
+                "Escribe el nombre del área principal",
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 6),
               CustomTextField(
                 controller: _nombreController,
-                hintText: "Agregar un nombre al Area Padre",
-                label: "Nombre del Área Padre",
-                prefixIcon: Iconsax.building,
+                hintText: "Ejemplo: Área de Producción",
+                label: "Crear una Area nueva",
+                prefixIcon: Iconsax.building_41,
               ),
-
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               Row(
                 children: const [
                   Text(
-                    "Crear o Asignar Subáreas",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    "Crear Subáreas",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   SizedBox(width: 8),
                   Expanded(child: Divider(color: Colors.grey, thickness: 1)),
-                  SizedBox(width: 8),
                 ],
               ),
-
               _subareaControllers.isEmpty
                   ? Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 20.0,
-                        horizontal: 16,
-                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 20),
                       child: Row(
                         children: const [
                           Icon(
-                            Icons.info_outline,
+                            Iconsax.info_circle,
                             color: Colors.grey,
                             size: 20,
                           ),
                           SizedBox(width: 8),
-                          Text(
-                            "No hay ninguna subárea creada.\nEmpieza a crearla presionando\n+ Subárea",
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontStyle: FontStyle.italic,
+                          Flexible(
+                            child: Text(
+                              "No hay subáreas creadas.\nPresiona '+ Subárea' arriba para añadir una nueva.",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontStyle: FontStyle.italic,
+                              ),
                             ),
                           ),
                         ],
@@ -325,7 +346,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                         return CustomTextField(
                           controller: controller,
                           label: "Subárea ${index + 1}",
-                          hintText: "Escribir subárea",
+                          hintText: "Nombre de subárea",
                           prefixIcon: Iconsax.diagram,
                           suffixIcon: IconButton(
                             icon: const Icon(Iconsax.trash, color: Colors.red),
@@ -336,7 +357,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                               SnackBarUtil.mostrarSnackBarPersonalizado(
                                 context: context,
                                 mensaje: "Subárea eliminada",
-                                icono: Icons.delete,
+                                icono: Iconsax.trash,
                                 colorFondo: Colors.black,
                                 textoAccion: "Deshacer",
                                 onAccion: () {
@@ -379,7 +400,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                   if (_idAreaPadreSeleccionada != null) {
                     idPadre =
                         _idSubAreaSeleccionada ?? _idAreaPadreSeleccionada!;
-                    print("🟢 Creando bajo ID padre: $idPadre");
                   } else {
                     final respPadre = await _areaService.crearAreaPadre(
                       _nombreController.text.trim(),
@@ -396,23 +416,12 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                       return;
                     }
                     idPadre = int.parse(respPadre["id_area"].toString());
-                    print("✅ Área padre creada con ID: $idPadre");
                   }
 
-                  for (final controller in _subareaControllers) {
-                    final nombreSub = controller.text.trim();
+                  for (final c in _subareaControllers) {
+                    final nombreSub = c.text.trim();
                     if (nombreSub.isNotEmpty) {
-                      final respSub = await _areaService.crearSubArea(
-                        nombreSub,
-                        idPadre,
-                      );
-                      if (respSub["success"] == true) {
-                        print("   ↳ Subárea creada: $nombreSub");
-                      } else {
-                        print(
-                          "⚠️ Error al crear subárea: ${respSub["message"]}",
-                        );
-                      }
+                      await _areaService.crearSubArea(nombreSub, idPadre);
                     }
                   }
 
@@ -420,7 +429,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                   showCustomDialog(
                     context: context,
                     title: "Éxito",
-                    message: "Se registró correctamente",
+                    message: "Área y subáreas guardadas correctamente.",
                     confirmButtonText: "Cerrar",
                   );
                 } catch (e) {

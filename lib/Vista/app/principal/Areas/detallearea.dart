@@ -1,7 +1,9 @@
 // ignore_for_file: unused_field
 
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:proyecto_web/Controlador/areasService.dart';
+import 'package:proyecto_web/Widgets/snackbar.dart';
 
 class DetalleAreaScreen extends StatefulWidget {
   final Map<String, dynamic> area;
@@ -41,9 +43,14 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
   Future<void> _quitarAsignacion(int idArea) async {
     final resp = await _areaService.quitarAsignacionArea(idArea);
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(resp["message"])));
+    SnackBarUtil.mostrarSnackBarPersonalizado(
+      context: context,
+      mensaje: resp["message"],
+      icono: resp["success"] == true
+          ? Iconsax.trash
+          : Icons.warning_amber_rounded,
+      colorFondo: Colors.black,
+    );
 
     if (resp["success"] == true) _cargarDatos();
   }
@@ -117,8 +124,7 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                             children: [
                               InkWell(
                                 borderRadius: BorderRadius.circular(16),
-                                onTap:
-                                    () {}, // Puedes agregar acción si quieres
+                                onTap: () {},
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 16,

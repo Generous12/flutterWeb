@@ -6,7 +6,7 @@ class SnackBarUtil {
     required String mensaje,
     IconData icono = Icons.info,
     Color? colorFondo,
-    Duration duracion = const Duration(seconds: 1),
+    Duration duracion = const Duration(milliseconds: 200),
     String? textoAccion,
     VoidCallback? onAccion,
   }) {
