@@ -140,7 +140,7 @@ class ComponentService extends ChangeNotifier {
     }
 
     final url = Uri.parse(
-      "http://172.25.10.207/proyecto_web/backend/procedimientoAlm/registrar_componente.php",
+      "http://192.168.18.22/proyecto_web/backend/procedimientoAlm/registrar_componente.php",
     );
 
     final atributosJson = atributos.map((attr) {

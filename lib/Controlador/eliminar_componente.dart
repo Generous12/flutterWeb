@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class EliminarComponenteService {
   final String baseUrl =
-      "http://172.25.10.207/proyecto_web/backend/procedimientoAlm";
+      "http://192.168.18.22/proyecto_web/backend/procedimientoAlm";
 
   Future<Map<String, dynamic>> eliminarTipos(List<int> ids) async {
     final url = Uri.parse('$baseUrl/eliminar_componente.php');
