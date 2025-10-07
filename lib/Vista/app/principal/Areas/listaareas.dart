@@ -24,7 +24,7 @@ class _ListaAreasScreenState extends State<ListaAreasScreen> {
   @override
   void initState() {
     super.initState();
-    _cargarAreas(); // Siempre se llama al iniciar
+    _cargarAreas();
   }
 
   void _cargarAreas({bool reset = false}) {
