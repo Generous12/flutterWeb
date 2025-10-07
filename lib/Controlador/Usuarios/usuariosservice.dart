@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   final String baseUrl =
-      "http://192.168.8.25/proyecto_web/backend/procedimientoAlm/usuarios";
+      "http://172.25.10.207/proyecto_web/backend/procedimientoAlm/usuarios";
 
   Future<Map<String, dynamic>> registrarUsuario({
     required String idUsuario,

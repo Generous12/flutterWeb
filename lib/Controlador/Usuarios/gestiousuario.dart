@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class GestiousuarioService {
   final String baseUrl =
-      "http://192.168.8.25/proyecto_web/backend/procedimientoAlm/usuarios/gestionusuarios.php";
+      "http://172.25.10.207/proyecto_web/backend/procedimientoAlm/usuarios/gestionusuarios.php";
 
   // Listar usuarios con búsqueda, filtro y paginación
   Future<List<Map<String, dynamic>>> listarUsuarios({

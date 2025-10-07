@@ -213,7 +213,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
             children: [
               const SizedBox(height: 5),
 
-              /// 🔹 Seleccionar área padre
               ListTile(
                 leading: const Icon(Iconsax.building),
                 title: Text(
@@ -225,33 +224,33 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                 onTap: _mostrarAreasPadres,
               ),
 
-              /// 🔹 Si hay subáreas disponibles, mostrar dropdown
               if (_subareasDisponibles.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: DropdownButtonFormField<int>(
-                    decoration: const InputDecoration(
-                      labelText: "Seleccionar Subárea (opcional)",
-                      border: OutlineInputBorder(),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: DropdownButtonFormField<int>(
+                      decoration: const InputDecoration(
+                        labelText: "Seleccionar Subárea (opcional)",
+                        border: OutlineInputBorder(),
+                      ),
+                      value: _idSubAreaSeleccionada,
+                      items: _subareasDisponibles
+                          .map<DropdownMenuItem<int>>(
+                            (subarea) => DropdownMenuItem(
+                              value: int.parse(subarea["id_area"].toString()),
+                              child: Text(subarea["nombre_area"]),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _idSubAreaSeleccionada = value;
+                        });
+                      },
                     ),
-                    value: _idSubAreaSeleccionada,
-                    items: _subareasDisponibles
-                        .map<DropdownMenuItem<int>>(
-                          (subarea) => DropdownMenuItem(
-                            value: int.parse(subarea["id_area"].toString()),
-                            child: Text(subarea["nombre_area"]),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _idSubAreaSeleccionada = value;
-                      });
-                    },
                   ),
                 ),
-
-              /// 🔹 Nueva opción para reasignar área existente
               ListTile(
                 leading: const Icon(
                   Iconsax.refresh_circle,
