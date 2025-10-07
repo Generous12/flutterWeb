@@ -153,12 +153,15 @@ class _ListaAreasScreenState extends State<ListaAreasScreen> {
                       ),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 18),
                       onTap: () {
-                        Navigator.push(
+                        navegarConSlideDerecha(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => DetalleAreaScreen(area: area),
-                          ),
-                        ).then((_) => _refresh());
+                          DetalleAreaScreen(area: area),
+                          onVolver: () {
+                            setState(() {
+                              _refresh();
+                            });
+                          },
+                        );
                       },
                     ),
                   );
