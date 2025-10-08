@@ -88,6 +88,9 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                     _nombreAreaPadreSeleccionada = area["nombre_area"];
                     _idSubAreaSeleccionada = null;
                     _subareasDisponibles.clear();
+
+                    // 🔹 Aquí agregamos esto para que el nombre se muestre en el TextField
+                    _nombreController.text = _nombreAreaPadreSeleccionada!;
                   });
 
                   await _cargarSubAreas(_idAreaPadreSeleccionada!);
@@ -226,12 +229,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 15),
           child: ListView(
             children: [
-              const SizedBox(height: 15),
-              const Text(
-                "Selecciona un área padre",
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 6),
               Card(
                 elevation: 1,
                 shape: RoundedRectangleBorder(
@@ -240,51 +237,41 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
+                    horizontal: 0,
+                    vertical: 0,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(
-                          Iconsax.building,
-                          color: Colors.black87,
-                        ),
-                        title: Text(
-                          _idAreaPadreSeleccionada == null
-                              ? "Seleccionar Área Padre"
-                              : _nombreAreaPadreSeleccionada ?? "",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 15,
-                          ),
-                        ),
-                        trailing: IconButton(
+                      CustomTextField(
+                        controller: _nombreController,
+                        hintText: "Ejemplo: Área de Producción",
+                        label: "Crea o seleciona una Area",
+                        readOnly: false,
+                        suffixIcon: IconButton(
                           icon: Icon(
-                            _idAreaPadreSeleccionada == null
-                                ? Iconsax.arrow_down_1
+                            _nombreAreaPadreSeleccionada == null
+                                ? Iconsax.building_4
                                 : Icons.close,
-                            color: Colors.black87,
+                            color: _nombreAreaPadreSeleccionada == null
+                                ? Colors.grey
+                                : Colors.redAccent,
                           ),
                           onPressed: () {
-                            if (_idAreaPadreSeleccionada != null) {
+                            if (_nombreAreaPadreSeleccionada != null) {
                               setState(() {
-                                _idAreaPadreSeleccionada = null;
                                 _nombreAreaPadreSeleccionada = null;
+                                _idAreaPadreSeleccionada = null;
                                 _idSubAreaSeleccionada = null;
                                 _nombreSubareaSeleccionada = null;
                                 _subareasDisponibles.clear();
+                                _nombreController.clear();
                               });
                             } else {
                               _mostrarAreasPadres();
                             }
                           },
                         ),
-                        onTap: _idAreaPadreSeleccionada == null
-                            ? _mostrarAreasPadres
-                            : null,
                       ),
 
                       if (_subareasDisponibles.isNotEmpty) ...[
@@ -319,7 +306,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                 ),
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 2),
               Text(
                 _getTextoReasignarArea(),
                 style: const TextStyle(fontWeight: FontWeight.w600),
@@ -334,14 +321,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                 onTap: _reasignarAreaExistente,
               ),
 
-              const Divider(height: 25),
-
-              CustomTextField(
-                controller: _nombreController,
-                hintText: "Ejemplo: Área de Producción",
-                label: "Crear una Area nueva",
-              ),
-              const SizedBox(height: 20),
               Row(
                 children: const [
                   Text(

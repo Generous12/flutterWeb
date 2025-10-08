@@ -18,6 +18,9 @@ class CustomTextField extends StatefulWidget {
   final String? initialValue;
   final Widget? suffixIcon;
   final String? errorText;
+  final bool readOnly;
+  final VoidCallback? onTap;
+
   const CustomTextField({
     Key? key,
     this.enabled = true,
@@ -36,6 +39,8 @@ class CustomTextField extends StatefulWidget {
     this.initialValue,
     this.suffixIcon,
     this.errorText,
+    this.readOnly = false,
+    this.onTap,
   }) : super(key: key);
 
   @override
@@ -82,6 +87,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
           minLines: widget.minLines ?? 1,
           onChanged: widget.onChanged,
           focusNode: widget.focusNode,
+          readOnly: widget.readOnly,
+          onTap: widget.onTap,
+
           cursorColor: colorScheme.onBackground,
           enabled: widget.enabled,
           style: TextStyle(fontSize: 14, color: colorScheme.onBackground),
