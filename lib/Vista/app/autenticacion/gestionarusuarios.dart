@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_initicon/flutter_initicon.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
 import 'package:proyecto_web/Controlador/Usuarios/gestiousuario.dart';
@@ -372,6 +373,104 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                                       if (seleccionados.isEmpty) {
                                         modoSeleccion = false;
                                       }
+                                    } else {
+                                      showBarModalBottomSheet(
+                                        context: context,
+                                        backgroundColor: Colors.white,
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(20),
+                                          ),
+                                        ),
+                                        builder: (context) => SafeArea(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(20),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Initicon(
+                                                      text: usuario['nombre'],
+                                                      backgroundColor:
+                                                          Colors.blue,
+                                                      size: 50,
+                                                    ),
+                                                    const SizedBox(width: 12),
+                                                    Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          usuario['nombre'],
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 16,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                        ),
+                                                        const SizedBox(
+                                                          height: 4,
+                                                        ),
+                                                        Text(
+                                                          'Registrado ${timeago.format(DateTime.parse(usuario['fecha_registro']), locale: 'es')}',
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 13,
+                                                              ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 20),
+                                                const Text(
+                                                  "Actualizar Rol y Estado",
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 15,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 10),
+                                                CustomDropdownSelector(
+                                                  labelText: 'Rol',
+                                                  hintText: 'Selecciona rol',
+                                                  value: usuario['rol'],
+                                                  items: roles,
+                                                  onChanged: (value) {
+                                                    actualizarUsuario(
+                                                      index,
+                                                      value,
+                                                      usuario['estado'],
+                                                    );
+                                                  },
+                                                ),
+                                                const SizedBox(height: 10),
+                                                CustomDropdownSelector(
+                                                  labelText: 'Estado',
+                                                  hintText: 'Selecciona estado',
+                                                  value: usuario['estado'],
+                                                  items: estados,
+                                                  onChanged: (value) {
+                                                    actualizarUsuario(
+                                                      index,
+                                                      usuario['rol'],
+                                                      value,
+                                                    );
+                                                    Navigator.pop(context);
+                                                  },
+                                                ),
+                                                const SizedBox(height: 20),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
                                     }
                                   });
                                 },
@@ -431,41 +530,6 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                                         ],
                                       ),
                                       const SizedBox(height: 12),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: CustomDropdownSelector(
-                                              labelText: 'Rol',
-                                              hintText: 'Selecciona rol',
-                                              value: usuario['rol'],
-                                              items: roles,
-                                              onChanged: (value) {
-                                                actualizarUsuario(
-                                                  index,
-                                                  value,
-                                                  usuario['estado'],
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: CustomDropdownSelector(
-                                              labelText: 'Estado',
-                                              hintText: 'Selecciona estado',
-                                              value: usuario['estado'],
-                                              items: estados,
-                                              onChanged: (value) {
-                                                actualizarUsuario(
-                                                  index,
-                                                  usuario['rol'],
-                                                  value,
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        ],
-                                      ),
                                     ],
                                   ),
                                 ),
