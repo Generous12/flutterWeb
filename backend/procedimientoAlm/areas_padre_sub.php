@@ -60,74 +60,84 @@ try {
     }
 
 
-elseif ($accion === "listarAreasPadresGeneral") {
-    $limit = $data["limit"] ?? 10;
-    $offset = $data["offset"] ?? 0;
-    $busqueda = $data["busqueda"] ?? null;
+    elseif ($accion === "listarAreasPadresGeneral") {
+        $limit = $data["limit"] ?? 10;
+        $offset = $data["offset"] ?? 0;
+        $busqueda = $data["busqueda"] ?? null;
 
-   
-    if ($busqueda === "") {
-        $busqueda = null;
-    }
-
-    $stmt = $conn->prepare("CALL sp_listarAreasPadresGeneral(?, ?, ?)");
-    $stmt->bind_param("iis", $limit, $offset, $busqueda);
-    $stmt->execute();
-
-    $result = $stmt->get_result();
-    $areas = $result->fetch_all(MYSQLI_ASSOC);
-
-    $response = ["success" => true, "areas" => $areas];
-}elseif ($accion === "listarSubAreasPorPadre") {
-    $id_padre = $data["id_area_padre"] ?? 0;
-
-    $stmt = $conn->prepare("CALL sp_listarSubAreasPorPadre(?)");
-    $stmt->bind_param("i", $id_padre);
-    $stmt->execute();
-
-    $result = $stmt->get_result();
-    $subareas = $result->fetch_all(MYSQLI_ASSOC);
-
-    $response = ["success" => true, "subareas" => $subareas];
-} elseif ($accion === "detalleAreaPadre") {
-    $id_padre = $data["id_area_padre"] ?? 0;
-    $limit = $data["limit"] ?? 10;
-    $offset = $data["offset"] ?? 0;
-
-    $stmt = $conn->prepare("CALL sp_detalleAreaPadre(?, ?, ?)");
-    $stmt->bind_param("iii", $id_padre, $limit, $offset);
-    $stmt->execute();
-
-    $result = $stmt->get_result();
-    $areas = $result->fetch_all(MYSQLI_ASSOC);
-
-    foreach ($areas as &$a) {
-        if ($a["id_area_padre"] == $id_padre) {
-            $a["tipo_area"] = "Subárea";
-        } else {
-            $a["tipo_area"] = "Sub-Subárea";
+    
+        if ($busqueda === "") {
+            $busqueda = null;
         }
-    }
 
-    $response = ["success" => true, "areas" => $areas];
-} elseif ($accion === "quitarAsignacionArea") {
-        $id_area = $data["id_area"] ?? 0;
-
-        $stmt = $conn->prepare("CALL sp_quitarAsignacionArea(?)");
-        $stmt->bind_param("i", $id_area);
+        $stmt = $conn->prepare("CALL sp_listarAreasPadresGeneral(?, ?, ?)");
+        $stmt->bind_param("iis", $limit, $offset, $busqueda);
         $stmt->execute();
 
-        $response = ["success" => true, "message" => "Asignación eliminada ✅"];
-    }elseif ($accion === "asignarAreaPadre") {
-    $id_area = $data["id_area"] ?? 0;
-    $id_area_padre = $data["id_area_padre"] ?? 0;
+        $result = $stmt->get_result();
+        $areas = $result->fetch_all(MYSQLI_ASSOC);
 
-    $stmt = $conn->prepare("CALL sp_asignarAreaPadre(?, ?)");
-    $stmt->bind_param("ii", $id_area, $id_area_padre);
-    $stmt->execute();
+        $response = ["success" => true, "areas" => $areas];
+    }elseif ($accion === "listarSubAreasPorPadre") {
+        $id_padre = $data["id_area_padre"] ?? 0;
 
-    $response = ["success" => true, "message" => "Área asignada correctamente ✅"];
+        $stmt = $conn->prepare("CALL sp_listarSubAreasPorPadre(?)");
+        $stmt->bind_param("i", $id_padre);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+        $subareas = $result->fetch_all(MYSQLI_ASSOC);
+
+        $response = ["success" => true, "subareas" => $subareas];
+    } elseif ($accion === "detalleAreaPadre") {
+        $id_padre = $data["id_area_padre"] ?? 0;
+        $limit = $data["limit"] ?? 10;
+        $offset = $data["offset"] ?? 0;
+
+        $stmt = $conn->prepare("CALL sp_detalleAreaPadre(?, ?, ?)");
+        $stmt->bind_param("iii", $id_padre, $limit, $offset);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+        $areas = $result->fetch_all(MYSQLI_ASSOC);
+
+        foreach ($areas as &$a) {
+            if ($a["id_area_padre"] == $id_padre) {
+                $a["tipo_area"] = "Subárea";
+            } else {
+                $a["tipo_area"] = "Sub-Subárea";
+            }
+        }
+
+        $response = ["success" => true, "areas" => $areas];
+    } elseif ($accion === "quitarAsignacionArea") {
+            $id_area = $data["id_area"] ?? 0;
+
+            $stmt = $conn->prepare("CALL sp_quitarAsignacionArea(?)");
+            $stmt->bind_param("i", $id_area);
+            $stmt->execute();
+
+            $response = ["success" => true, "message" => "Asignación eliminada ✅"];
+        }elseif ($accion === "asignarAreaPadre") {
+        $id_area = $data["id_area"] ?? 0;
+        $id_area_padre = $data["id_area_padre"] ?? 0;
+
+        $stmt = $conn->prepare("CALL sp_asignarAreaPadre(?, ?)");
+        $stmt->bind_param("ii", $id_area, $id_area_padre);
+        $stmt->execute();
+
+        $response = ["success" => true, "message" => "Área asignada correctamente ✅"];
+    }elseif ($accion === "eliminarAreasSinSubniveles") {
+    $result = $conn->query("CALL EliminarAreasSinSubniveles()");
+    $row = $result->fetch_assoc();
+
+    $response = [
+        "success" => true,
+        "message" => "Áreas padre sin subniveles eliminadas ✅",
+        "total_eliminadas" => $row["total_eliminadas"] ?? 0
+    ];
 }
+
 
 
 } catch (Exception $e) {

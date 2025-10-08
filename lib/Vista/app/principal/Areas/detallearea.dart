@@ -67,7 +67,6 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
 
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.grey[100],
         appBar: AppBar(
           backgroundColor: Colors.black,
           title: Text(

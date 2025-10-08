@@ -138,4 +138,15 @@ class AreaService {
     }
     return [];
   }
+
+  Future<Map<String, dynamic>> eliminarAreasSinSubniveles() async {
+    final resp = await http.post(
+      Uri.parse(baseUrl),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"accion": "eliminarAreasSinSubniveles"}),
+    );
+
+    final decoded = jsonDecode(resp.body);
+    return decoded;
+  }
 }
