@@ -21,7 +21,6 @@ if (!$conn) {
 $accion = $data["accion"] ?? "";
 
 try {
-    // ✅ CREAR ÁREA PADRE
     if ($accion === "crearAreaPadre") {
         $nombre = $data["nombre_area"] ?? "";
         $stmt = $conn->prepare("CALL sp_crearAreaPadre(?, @id_area)");
@@ -34,7 +33,7 @@ try {
         $response = ["success" => true, "message" => "Área padre creada ✅", "id_area" => $id_area];
     }
 
-    // ✅ CREAR SUBÁREA
+
     elseif ($accion === "crearSubArea") {
         $nombre = $data["nombre_area"] ?? "";
         $id_padre = $data["id_area_padre"] ?? 0;
@@ -53,7 +52,6 @@ try {
         }
     }
 
-    // ✅ LISTAR ÁREAS PADRES
     elseif ($accion === "listarAreasPadres") {
         $result = $conn->query("CALL sp_listarAreasPadres()");
         $areas = $result->fetch_all(MYSQLI_ASSOC);
@@ -61,13 +59,13 @@ try {
         $response = ["success" => true, "areas" => $areas];
     }
 
-    // ✅ LISTAR ÁREAS PADRES GENERAL
+
 elseif ($accion === "listarAreasPadresGeneral") {
     $limit = $data["limit"] ?? 10;
     $offset = $data["offset"] ?? 0;
     $busqueda = $data["busqueda"] ?? null;
 
-    // Si la búsqueda está vacía, la pasamos como NULL
+   
     if ($busqueda === "") {
         $busqueda = null;
     }
@@ -80,9 +78,7 @@ elseif ($accion === "listarAreasPadresGeneral") {
     $areas = $result->fetch_all(MYSQLI_ASSOC);
 
     $response = ["success" => true, "areas" => $areas];
-}
-
-elseif ($accion === "listarSubAreasPorPadre") {
+}elseif ($accion === "listarSubAreasPorPadre") {
     $id_padre = $data["id_area_padre"] ?? 0;
 
     $stmt = $conn->prepare("CALL sp_listarSubAreasPorPadre(?)");
@@ -93,12 +89,7 @@ elseif ($accion === "listarSubAreasPorPadre") {
     $subareas = $result->fetch_all(MYSQLI_ASSOC);
 
     $response = ["success" => true, "subareas" => $subareas];
-}
-
-
-
-    // ✅ DETALLE DE UN ÁREA PADRE
-  elseif ($accion === "detalleAreaPadre") {
+} elseif ($accion === "detalleAreaPadre") {
     $id_padre = $data["id_area_padre"] ?? 0;
     $limit = $data["limit"] ?? 10;
     $offset = $data["offset"] ?? 0;
@@ -110,7 +101,6 @@ elseif ($accion === "listarSubAreasPorPadre") {
     $result = $stmt->get_result();
     $areas = $result->fetch_all(MYSQLI_ASSOC);
 
-    // 🔹 Agregar tipo de área según jerarquía
     foreach ($areas as &$a) {
         if ($a["id_area_padre"] == $id_padre) {
             $a["tipo_area"] = "Subárea";
@@ -120,11 +110,7 @@ elseif ($accion === "listarSubAreasPorPadre") {
     }
 
     $response = ["success" => true, "areas" => $areas];
-}
-
-
-    // ✅ QUITAR ASIGNACIÓN DE UN ÁREA
-    elseif ($accion === "quitarAsignacionArea") {
+} elseif ($accion === "quitarAsignacionArea") {
         $id_area = $data["id_area"] ?? 0;
 
         $stmt = $conn->prepare("CALL sp_quitarAsignacionArea(?)");
@@ -132,8 +118,7 @@ elseif ($accion === "listarSubAreasPorPadre") {
         $stmt->execute();
 
         $response = ["success" => true, "message" => "Asignación eliminada ✅"];
-    }// ✅ ASIGNAR UN ÁREA EXISTENTE COMO SUBÁREA O SUB-SUBÁREA
-elseif ($accion === "asignarAreaPadre") {
+    }elseif ($accion === "asignarAreaPadre") {
     $id_area = $data["id_area"] ?? 0;
     $id_area_padre = $data["id_area_padre"] ?? 0;
 
