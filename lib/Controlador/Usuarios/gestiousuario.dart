@@ -5,7 +5,6 @@ class GestiousuarioService {
   final String baseUrl =
       "http://192.168.18.23/proyecto_web/backend/procedimientoAlm/usuarios/gestionusuarios.php";
 
-  // Listar usuarios con búsqueda, filtro y paginación
   Future<List<Map<String, dynamic>>> listarUsuarios({
     String? busqueda,
     String? estadoFiltro,
