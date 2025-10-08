@@ -15,6 +15,12 @@ class CustomDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final usuarioProvider = Provider.of<UsuarioProvider>(
+      context,
+      listen: false,
+    );
+
+    final rolUsuario = usuarioProvider.rol ?? "Sin rol";
     return Drawer(
       child: SafeArea(
         child: Container(
@@ -71,7 +77,6 @@ class CustomDrawer extends StatelessWidget {
                   ),
                 ),
               ),
-
               ListTile(
                 leading: const Icon(Iconsax.home, color: Colors.black),
                 title: const Text(
@@ -83,14 +88,25 @@ class CustomDrawer extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: const Icon(Iconsax.user, color: Colors.black),
-                title: const Text(
-                  "Usuarios",
-                  style: TextStyle(color: Colors.black),
+                leading: Icon(
+                  Iconsax.user,
+                  color: rolUsuario == "Practicante"
+                      ? Colors.grey
+                      : Colors.black,
                 ),
-                onTap: () {
-                  navegarConSlideDerecha(context, UsuariosScreen());
-                },
+                title: Text(
+                  "Usuarios",
+                  style: TextStyle(
+                    color: rolUsuario == "Practicante"
+                        ? Colors.grey
+                        : Colors.black,
+                  ),
+                ),
+                onTap: rolUsuario == "Practicante"
+                    ? null
+                    : () {
+                        navegarConSlideDerecha(context, UsuariosScreen());
+                      },
               ),
               ListTile(
                 leading: const Icon(Iconsax.cpu, color: Colors.black),

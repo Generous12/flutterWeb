@@ -153,6 +153,12 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final usuarioProvider = Provider.of<UsuarioProvider>(
+      context,
+      listen: false,
+    );
+
+    final idUsuarioActual = usuarioProvider.idUsuario;
     return SafeArea(
       child: Scaffold(
         body: Column(
@@ -405,7 +411,11 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                                                               .start,
                                                       children: [
                                                         Text(
-                                                          usuario['nombre'],
+                                                          usuario['id_usuario']
+                                                                      .toString() ==
+                                                                  idUsuarioActual
+                                                              ? '${usuario['nombre']} (Yo)'
+                                                              : usuario['nombre'],
                                                           style:
                                                               const TextStyle(
                                                                 fontSize: 16,
@@ -511,13 +521,16 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                usuario['nombre'],
+                                                usuario['id_usuario']
+                                                            .toString() ==
+                                                        idUsuarioActual
+                                                    ? '${usuario['nombre']} (Yo)'
+                                                    : usuario['nombre'],
                                                 style: const TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
-
                                               const SizedBox(height: 4),
                                               Text(
                                                 'Registrado ${timeago.format(DateTime.parse(usuario['fecha_registro']), locale: 'es')}',
