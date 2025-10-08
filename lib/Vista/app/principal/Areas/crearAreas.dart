@@ -230,7 +230,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
           child: ListView(
             children: [
               Card(
-                elevation: 1,
+                elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -273,7 +273,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                           },
                         ),
                       ),
-
+                      SizedBox(height: 10),
                       if (_subareasDisponibles.isNotEmpty) ...[
                         CustomDropdownSelector(
                           labelText: "Subárea (opcional)",
@@ -305,7 +305,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 2),
               Text(
                 _getTextoReasignarArea(),
