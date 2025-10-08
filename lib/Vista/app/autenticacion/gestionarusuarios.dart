@@ -83,7 +83,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
       setState(() {
         usuarios.addAll(nuevosUsuarios);
-        hasMore = nuevosUsuarios.length == 10; // 10 por página
+        hasMore = nuevosUsuarios.length == 10;
         paginaActual++;
       });
     } catch (e) {

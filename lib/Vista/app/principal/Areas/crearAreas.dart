@@ -125,9 +125,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
     final areasDisponibles = todasAreas.where((a) {
       final totalSub = int.tryParse(a["total_subareas"].toString()) ?? 0;
       final totalSubSub = int.tryParse(a["total_subsubareas"].toString()) ?? 0;
-
-      // Excluir áreas que ya tienen subáreas o sub-subáreas
-      // y también excluir el área padre seleccionada
       final idArea = int.tryParse(a["id_area"].toString());
       return totalSub == 0 &&
           totalSubSub == 0 &&
@@ -194,6 +191,17 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
     );
   }
 
+  String _getTextoReasignarArea() {
+    if (_idAreaPadreSeleccionada != null && _idSubAreaSeleccionada == null) {
+      return "Selecciona una subárea";
+    } else if (_idAreaPadreSeleccionada != null &&
+        _idSubAreaSeleccionada != null) {
+      return "Selecciona una sub-subárea libre";
+    } else {
+      return "Reasignar Áreas libres existentes";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -220,88 +228,114 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
             children: [
               const SizedBox(height: 15),
               const Text(
-                "Selecciona o crea un área padre",
+                "Selecciona un área padre",
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 6),
-              ListTile(
-                leading: const Icon(Iconsax.building),
-                title: Text(
-                  _idAreaPadreSeleccionada == null
-                      ? "Seleccionar Área Padre existente"
-                      : "$_nombreAreaPadreSeleccionada",
+              Card(
+                elevation: 1,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                trailing: IconButton(
-                  icon: Icon(
-                    _idAreaPadreSeleccionada == null
-                        ? Iconsax.arrow_down_1
-                        : Icons.close,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
                   ),
-                  onPressed: () {
-                    if (_idAreaPadreSeleccionada != null) {
-                      setState(() {
-                        _idAreaPadreSeleccionada = null;
-                        _nombreAreaPadreSeleccionada = null;
-                        _idSubAreaSeleccionada = null;
-                        _subareasDisponibles.clear();
-                      });
-                    } else {
-                      _mostrarAreasPadres();
-                    }
-                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(
+                          Iconsax.building,
+                          color: Colors.black87,
+                        ),
+                        title: Text(
+                          _idAreaPadreSeleccionada == null
+                              ? "Seleccionar Área Padre"
+                              : _nombreAreaPadreSeleccionada ?? "",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15,
+                          ),
+                        ),
+                        trailing: IconButton(
+                          icon: Icon(
+                            _idAreaPadreSeleccionada == null
+                                ? Iconsax.arrow_down_1
+                                : Icons.close,
+                            color: Colors.black87,
+                          ),
+                          onPressed: () {
+                            if (_idAreaPadreSeleccionada != null) {
+                              setState(() {
+                                _idAreaPadreSeleccionada = null;
+                                _nombreAreaPadreSeleccionada = null;
+                                _idSubAreaSeleccionada = null;
+                                _nombreSubareaSeleccionada = null;
+                                _subareasDisponibles.clear();
+                              });
+                            } else {
+                              _mostrarAreasPadres();
+                            }
+                          },
+                        ),
+                        onTap: _idAreaPadreSeleccionada == null
+                            ? _mostrarAreasPadres
+                            : null,
+                      ),
+
+                      if (_subareasDisponibles.isNotEmpty) ...[
+                        CustomDropdownSelector(
+                          labelText: "Subárea (opcional)",
+                          hintText: "Selecciona una subárea",
+                          value: _nombreSubareaSeleccionada,
+                          items: _subareasDisponibles
+                              .map<String>((s) => s["nombre_area"].toString())
+                              .toList(),
+                          onChanged: (selectedName) {
+                            setState(() {
+                              _nombreSubareaSeleccionada = selectedName;
+                              final s = _subareasDisponibles.firstWhere(
+                                (x) => x["nombre_area"] == selectedName,
+                              );
+                              _idSubAreaSeleccionada = int.parse(
+                                s["id_area"].toString(),
+                              );
+                            });
+                          },
+                          onClear: () {
+                            setState(() {
+                              _nombreSubareaSeleccionada = null;
+                              _idSubAreaSeleccionada = null;
+                            });
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
-                onTap: _idAreaPadreSeleccionada == null
-                    ? _mostrarAreasPadres
-                    : null,
               ),
 
-              if (_subareasDisponibles.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                CustomDropdownSelector(
-                  labelText: "Subárea (opcional)",
-                  hintText: "Selecciona una subárea",
-                  value: _nombreSubareaSeleccionada,
-                  items: _subareasDisponibles
-                      .map<String>((s) => s["nombre_area"].toString())
-                      .toList(),
-                  onChanged: (selectedName) {
-                    setState(() {
-                      _nombreSubareaSeleccionada = selectedName;
-                      final s = _subareasDisponibles.firstWhere(
-                        (x) => x["nombre_area"] == selectedName,
-                      );
-                      _idSubAreaSeleccionada = int.parse(
-                        s["id_area"].toString(),
-                      );
-                    });
-                  },
-                  onClear: () {
-                    setState(() {
-                      _nombreSubareaSeleccionada = null;
-                      _idSubAreaSeleccionada = null;
-                    });
-                  },
-                ),
-              ],
-              const Text(
-                "Reasignar Areas libres existentes",
-                style: TextStyle(fontWeight: FontWeight.w600),
+              const SizedBox(height: 12),
+              Text(
+                _getTextoReasignarArea(),
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               ListTile(
                 leading: const Icon(
                   Iconsax.refresh_circle,
                   color: Colors.black,
                 ),
-                title: const Text("Seleccionar una Area"),
+                title: const Text("Seleccionar un Área"),
                 trailing: const Icon(Iconsax.arrow_down_1),
                 onTap: _reasignarAreaExistente,
               ),
+
               const Divider(height: 25),
-              const Text(
-                "Escribe el nombre del área principal",
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 6),
+
               CustomTextField(
                 controller: _nombreController,
                 hintText: "Ejemplo: Área de Producción",
@@ -347,7 +381,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                       ) {
                         int index = entry.key;
                         TextEditingController controller = entry.value;
-
                         return CustomTextField(
                           controller: controller,
                           label: "Subárea ${index + 1}",
