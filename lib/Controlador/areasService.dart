@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class AreaService {
   final String baseUrl =
-      "http://192.168.18.23/proyecto_web/backend/procedimientoAlm/areas_padre_sub.php";
+      "http://192.168.8.25/proyecto_web/backend/procedimientoAlm/areas_padre_sub.php";
 
   Future<Map<String, dynamic>> crearAreaPadre(String nombreArea) async {
     final resp = await http.post(

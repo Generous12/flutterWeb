@@ -41,7 +41,7 @@ class _ListaAreasScreenState extends State<ListaAreasScreen> {
   Future<void> _eliminarSeleccionadas() async {
     if (_selectedAreas.isEmpty) return;
 
-    final confirm = await showCustomDialog(
+    await showCustomDialog(
       context: context,
       title: "Eliminar áreas",
       message: "¿Deseas eliminar las áreas padre que no tienen subniveles?",
