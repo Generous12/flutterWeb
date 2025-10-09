@@ -21,10 +21,13 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
 
   int? _idAreaPadreSeleccionada;
   int? _idSubAreaSeleccionada;
-  List<dynamic> _subareasDisponibles = [];
+  List<Map<String, dynamic>> _subareasDisponibles = [];
+  List<Map<String, dynamic>> _areasDisponiblesReasignar = [];
   String? _nombreAreaPadreSeleccionada;
   String? _nombreSubareaSeleccionada;
+  String? _nombreAreaReasignadaSeleccionada;
   final AreaService _areaService = AreaService();
+  bool _mostrarReasignar = false;
 
   @override
   void initState() {
@@ -41,6 +44,8 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
       _idAreaPadreSeleccionada = null;
       _idSubAreaSeleccionada = null;
       _subareasDisponibles.clear();
+      _areasDisponiblesReasignar.clear();
+      _nombreAreaReasignadaSeleccionada = null;
     });
   }
 
@@ -88,8 +93,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                     _nombreAreaPadreSeleccionada = area["nombre_area"];
                     _idSubAreaSeleccionada = null;
                     _subareasDisponibles.clear();
-
-                    // 🔹 Aquí agregamos esto para que el nombre se muestre en el TextField
                     _nombreController.text = _nombreAreaPadreSeleccionada!;
                   });
 
@@ -108,7 +111,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
     try {
       final resp = await _areaService.listarSubAreasPorPadre(idAreaPadre);
       setState(() {
-        _subareasDisponibles = resp;
+        _subareasDisponibles = resp.cast<Map<String, dynamic>>();
       });
     } catch (e) {
       SnackBarUtil.mostrarSnackBarPersonalizado(
@@ -120,12 +123,12 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
     }
   }
 
-  Future<void> _reasignarAreaExistente() async {
-    final todasAreas = await _areaService.listarAreasPadresGeneral(limit: 100);
+  Future<void> _cargarAreasDisponiblesReasignar() async {
+    final todasAreas = (await _areaService.listarAreasPadresGeneral(
+      limit: 100,
+    )).cast<Map<String, dynamic>>();
 
-    if (!mounted) return;
-
-    final areasDisponibles = todasAreas.where((a) {
+    final filtradas = todasAreas.where((a) {
       final totalSub = int.tryParse(a["total_subareas"].toString()) ?? 0;
       final totalSubSub = int.tryParse(a["total_subsubareas"].toString()) ?? 0;
       final idArea = int.tryParse(a["id_area"].toString());
@@ -134,74 +137,51 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
           idArea != _idAreaPadreSeleccionada;
     }).toList();
 
-    if (areasDisponibles.isEmpty) {
+    setState(() {
+      _areasDisponiblesReasignar = filtradas;
+    });
+
+    if (filtradas.isEmpty) {
       SnackBarUtil.mostrarSnackBarPersonalizado(
         context: context,
         mensaje: "No hay áreas disponibles para reasignar",
         icono: Icons.warning_amber_rounded,
         colorFondo: Colors.black,
       );
-      return;
     }
-
-    showCupertinoModalBottomSheet(
-      context: context,
-      builder: (context) => Material(
-        child: SafeArea(
-          child: ListView.builder(
-            itemCount: areasDisponibles.length,
-            itemBuilder: (context, index) {
-              final area = areasDisponibles[index];
-              return ListTile(
-                leading: const Icon(Iconsax.diagram),
-                title: Text(area["nombre_area"]),
-                onTap: () async {
-                  if (_idSubAreaSeleccionada != null ||
-                      _idAreaPadreSeleccionada != null) {
-                    final idPadre =
-                        _idSubAreaSeleccionada ?? _idAreaPadreSeleccionada;
-
-                    final resp = await _areaService.asignarAreaPadre(
-                      int.parse(area["id_area"].toString()),
-                      idPadre!,
-                    );
-
-                    if (!mounted) return;
-
-                    showCustomDialog(
-                      context: context,
-                      title: resp["success"] ? "Éxito" : "Error",
-                      message: resp["message"],
-                      confirmButtonText: "Cerrar",
-                      onConfirm: () {
-                        Navigator.of(context).pop();
-                      },
-                    );
-                  } else {
-                    SnackBarUtil.mostrarSnackBarPersonalizado(
-                      context: context,
-                      mensaje: "Selecciona primero un área o subárea destino",
-                      icono: Icons.warning_amber_rounded,
-                      colorFondo: Colors.black,
-                    );
-                  }
-                },
-              );
-            },
-          ),
-        ),
-      ),
-    );
   }
 
-  String _getTextoReasignarArea() {
-    if (_idAreaPadreSeleccionada != null && _idSubAreaSeleccionada == null) {
-      return "Selecciona una subárea";
-    } else if (_idAreaPadreSeleccionada != null &&
-        _idSubAreaSeleccionada != null) {
-      return "Selecciona una sub-subárea libre";
+  Future<void> _reasignarAreaSeleccionada(String nombreArea) async {
+    final area = _areasDisponiblesReasignar.firstWhere(
+      (a) => a["nombre_area"] == nombreArea,
+    );
+
+    if (_idSubAreaSeleccionada != null || _idAreaPadreSeleccionada != null) {
+      final idPadre = _idSubAreaSeleccionada ?? _idAreaPadreSeleccionada;
+
+      final resp = await _areaService.asignarAreaPadre(
+        int.parse(area["id_area"].toString()),
+        idPadre!,
+      );
+
+      if (!mounted) return;
+
+      showCustomDialog(
+        context: context,
+        title: resp["success"] ? "Éxito" : "Error",
+        message: resp["message"],
+        confirmButtonText: "Cerrar",
+        onConfirm: () {
+          Navigator.of(context).pop();
+        },
+      );
     } else {
-      return "Reasignar Áreas libres existentes";
+      SnackBarUtil.mostrarSnackBarPersonalizado(
+        context: context,
+        mensaje: "Selecciona primero un área o subárea destino",
+        icono: Icons.warning_amber_rounded,
+        colorFondo: Colors.black,
+      );
     }
   }
 
@@ -246,7 +226,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                       CustomTextField(
                         controller: _nombreController,
                         hintText: "Ejemplo: Área de Producción",
-                        label: "Crea o seleciona una Area",
+                        label: "Crea o selecciona una Área",
                         readOnly: false,
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -257,7 +237,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                                 ? Colors.grey
                                 : Colors.redAccent,
                           ),
-                          onPressed: () {
+                          onPressed: () async {
                             if (_nombreAreaPadreSeleccionada != null) {
                               setState(() {
                                 _nombreAreaPadreSeleccionada = null;
@@ -266,17 +246,23 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                                 _nombreSubareaSeleccionada = null;
                                 _subareasDisponibles.clear();
                                 _nombreController.clear();
+                                _mostrarReasignar = false;
+                                _areasDisponiblesReasignar.clear();
+                                _nombreAreaReasignadaSeleccionada = null;
                               });
                             } else {
+                              setState(() {
+                                _mostrarReasignar = true;
+                              });
                               _mostrarAreasPadres();
                             }
                           },
                         ),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       if (_subareasDisponibles.isNotEmpty) ...[
                         CustomDropdownSelector(
-                          labelText: "Subárea (opcional)",
+                          labelText: "Selecciona una Subárea",
                           hintText: "Selecciona una subárea",
                           value: _nombreSubareaSeleccionada,
                           items: _subareasDisponibles
@@ -306,20 +292,30 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                 ),
               ),
               const SizedBox(height: 2),
-              Text(
-                _getTextoReasignarArea(),
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              ListTile(
-                leading: const Icon(
-                  Iconsax.refresh_circle,
-                  color: Colors.black,
+              if (_mostrarReasignar) ...[
+                const SizedBox(height: 9),
+                CustomDropdownSelector(
+                  labelText: "Reasignar Área existente",
+                  hintText: "Selecciona un área disponible",
+                  value: _nombreAreaReasignadaSeleccionada,
+                  items: _areasDisponiblesReasignar
+                      .map<String>((a) => a["nombre_area"].toString())
+                      .toList(),
+                  onChanged: (selected) async {
+                    setState(() {
+                      _nombreAreaReasignadaSeleccionada = selected;
+                    });
+                    await _reasignarAreaSeleccionada(selected);
+                  },
+                  onClear: () {
+                    setState(() {
+                      _nombreAreaReasignadaSeleccionada = null;
+                    });
+                  },
+                  onTap: _cargarAreasDisponiblesReasignar,
                 ),
-                title: const Text("Seleccionar un Área"),
-                trailing: const Icon(Iconsax.arrow_down_1),
-                onTap: _reasignarAreaExistente,
-              ),
-
+              ],
+              const SizedBox(height: 15),
               Row(
                 children: const [
                   Text(
@@ -369,7 +365,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                             onPressed: () {
                               final eliminado = controller.text;
                               _eliminarSubarea(index, controller);
-
                               SnackBarUtil.mostrarSnackBarPersonalizado(
                                 context: context,
                                 mensaje: "Subárea eliminada",
