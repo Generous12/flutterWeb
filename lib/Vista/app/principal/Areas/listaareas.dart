@@ -92,11 +92,11 @@ class _ListaAreasScreenState extends State<ListaAreasScreen> {
             padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
             color: _selectedAreas.isNotEmpty
                 ? Colors.black
-                : Colors.transparent, // 🔹 Cambia color si hay selección
+                : Colors.transparent, //  Cambia color si hay selección
             child: Column(
               children: [
                 if (_selectedAreas.isEmpty)
-                  // 🔸 AppBar normal con búsqueda
+                  // AppBar normal con búsqueda
                   Container(
                     decoration: BoxDecoration(
                       color: const Color.fromARGB(255, 238, 238, 238),
@@ -141,7 +141,6 @@ class _ListaAreasScreenState extends State<ListaAreasScreen> {
                     ),
                   )
                 else
-                  // 🔸 AppBar de selección múltiple
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
