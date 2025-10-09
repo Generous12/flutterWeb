@@ -64,7 +64,6 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
     final subSubAreas = _detalleAreas
         .where((a) => a["tipo_area"] == "Sub-Subárea")
         .toList();
-
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -76,7 +75,6 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
           iconTheme: const IconThemeData(color: Colors.white),
           elevation: 2,
         ),
-
         body: _cargando
             ? const Center(child: CircularProgressIndicator())
             : RefreshIndicator(
@@ -105,7 +103,6 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                         final subSubDeEsta = subSubAreas
                             .where((s) => s["id_area_padre"] == sub["id_area"])
                             .toList();
-
                         return Container(
                           margin: const EdgeInsets.only(bottom: 16),
                           decoration: BoxDecoration(

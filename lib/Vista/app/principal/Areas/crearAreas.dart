@@ -95,7 +95,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                     _subareasDisponibles.clear();
                     _nombreController.text = _nombreAreaPadreSeleccionada!;
                   });
-
                   await _cargarSubAreas(_idAreaPadreSeleccionada!);
                   Navigator.pop(context);
                 },
