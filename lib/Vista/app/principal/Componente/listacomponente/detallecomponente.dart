@@ -9,7 +9,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
-import 'package:proyecto_web/Controlador/list_Update_Component.dart';
+import 'package:proyecto_web/Controlador/Componentes/list_Update_Component.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/dropdownbutton.dart';

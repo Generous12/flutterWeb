@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:proyecto_web/Controlador/areasService.dart';
+import 'package:proyecto_web/Controlador/Areas/areasService.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
 
 class DetalleAreaScreen extends StatefulWidget {

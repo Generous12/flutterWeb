@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:proyecto_web/Controlador/areasService.dart';
+import 'package:proyecto_web/Controlador/Areas/areasService.dart';
 import 'package:proyecto_web/Vista/app/principal/Areas/crearAreas.dart';
 import 'package:proyecto_web/Vista/app/principal/Areas/detallearea.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
@@ -92,11 +92,10 @@ class _ListaAreasScreenState extends State<ListaAreasScreen> {
             padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
             color: _selectedAreas.isNotEmpty
                 ? Colors.black
-                : Colors.transparent, //  Cambia color si hay selección
+                : Colors.transparent,
             child: Column(
               children: [
                 if (_selectedAreas.isEmpty)
-                  // AppBar normal con búsqueda
                   Container(
                     decoration: BoxDecoration(
                       color: const Color.fromARGB(255, 238, 238, 238),
@@ -175,8 +174,6 @@ class _ListaAreasScreenState extends State<ListaAreasScreen> {
             if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return const Center(child: Text("No hay áreas registradas"));
             }
-
-            // 🔹 Filtrar para que las áreas sin subniveles salgan primero
             final areas = snapshot.data!;
             final sinSubniveles = areas
                 .where(
