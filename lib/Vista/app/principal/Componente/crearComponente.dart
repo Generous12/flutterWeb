@@ -787,7 +787,7 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
                   context: context,
                   mensaje: "Atributo eliminado",
                   icono: Icons.delete,
-                  duracion: const Duration(seconds: 1),
+                  duracion: const Duration(milliseconds: 500),
                   textoAccion: "Deshacer",
                   onAccion: () {
                     setState(() {
@@ -898,7 +898,7 @@ class _ComponenteFormState extends State<ComponenteForm> {
   final List<File> _imagenesSeleccionadas = [];
   File? _imagenPrincipal;
   String? _tipoSeleccionado;
-  String? _estadoSeleccionado;
+  String? _estadoSeleccionado = "Disponible";
 
   @override
   void didChangeDependencies() {
@@ -1078,24 +1078,21 @@ class _ComponenteFormState extends State<ComponenteForm> {
             children: [
               Expanded(
                 flex: 1,
-                child: CustomDropdownSelector(
-                  labelText: "Estado",
-                  hintText: "Seleccione el estado",
-                  value: _estadoSeleccionado,
-                  items: const ["Disponible", "Mantenimiento", "En uso"],
-                  onChanged: (nuevoValor) {
-                    setState(() {
-                      _estadoSeleccionado = nuevoValor;
-                    });
-                  },
-                  onClear: () {
-                    setState(() {
-                      _estadoSeleccionado = null;
-                    });
-                  },
+                child: AbsorbPointer(
+                  absorbing: true,
+                  child: Opacity(
+                    opacity: 0.8,
+                    child: CustomDropdownSelector(
+                      labelText: "Estado",
+                      hintText: "Seleccione el estado",
+                      value: _estadoSeleccionado ?? "Disponible",
+                      items: const ["Disponible", "Mantenimiento", "En uso"],
+                      onChanged: (nuevoValor) {},
+                      onClear: () {},
+                    ),
+                  ),
                 ),
               ),
-
               const SizedBox(width: 8),
               Expanded(
                 flex: 1,

@@ -89,6 +89,71 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
     return true;
   }
 
+  final List<String> _estadosPrincipales = [
+    "Disponible",
+    "Mantenimiento",
+    "En uso",
+  ];
+
+  final List<String> _otrosEstados = ["Dañado", "Arreglado"];
+
+  void _mostrarModalEstados(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(12.0),
+                child: Text(
+                  "Seleccionar estado",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ..._estadosPrincipales.map(
+                (estado) => ListTile(
+                  title: Text(estado),
+                  trailing: _estadoseleccionado == estado
+                      ? const Icon(Icons.check, color: Colors.green)
+                      : null,
+                  onTap: () {
+                    setState(() {
+                      _estadoseleccionado = estado;
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+
+              const Divider(height: 10, thickness: 1),
+              ..._otrosEstados.map(
+                (estado) => ListTile(
+                  title: Text(estado),
+                  trailing: _estadoseleccionado == estado
+                      ? const Icon(Icons.check, color: Colors.green)
+                      : null,
+                  onTap: () {
+                    setState(() {
+                      _estadoseleccionado = estado;
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     nombreController.dispose();
@@ -279,7 +344,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
             foregroundColor: Colors.white,
           ),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+            padding: const EdgeInsets.fromLTRB(7, 10, 7, 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -468,21 +533,34 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                   children: [
                     Expanded(
                       flex: 1,
-                      child: CustomDropdownSelector(
-                        labelText: "Estado",
-                        hintText: "Seleccione el estado",
-                        value: _estadoseleccionado,
-                        items: const ["Disponible", "Mantenimiento", "En uso"],
-                        onChanged: (nuevoValor) {
-                          setState(() {
-                            _estadoseleccionado = nuevoValor;
-                          });
-                        },
-                        onClear: () {
-                          setState(() {
-                            _estadoseleccionado = null;
-                          });
-                        },
+                      child: InkWell(
+                        onTap: () => _mostrarModalEstados(context),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade400),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _estadoseleccionado ?? "Seleccione el estado",
+                                style: TextStyle(
+                                  color: _estadoseleccionado == null
+                                      ? Colors.grey
+                                      : Colors.black,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const Icon(Icons.arrow_drop_down),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 5),

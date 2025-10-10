@@ -353,13 +353,19 @@ class _ComponentesListState extends State<ComponentesList> {
                           String stockTexto;
                           if (c.estado == "Mantenimiento") {
                             stockColor = const Color.fromARGB(255, 255, 17, 0);
-                            stockTexto = 'Esta en Mantenimiento';
+                            stockTexto = 'Está en Mantenimiento';
                           } else if (c.estado == "En uso") {
                             stockColor = const Color.fromARGB(255, 255, 230, 0);
-                            stockTexto = 'Esta en Uso';
+                            stockTexto = 'Está en Uso';
+                          } else if (c.estado == "Dañado") {
+                            stockColor = const Color.fromARGB(255, 128, 0, 0);
+                            stockTexto = 'Está Dañado';
+                          } else if (c.estado == "Arreglado") {
+                            stockColor = const Color.fromARGB(255, 0, 102, 204);
+                            stockTexto = 'Ha sido Arreglado';
                           } else {
                             stockColor = const Color.fromARGB(255, 0, 167, 6);
-                            stockTexto = 'Se encuentra disponible';
+                            stockTexto = 'Se encuentra Disponible';
                           }
                           return Card(
                             shape: RoundedRectangleBorder(
@@ -444,17 +450,16 @@ class _ComponentesListState extends State<ComponentesList> {
                                               borderRadius:
                                                   BorderRadius.circular(90),
                                             ),
-                                            child: Row(
-                                              children: [
-                                                Text(
-                                                  stockTexto,
-                                                  style: const TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
+                                            child: Center(
+                                              child: Text(
+                                                stockTexto,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
                                                 ),
-                                              ],
+                                              ),
                                             ),
                                           ),
                                         ],
