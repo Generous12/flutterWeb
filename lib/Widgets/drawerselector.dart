@@ -6,6 +6,7 @@ import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
 import 'package:proyecto_web/Vista/app/autenticacion/gestionarusuarios.dart';
 import 'package:proyecto_web/Vista/app/autenticacion/loginapp.dart';
 import 'package:proyecto_web/Vista/app/principal/Areas/listaareas.dart';
+import 'package:proyecto_web/Vista/app/principal/Asignacion/Prueba3.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/menu.dart';
 import 'package:proyecto_web/Vista/app/principal/Historial/gestionarhistorial.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
@@ -136,6 +137,16 @@ class CustomDrawer extends StatelessWidget {
                 ),
                 onTap: () {
                   navegarConSlideDerecha(context, HistorialScreen());
+                },
+              ),
+              ListTile(
+                leading: const Icon(Iconsax.archive, color: Colors.black),
+                title: const Text(
+                  "Asignaciones",
+                  style: TextStyle(color: Colors.black),
+                ),
+                onTap: () {
+                  navegarConSlideDerecha(context, MenuPrincipalScreen());
                 },
               ),
               const Divider(),

@@ -32,6 +32,9 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
   @override
   void initState() {
     super.initState();
+    if (_idAreaPadreSeleccionada != null) {
+      _cargarSubAreas(_idAreaPadreSeleccionada!);
+    }
   }
 
   void _limpiarCampos() {
@@ -109,8 +112,14 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
   Future<void> _cargarSubAreas(int idAreaPadre) async {
     try {
       final resp = await _areaService.listarSubAreasPorPadre(idAreaPadre);
+
+      final subareasDirectas = resp.where((sub) {
+        final idPadre = int.tryParse(sub["id_area_padre"]?.toString() ?? "");
+        return idPadre == idAreaPadre;
+      }).toList();
+
       setState(() {
-        _subareasDisponibles = resp.cast<Map<String, dynamic>>();
+        _subareasDisponibles = subareasDirectas.cast<Map<String, dynamic>>();
       });
     } catch (e) {
       SnackBarUtil.mostrarSnackBarPersonalizado(
@@ -277,6 +286,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                                 s["id_area"].toString(),
                               );
                             });
+                            _cargarSubAreas(_idAreaPadreSeleccionada!);
                           },
                           onClear: () {
                             setState(() {
