@@ -351,30 +351,15 @@ class _ComponentesListState extends State<ComponentesList> {
                           final c = componentes[index];
                           Color stockColor;
                           String stockTexto;
-                          if (c.cantidad <= 5) {
-                            stockColor = const Color.fromARGB(
-                              255,
-                              255,
-                              137,
-                              129,
-                            );
-                            stockTexto = 'Bajo Stock';
-                          } else if (c.cantidad <= 20) {
-                            stockColor = const Color.fromARGB(
-                              255,
-                              255,
-                              242,
-                              124,
-                            );
-                            stockTexto = 'Medio Stock';
+                          if (c.estado == "Mantenimiento") {
+                            stockColor = const Color.fromARGB(255, 255, 17, 0);
+                            stockTexto = 'Esta en Mantenimiento';
+                          } else if (c.estado == "En uso") {
+                            stockColor = const Color.fromARGB(255, 255, 230, 0);
+                            stockTexto = 'Esta en Uso';
                           } else {
-                            stockColor = const Color.fromARGB(
-                              255,
-                              123,
-                              180,
-                              125,
-                            );
-                            stockTexto = 'Stock Disponible';
+                            stockColor = const Color.fromARGB(255, 0, 167, 6);
+                            stockTexto = 'Se encuentra disponible';
                           }
                           return Card(
                             shape: RoundedRectangleBorder(
@@ -460,9 +445,6 @@ class _ComponentesListState extends State<ComponentesList> {
                                                   BorderRadius.circular(90),
                                             ),
                                             child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
                                               children: [
                                                 Text(
                                                   stockTexto,
@@ -470,13 +452,6 @@ class _ComponentesListState extends State<ComponentesList> {
                                                     fontSize: 14,
                                                     color: Colors.white,
                                                     fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  '${c.cantidad}',
-                                                  style: const TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors.white,
                                                   ),
                                                 ),
                                               ],
@@ -533,13 +508,13 @@ Widget _buildFirstImage(ComponenteUpdate c) {
       borderRadius: BorderRadius.circular(8),
       child: Image.memory(
         firstBytes,
-        width: 50,
-        height: 50,
+        width: 80,
+        height: 80,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
           return Container(
-            width: 50,
-            height: 50,
+            width: 80,
+            height: 80,
             color: Colors.grey[300],
             child: const Icon(Icons.broken_image, color: Colors.grey),
           );

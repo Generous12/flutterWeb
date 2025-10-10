@@ -22,6 +22,7 @@ $imagenes      = $data['imagenes'] ?? [];
 $offset        = $data['offset'] ?? null;
 $limit         = $data['limit'] ?? null;
 $nuevo_tipo_nombre = $data['nuevo_tipo_nombre'] ?? null;
+$estado            = $data['nuevoestado'] ?? null;
 try {
    if ($action == 'listar') {
     if ($offset !== null && $limit !== null) {
@@ -30,7 +31,7 @@ try {
                 c.id_componente,
                 c.id_tipo,  
                 c.codigo_inventario,
-                c.cantidad,
+                c.estado,
                 c.imagenes,
                 c.tipo_nombre,
                 tc.nombre_tipo
@@ -51,7 +52,7 @@ try {
                 c.id_componente,
                 c.id_tipo,  
                 c.codigo_inventario,
-                c.cantidad,
+                c.estado,
                 c.imagenes,
                 c.tipo_nombre,
                 tc.nombre_tipo
@@ -91,7 +92,7 @@ try {
     $idUsuarioCreador = $data['id_usuario'] ?? null;
     $rolCreador       = $data['rol'] ?? null;
     $imagenes = array_pad($imagenes, 4, null);
-    $stmtSel = $conn->prepare("SELECT cantidad, imagenes, codigo_inventario, id_tipo, tipo_nombre FROM Componente WHERE codigo_inventario = ?");
+    $stmtSel = $conn->prepare("SELECT estado, imagenes, codigo_inventario, id_tipo, tipo_nombre FROM Componente WHERE codigo_inventario = ?");
     $stmtSel->bind_param("s", $identificador);
     $stmtSel->execute();
     $result = $stmtSel->get_result();
@@ -101,7 +102,7 @@ try {
         throw new Exception("Componente no encontrado");
     }
 
-    $cantidadActual = $row['cantidad'];
+    $estadoActual = $row['estado'];
     $imagenesActuales = json_decode($row['imagenes'], true) ?: [null, null, null, null];
     $codigoActual = $row['codigo_inventario'];
     $tipoNombreActual = $row['tipo_nombre'];
@@ -112,11 +113,11 @@ try {
         }
     }
     $imagenesJson = json_encode($imagenesActuales);
-    $cantidadAActualizar = $cantidad ?? $cantidadActual;
+     $estadoAActualizar    = $estado ?? $estadoActual;
     $codigoAActualizar = $nuevo_codigo ?? $codigoActual;
     $tipoNombreAActualizar = $nuevo_tipo_nombre ?? $tipoNombreActual;
-    $stmt = $conn->prepare("UPDATE Componente SET cantidad = ?, imagenes = ?, codigo_inventario = ?, tipo_nombre = ?  WHERE codigo_inventario = ?");
-    $stmt->bind_param("issss", $cantidadAActualizar, $imagenesJson, $codigoAActualizar, $tipoNombreAActualizar, $identificador);
+    $stmt = $conn->prepare("UPDATE Componente SET estado = ?, imagenes = ?, codigo_inventario = ?, tipo_nombre = ?  WHERE codigo_inventario = ?");
+    $stmt->bind_param("sssss", $estadoAActualizar, $imagenesJson, $codigoAActualizar, $tipoNombreAActualizar, $identificador);
     $stmt->execute();
 
     if ($nuevo_nombre_tipo !== null && $nuevo_nombre_tipo !== '') {

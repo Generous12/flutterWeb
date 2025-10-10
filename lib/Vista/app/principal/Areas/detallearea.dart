@@ -15,10 +15,10 @@ class DetalleAreaScreen extends StatefulWidget {
 
 class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
   final AreaService _areaService = AreaService();
-  List<dynamic> _areas = [];
+
   List<dynamic> _detalleAreas = [];
   bool _cargando = true;
-
+  List<dynamic> _areas = [];
   @override
   void initState() {
     super.initState();
@@ -69,11 +69,12 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
         appBar: AppBar(
           backgroundColor: Colors.black,
           title: Text(
-            "Detalle - ${area["nombre_area"]}",
+            "${area["nombre_area"]}",
             style: const TextStyle(color: Colors.white),
           ),
           iconTheme: const IconThemeData(color: Colors.white),
-          elevation: 2,
+          elevation: 0,
+          toolbarHeight: 48,
         ),
         body: _cargando
             ? const Center(child: CircularProgressIndicator())
@@ -186,7 +187,6 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                             fontSize: 14,
                                           ),
                                         ),
-
                                         trailing: IconButton(
                                           icon: const Icon(
                                             Icons.link_off,

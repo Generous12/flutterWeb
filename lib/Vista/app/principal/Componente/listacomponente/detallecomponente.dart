@@ -28,9 +28,10 @@ class ComponenteDetail extends StatefulWidget {
 class _ComponenteDetailState extends State<ComponenteDetail> {
   late TextEditingController nombreController;
   late TextEditingController codigoController;
-  late TextEditingController stockController;
+
   bool isLoading = false;
   String? _tipoSeleccionado;
+  String? _estadoseleccionado;
 
   List<String?> _imagenesNuevas = List.filled(4, null);
   @override
@@ -45,11 +46,11 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
       text: widget.componente.codigoInventario,
     );
 
-    stockController = TextEditingController(
-      text: widget.componente.cantidad.toString(),
-    );
     _tipoSeleccionado = widget.componente.tipoNombre.isNotEmpty
         ? widget.componente.tipoNombre
+        : null;
+    _estadoseleccionado = widget.componente.estado.isNotEmpty
+        ? widget.componente.estado
         : null;
     nombreController.addListener(() {
       final nombre = nombreController.text;
@@ -64,7 +65,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
   bool get huboCambio {
     if (nombreController.text != widget.componente.nombreTipo ||
         codigoController.text != widget.componente.codigoInventario ||
-        stockController.text != widget.componente.cantidad.toString() ||
+        _estadoseleccionado != widget.componente.estado ||
         _tipoSeleccionado != widget.componente.tipoNombre) {
       return true;
     }
@@ -92,7 +93,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
   void dispose() {
     nombreController.dispose();
     codigoController.dispose();
-    stockController.dispose();
     super.dispose();
   }
 
@@ -162,11 +162,11 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
     final service = ComponenteUpdateService();
     bool huboCambio = false;
 
-    int? cantidadActualizada;
-    if (stockController.text.isNotEmpty &&
-        stockController.text != widget.componente.cantidad.toString()) {
-      cantidadActualizada =
-          int.tryParse(stockController.text) ?? widget.componente.cantidad;
+    String? nuevoEstado;
+    if (_estadoseleccionado != null &&
+        _estadoseleccionado!.isNotEmpty &&
+        _estadoseleccionado != widget.componente.estado) {
+      nuevoEstado = _estadoseleccionado;
       huboCambio = true;
     }
 
@@ -222,7 +222,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
 
       final success = await service.actualizarComponente(
         identificador: identificador,
-        cantidad: cantidadActualizada,
+        nuevoestado: nuevoEstado,
         imagenesNuevas: imagenesFinal,
         nuevoCodigo: nuevoCodigo,
         nuevoNombreTipo: nuevoNombreTipo,
@@ -464,23 +464,25 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                   hintText: "Nombre del componente",
                 ),
                 const SizedBox(height: 10),
-                CustomTextField(
-                  controller: codigoController,
-                  label: "Código Inventario",
-                  hintText: "Código inventario",
-                  enabled: false,
-                ),
-
-                const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
                       flex: 1,
-                      child: CustomTextField(
-                        controller: stockController,
-                        hintText: "Ingrese la cantidad",
-                        label: "Cantidad",
-                        isNumeric: true,
+                      child: CustomDropdownSelector(
+                        labelText: "Estado",
+                        hintText: "Seleccione el estado",
+                        value: _estadoseleccionado,
+                        items: const ["Disponible", "Mantenimiento", "En uso"],
+                        onChanged: (nuevoValor) {
+                          setState(() {
+                            _estadoseleccionado = nuevoValor;
+                          });
+                        },
+                        onClear: () {
+                          setState(() {
+                            _estadoseleccionado = null;
+                          });
+                        },
                       ),
                     ),
                     const SizedBox(width: 5),
@@ -500,6 +502,14 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                       ),
                     ),
                   ],
+                ),
+
+                const SizedBox(height: 10),
+                CustomTextField(
+                  controller: codigoController,
+                  label: "Código Inventario",
+                  hintText: "Código inventario",
+                  enabled: false,
                 ),
               ],
             ),

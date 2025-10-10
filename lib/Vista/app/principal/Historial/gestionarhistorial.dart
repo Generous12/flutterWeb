@@ -95,7 +95,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
       return;
     }
 
-    // 🔹 Confirmar antes de eliminar
     final confirmar = await showCustomDialog(
       context: context,
       title: "Confirmar eliminación",
@@ -103,7 +102,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
           "¿Deseas eliminar los ${seleccionados.length} registros seleccionados?",
       confirmButtonText: "Sí",
       cancelButtonText: "No",
-      confirmButtonColor: Colors.red, // opcional
+      confirmButtonColor: Colors.red,
     );
 
     if (confirmar != true) return;
@@ -260,7 +259,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
                           ),
                         ),
                         const SizedBox(width: 12),
-
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -304,8 +302,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
                                 ],
                               ),
                               const SizedBox(height: 6),
-
-                              // Entidad afectada
                               Text(
                                 "Entidad: ${item['id_entidad']}",
                                 style: TextStyle(
@@ -314,8 +310,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-
-                              // Fecha formateada
                               Text(
                                 "Hace ${timeago.format(DateTime.parse(item['fecha']), locale: 'es')}",
                                 style: TextStyle(

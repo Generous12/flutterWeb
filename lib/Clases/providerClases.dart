@@ -1,15 +1,15 @@
 import 'dart:io';
 
 class TipoComponente {
-  final int? id; // ID temporal en memoria
+  final int? id;
   final String nombre;
 
   TipoComponente({this.id, required this.nombre});
 }
 
 class Atributo {
-  final int? id; // ID temporal en memoria
-  final int idTipo; // ID del TipoComponente al que pertenece
+  final int? id;
+  final int idTipo;
   final String nombre;
   final String tipoDato;
 
@@ -25,7 +25,7 @@ class Componente {
   final int? id;
   final int idTipo;
   final String codigoInventario;
-  final int cantidad;
+  final String estado;
   final List<File>? imagenes;
   final String tipoNombre;
 
@@ -33,7 +33,7 @@ class Componente {
     this.id,
     required this.idTipo,
     required this.codigoInventario,
-    required this.cantidad,
+    required this.estado,
     this.imagenes,
     required this.tipoNombre,
   });

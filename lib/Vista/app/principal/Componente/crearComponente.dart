@@ -115,7 +115,7 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
   }
 
   Future<void> _guardarComponenteFinal() async {
-    print("🖱️ Botón Finalizado presionado, mostrando diálogo de confirmación");
+    print(" Botón Finalizado presionado, mostrando diálogo de confirmación");
     final confirmado = await showCustomDialog(
       context: context,
       title: "Confirmar",
@@ -125,11 +125,11 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
     );
 
     if (confirmado != true) {
-      print("⏹️ Usuario canceló la acción");
+      print("⏹ Usuario canceló la acción");
       return;
     }
 
-    print("➡️ Usuario confirmó, intentando guardar en backend");
+    print(" Usuario confirmó, intentando guardar en backend");
     final usuarioProvider = Provider.of<UsuarioProvider>(
       context,
       listen: false,
@@ -161,11 +161,11 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
     final provider = Provider.of<ComponentService>(context, listen: false);
 
     if (continuar == true) {
-      print("🔄 Usuario quiere seguir registrando");
+      print(" Usuario quiere seguir registrando");
       provider.reset();
       navegarYRemoverConSlideIzquierda(context, const FlujoCrearComponente());
     } else {
-      print("🏠 Usuario quiere volver al inicio");
+      print(" Usuario quiere volver al inicio");
       provider.reset();
       navegarYRemoverConSlideIzquierda(context, const InicioScreen());
     }
@@ -193,13 +193,13 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
 
             if (salir == true) {
               provider.reset();
-              return true; // Permite salir
+              return true;
             } else {
-              return false; // Cancela salida
+              return false;
             }
           } else {
             provider.reset();
-            return true; // Permite salir
+            return true;
           }
         },
         child: Scaffold(
@@ -367,7 +367,7 @@ class _ResumenComponente extends StatelessWidget {
               title: "Componente Creado",
               subtitle:
                   "Código: ${provider.componenteCreado!.codigoInventario}\n"
-                  "Cantidad: ${provider.componenteCreado!.cantidad}",
+                  "Estado: ${provider.componenteCreado!.estado}",
               color: Colors.black87,
             ),
           if (provider.componenteCreado != null)
@@ -380,7 +380,6 @@ class _ResumenComponente extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // **Alineamos el texto "Atributos"**
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
@@ -896,10 +895,10 @@ class ComponenteForm extends StatefulWidget {
 
 class _ComponenteFormState extends State<ComponenteForm> {
   final TextEditingController codigoController = TextEditingController();
-  final TextEditingController cantidadController = TextEditingController();
   final List<File> _imagenesSeleccionadas = [];
   File? _imagenPrincipal;
   String? _tipoSeleccionado;
+  String? _estadoSeleccionado;
 
   @override
   void didChangeDependencies() {
@@ -909,7 +908,7 @@ class _ComponenteFormState extends State<ComponenteForm> {
 
     if (provider.componenteCreado != null) {
       codigoController.text = provider.componenteCreado!.codigoInventario;
-      cantidadController.text = provider.componenteCreado!.cantidad.toString();
+      _estadoSeleccionado = provider.componenteCreado!.estado;
 
       _imagenesSeleccionadas.clear();
       _imagenesSeleccionadas.addAll(provider.componenteCreado!.imagenes ?? []);
@@ -926,15 +925,14 @@ class _ComponenteFormState extends State<ComponenteForm> {
       );
     }
     codigoController.addListener(_validate);
-    cantidadController.addListener(_validate);
   }
 
   void _validate() {
     widget.onValidChange(
       codigoController.text.isNotEmpty &&
-          cantidadController.text.isNotEmpty &&
           _imagenesSeleccionadas.isNotEmpty &&
-          _tipoSeleccionado != null,
+          _tipoSeleccionado != null &&
+          _estadoSeleccionado != null,
     );
   }
 
@@ -1003,7 +1001,7 @@ class _ComponenteFormState extends State<ComponenteForm> {
 
           provider.crearComponente(
             codigoController.text.trim(),
-            int.tryParse(cantidadController.text.trim()) ?? 0,
+            estado: _estadoSeleccionado,
             imagenes: _imagenesSeleccionadas,
           );
           _validate();
@@ -1014,21 +1012,20 @@ class _ComponenteFormState extends State<ComponenteForm> {
 
   void guardar(ComponentService provider) {
     final codigo = codigoController.text.trim();
-    final cantidad = int.tryParse(cantidadController.text.trim()) ?? 0;
 
     final componenteOriginal = provider.componenteCreado;
 
     final cambios =
         componenteOriginal == null ||
         componenteOriginal.codigoInventario != codigo ||
-        componenteOriginal.cantidad != cantidad ||
+        componenteOriginal.estado != _estadoSeleccionado ||
         componenteOriginal.tipoNombre != _tipoSeleccionado ||
         !listEquals(componenteOriginal.imagenes ?? [], _imagenesSeleccionadas);
 
     if (cambios) {
       provider.crearComponente(
         codigo,
-        cantidad,
+        estado: _estadoSeleccionado,
         imagenes: _imagenesSeleccionadas.isNotEmpty
             ? _imagenesSeleccionadas
             : null,
@@ -1057,7 +1054,6 @@ class _ComponenteFormState extends State<ComponenteForm> {
   @override
   void dispose() {
     codigoController.dispose();
-    cantidadController.dispose();
     super.dispose();
   }
 
@@ -1082,13 +1078,24 @@ class _ComponenteFormState extends State<ComponenteForm> {
             children: [
               Expanded(
                 flex: 1,
-                child: CustomTextField(
-                  controller: cantidadController,
-                  hintText: "Ingrese la cantidad",
-                  label: "Cantidad",
-                  isNumeric: true,
+                child: CustomDropdownSelector(
+                  labelText: "Estado",
+                  hintText: "Seleccione el estado",
+                  value: _estadoSeleccionado,
+                  items: const ["Disponible", "Mantenimiento", "En uso"],
+                  onChanged: (nuevoValor) {
+                    setState(() {
+                      _estadoSeleccionado = nuevoValor;
+                    });
+                  },
+                  onClear: () {
+                    setState(() {
+                      _estadoSeleccionado = null;
+                    });
+                  },
                 ),
               ),
+
               const SizedBox(width: 8),
               Expanded(
                 flex: 1,
@@ -1108,7 +1115,7 @@ class _ComponenteFormState extends State<ComponenteForm> {
                     );
                     provider.crearComponente(
                       codigoController.text.trim(),
-                      int.tryParse(cantidadController.text.trim()) ?? 0,
+                      estado: _estadoSeleccionado,
                       imagenes: _imagenesSeleccionadas,
                       tipoNombre: _tipoSeleccionado,
                       reemplazar: true,

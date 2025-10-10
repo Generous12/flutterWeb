@@ -9,7 +9,7 @@ class ComponenteUpdate {
   final String nombreTipo;
   final String tipoNombre;
 
-  final int cantidad;
+  final String estado;
   final List<String?> imagenesBase64;
   ComponenteUpdate({
     required this.id,
@@ -17,7 +17,7 @@ class ComponenteUpdate {
     required this.codigoInventario,
     required this.nombreTipo,
     required this.tipoNombre,
-    required this.cantidad,
+    required this.estado,
     required this.imagenesBase64,
   });
   factory ComponenteUpdate.fromJson(Map<String, dynamic> json) {
@@ -45,7 +45,7 @@ class ComponenteUpdate {
       codigoInventario: json['codigo_inventario'],
       nombreTipo: json['nombre_tipo'],
       tipoNombre: json['tipo_nombre'] ?? '',
-      cantidad: int.tryParse(json['cantidad'].toString()) ?? 0,
+      estado: json['estado'],
       imagenesBase64: imagenes,
     );
   }
@@ -77,7 +77,7 @@ class ComponenteUpdate {
 
 class ComponenteUpdateService {
   final String url =
-      "http://192.168.8.25/proyecto_web/backend/procedimientoAlm/list_update_component.php";
+      "http://192.168.18.23/proyecto_web/backend/procedimientoAlm/list_update_component.php";
 
   Future<List<ComponenteUpdate>> listar({
     String busqueda = '',
@@ -137,7 +137,7 @@ class ComponenteUpdateService {
 
   Future<bool> actualizarComponente({
     required String identificador,
-    int? cantidad,
+    String? nuevoestado,
     required List<String?> imagenesNuevas,
     List<String?>? imagenesActuales,
     String? nuevoCodigo,
@@ -158,7 +158,7 @@ class ComponenteUpdateService {
 
     print("📤 Preparando payload para backend:");
     print("Identificador: $identificador");
-    print("Cantidad: $cantidad");
+    print("Estado: $nuevoestado");
     print("Nuevo código: $nuevoCodigo");
     print("Nuevo nombre tipo: $nuevoNombreTipo");
     print("Nuevo tipo nombre: $nuevoTipoNombre");
@@ -179,12 +179,13 @@ class ComponenteUpdateService {
       "id_usuario": idUsuarioCreador,
       "rol": rolCreador,
     };
-    if (cantidad != null) cambios["cantidad"] = cantidad;
+    if (nuevoestado != null) cambios["estado"] = nuevoestado;
     if (imagenesFinal.any((img) => img != null))
       cambios["imagenes"] = imagenesFinal;
     if (nuevoCodigo != null) cambios["nuevo_codigo"] = nuevoCodigo;
     if (nuevoNombreTipo != null) cambios["nuevo_nombre_tipo"] = nuevoNombreTipo;
     if (nuevoTipoNombre != null) cambios["nuevo_tipo_nombre"] = nuevoTipoNombre;
+    if (nuevoestado != null) cambios["nuevoestado"] = nuevoestado;
     try {
       final response = await http.post(
         Uri.parse(url),

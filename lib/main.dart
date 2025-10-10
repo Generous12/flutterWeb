@@ -12,7 +12,10 @@ void main() async {
 
   final usuarioProvider = UsuarioProvider();
   await usuarioProvider.cargarUsuario();
-
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.black,

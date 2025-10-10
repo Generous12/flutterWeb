@@ -12,6 +12,7 @@ class ComponentService extends ChangeNotifier {
   final Map<int, String> valoresAtributos = {};
   final Map<int, int> atributoIdDBMap = {};
   int _tempIdCounter = 0;
+  String? estadoSeleccionado;
 
   void crearTipoComponente(String nombre, {bool reemplazar = false}) {
     if (tipoSeleccionado != null && !reemplazar) return;
@@ -20,6 +21,11 @@ class ComponentService extends ChangeNotifier {
       id: tipoSeleccionado?.id ?? _tempIdCounter++,
       nombre: nombre,
     );
+    notifyListeners();
+  }
+
+  void setEstadoSeleccionado(String? nuevoEstado) {
+    estadoSeleccionado = nuevoEstado;
     notifyListeners();
   }
 
@@ -69,9 +75,9 @@ class ComponentService extends ChangeNotifier {
   }
 
   void crearComponente(
-    String codigo,
-    int cantidad, {
+    String codigo, {
     List<File>? imagenes,
+    String? estado,
     String? tipoNombre,
     bool reemplazar = false,
   }) {
@@ -82,7 +88,7 @@ class ComponentService extends ChangeNotifier {
         id: componenteCreado!.id,
         idTipo: componenteCreado!.idTipo,
         codigoInventario: codigo,
-        cantidad: cantidad,
+        estado: estado ?? componenteCreado!.estado,
         imagenes: imagenes ?? componenteCreado!.imagenes,
         tipoNombre: tipoNombre ?? componenteCreado!.tipoNombre,
       );
@@ -90,7 +96,7 @@ class ComponentService extends ChangeNotifier {
       componenteCreado = Componente(
         idTipo: tipoSeleccionado!.id!,
         codigoInventario: codigo,
-        cantidad: cantidad,
+        estado: estado ?? estadoSeleccionado!,
         imagenes: imagenes ?? [],
         tipoNombre: tipoNombre ?? tipoSeleccionado!.nombre,
       );
@@ -140,7 +146,7 @@ class ComponentService extends ChangeNotifier {
     }
 
     final url = Uri.parse(
-      "http://192.168.8.25/proyecto_web/backend/procedimientoAlm/registrar_componente.php",
+      "http://192.168.18.23/proyecto_web/backend/procedimientoAlm/registrar_componente.php",
     );
 
     final atributosJson = atributos.map((attr) {
@@ -172,7 +178,7 @@ class ComponentService extends ChangeNotifier {
     final body = jsonEncode({
       "nombre_tipo": tipoSeleccionado!.nombre,
       "codigo_inventario": componenteCreado!.codigoInventario,
-      "cantidad": componenteCreado!.cantidad,
+      "estado": componenteCreado!.estado,
       "atributos": atributosJson,
       "imagenes": imagenesBase64,
       "tipo_nombre": componenteCreado!.tipoNombre,
@@ -200,7 +206,7 @@ class ComponentService extends ChangeNotifier {
           id: int.parse(data['id_componente'].toString()),
           idTipo: tipoSeleccionado!.id!,
           codigoInventario: componenteCreado!.codigoInventario,
-          cantidad: componenteCreado!.cantidad,
+          estado: componenteCreado!.estado,
           tipoNombre: componenteCreado!.tipoNombre,
           imagenes: componenteCreado!.imagenes,
         );

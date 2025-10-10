@@ -16,7 +16,7 @@ $missingParams = [];
 if (!isset($data['nombre_tipo'])) $missingParams[] = 'nombre_tipo';
 if (!isset($data['atributos']) || !is_array($data['atributos'])) $missingParams[] = 'atributos';
 if (!isset($data['codigo_inventario'])) $missingParams[] = 'codigo_inventario';
-if (!isset($data['cantidad'])) $missingParams[] = 'cantidad';
+if (!isset($data['estado'])) $missingParams[] = 'estado';
 if (!isset($data['id_usuario'])) $missingParams[] = 'id_usuario';
 if (!isset($data['rol'])) $missingParams[] = 'rol';
 if (!empty($missingParams)) {
@@ -33,7 +33,7 @@ $rol = $data['rol'];
 $nombre_tipo = $data['nombre_tipo'];
 $atributos = $data['atributos'];
 $codigo_inventario = $data['codigo_inventario'];
-$cantidad = intval($data['cantidad']);
+$estado = $data['estado'];
 $tipo_nombre = $data['tipo_nombre'];
 try {
     $conn->begin_transaction();
@@ -81,7 +81,7 @@ try {
     $stmt = $conn->prepare("CALL sp_crearComponenteInCan(?,?,?,?,?, @id_componente)");
     if (!$stmt) { error_log("❌ Error prepare Componente: ".$conn->error); }
 
-    $stmt->bind_param("isiss", $id_tipo, $codigo_inventario, $cantidad, $imagenes_json, $tipo_nombre);
+    $stmt->bind_param("issss", $id_tipo, $codigo_inventario, $estado, $imagenes_json, $tipo_nombre);
 
     $stmt->execute();
     $stmt->close();
