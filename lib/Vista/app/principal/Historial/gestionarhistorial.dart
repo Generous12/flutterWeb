@@ -54,7 +54,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
       historial.clear();
       _hasMore = true;
     }
-
+    if (!mounted) return;
     setState(() => _isLoadingMore = true);
 
     try {
@@ -62,6 +62,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
         page: _page,
         limit: _limit,
       );
+      if (!mounted) return;
 
       setState(() {
         historial.addAll(data);
@@ -70,9 +71,11 @@ class _HistorialScreenState extends State<HistorialScreen> {
         if (_hasMore) _page++;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoadingMore = false);
       print("Error al cargar historial: $e");
     } finally {
+      if (!mounted) return;
       setState(() => cargando = false);
     }
   }
