@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
@@ -43,8 +42,6 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
       );
       return;
     }
-
-    // Simular guardado o proceso
     await Future.delayed(const Duration(seconds: 1));
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -53,7 +50,6 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
         backgroundColor: Colors.green,
       ),
     );
-
     await caseProv.limpiarCase();
   }
 
@@ -74,7 +70,7 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
               onPressed: () {
                 navegarConSlideDerecha(
                   context,
-                  const ListaAreasScreen(),
+                  const AreasCarrito(),
                   onVolver: () {
                     setState(() {});
                   },
@@ -101,7 +97,6 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
           padding: const EdgeInsets.all(20),
           child: ListView(
             children: [
-              // --- ÁREA ---
               if (caseProv.areaSeleccionada != null) ...[
                 const Text(
                   'Área',

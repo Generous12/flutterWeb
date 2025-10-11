@@ -573,6 +573,7 @@ extension ComponenteUpdateExtension on ComponenteUpdate {
   }
 }
 
+//MODO ASIGNACION DE COMPONENTES O PERIFERICOS CON AREA
 class ComponentesCarrito extends StatefulWidget {
   const ComponentesCarrito({super.key});
 
@@ -596,6 +597,7 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
   int offset = 0;
   final int limit = 20;
   String filtroTipo = 'General';
+
   @override
   void initState() {
     super.initState();
@@ -635,8 +637,8 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
       );
 
       if (currentRequestId != _lastRequestId) return;
-
       if (!mounted) return;
+
       setState(() {
         if (reset) {
           componentes = nuevos;
@@ -705,7 +707,7 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
 
   @override
   Widget build(BuildContext context) {
-    final caseProv = Provider.of<CaseProvider>(context, listen: false);
+    final caseProv = Provider.of<CaseProvider>(context);
 
     return SafeArea(
       child: Scaffold(
@@ -876,6 +878,8 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
 
                         final c = componentes[index];
                         final seleccionado = seleccionados.contains(c.id);
+                        final yaAgregado = caseProv.componentesSeleccionados
+                            .any((comp) => comp.id == c.id);
 
                         Color stockColor;
                         String stockTexto;
@@ -901,97 +905,103 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
                             stockTexto = 'Disponible';
                         }
 
-                        return Card(
-                          margin: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(0),
-                          ),
-                          color: seleccionado
-                              ? Colors.blue.withOpacity(0.2)
-                              : Colors.white,
-                          child: InkWell(
-                            onTap: () {
-                              if (modoSeleccion) {
-                                setState(() {
-                                  if (seleccionado) {
-                                    seleccionados.remove(c.id);
-                                    if (seleccionados.isEmpty)
-                                      modoSeleccion = false;
-                                  } else {
-                                    seleccionados.add(c.id);
-                                  }
-                                });
-                              } else {
-                                navegarConSlideDerecha(
-                                  context,
-                                  ComponenteDetail(componente: c),
-                                  onVolver: () => fetchComponentes(reset: true),
-                                );
-                              }
-                            },
-                            onLongPress: () {
-                              setState(() {
-                                modoSeleccion = true;
-                                seleccionados.add(c.id);
-                              });
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Row(
-                                children: [
-                                  _buildFirstImage(c),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          c.nombreTipo,
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          c.codigoInventario,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black54,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 4,
-                                            horizontal: 8,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: stockColor,
-                                            borderRadius: BorderRadius.circular(
-                                              90,
+                        return Opacity(
+                          opacity: yaAgregado ? 0.5 : 1.0,
+                          child: Card(
+                            margin: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(0),
+                            ),
+                            color: seleccionado
+                                ? Colors.blue.withOpacity(0.2)
+                                : Colors.white,
+                            child: InkWell(
+                              onTap: yaAgregado
+                                  ? null
+                                  : () {
+                                      if (modoSeleccion) {
+                                        setState(() {
+                                          if (seleccionado) {
+                                            seleccionados.remove(c.id);
+                                            if (seleccionados.isEmpty)
+                                              modoSeleccion = false;
+                                          } else {
+                                            seleccionados.add(c.id);
+                                          }
+                                        });
+                                      }
+                                    },
+                              onLongPress: yaAgregado
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        modoSeleccion = true;
+                                        seleccionados.add(c.id);
+                                      });
+                                    },
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
+                                  children: [
+                                    _buildFirstImage(c),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            c.nombreTipo,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          child: Center(
-                                            child: Text(
-                                              stockTexto,
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            c.codigoInventario,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.black54,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 4,
+                                              horizontal: 8,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: stockColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(90),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                stockTexto,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  const Icon(
-                                    Iconsax.arrow_right_3,
-                                    color: Colors.black,
-                                  ),
-                                ],
+                                    if (!yaAgregado)
+                                      const Icon(
+                                        Iconsax.arrow_right_3,
+                                        color: Colors.black,
+                                      ),
+                                    if (yaAgregado)
+                                      const Icon(
+                                        Icons.check_circle,
+                                        color: Colors.green,
+                                      ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),

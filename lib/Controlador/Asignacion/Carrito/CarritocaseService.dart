@@ -13,7 +13,6 @@ class CaseProvider extends ChangeNotifier {
       _componentesSeleccionados;
   Map<String, dynamic>? get areaSeleccionada => _areaSeleccionada;
 
-  /// Cargar estado desde SharedPreferences
   Future<void> cargarEstado() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -25,7 +24,6 @@ class CaseProvider extends ChangeNotifier {
           .toList();
     }
 
-    // Área
     final areaStr = prefs.getString('areaSeleccionada');
     if (areaStr != null) {
       _areaSeleccionada = json.decode(areaStr);
@@ -44,7 +42,6 @@ class CaseProvider extends ChangeNotifier {
       await _guardarComponentes();
       notifyListeners();
     } else {
-      // Mostrar SnackBar de aviso
       SnackBarUtil.mostrarSnackBarPersonalizado(
         context: context,
         mensaje: 'El componente ya fue agregado',
@@ -55,14 +52,12 @@ class CaseProvider extends ChangeNotifier {
     }
   }
 
-  /// Quitar componente
   Future<void> quitarComponente(int idComponente) async {
     _componentesSeleccionados.removeWhere((comp) => comp.id == idComponente);
     await _guardarComponentes();
     notifyListeners();
   }
 
-  /// Guardar componentes en SharedPreferences
   Future<void> _guardarComponentes() async {
     final prefs = await SharedPreferences.getInstance();
     final listaJson = _componentesSeleccionados
