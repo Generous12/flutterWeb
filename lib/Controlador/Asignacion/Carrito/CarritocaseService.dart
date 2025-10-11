@@ -1,86 +1,101 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:proyecto_web/Controlador/Componentes/list_Update_Component.dart';
+import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CaseProvider extends ChangeNotifier {
-  bool _modoCarrito = false;
-  List<int> _componentesSeleccionados = [];
-  int? _idAreaSeleccionada;
+  List<ComponenteUpdate> _componentesSeleccionados = [];
+  Map<String, dynamic>? _areaSeleccionada;
 
-  bool get modoCarrito => _modoCarrito;
-  List<int> get componentesSeleccionados => _componentesSeleccionados;
-  int? get idAreaSeleccionada => _idAreaSeleccionada;
+  List<ComponenteUpdate> get componentesSeleccionados =>
+      _componentesSeleccionados;
+  Map<String, dynamic>? get areaSeleccionada => _areaSeleccionada;
 
-  /// Inicializa el estado desde SharedPreferences
+  /// Cargar estado desde SharedPreferences
   Future<void> cargarEstado() async {
     final prefs = await SharedPreferences.getInstance();
-    _modoCarrito = prefs.getBool('modoCarrito') ?? false;
-    _componentesSeleccionados =
-        prefs
-            .getStringList('componentesSeleccionados')
-            ?.map(int.parse)
-            .toList() ??
-        [];
-    _idAreaSeleccionada = prefs.getInt('idAreaSeleccionada');
-    notifyListeners();
-  }
 
-  /// Activa o desactiva el modo carrito
-  Future<void> toggleModoCarrito() async {
-    final prefs = await SharedPreferences.getInstance();
-    _modoCarrito = !_modoCarrito;
-    await prefs.setBool('modoCarrito', _modoCarrito);
+    // Componentes
+    final componentesStr = prefs.getStringList('componentesSeleccionados');
+    if (componentesStr != null) {
+      _componentesSeleccionados = componentesStr
+          .map((jsonStr) => ComponenteUpdate.fromJson(json.decode(jsonStr)))
+          .toList();
+    }
 
-    // Si se desactiva, limpia todo
-    if (!_modoCarrito) {
-      _componentesSeleccionados.clear();
-      _idAreaSeleccionada = null;
-      await prefs.remove('componentesSeleccionados');
-      await prefs.remove('idAreaSeleccionada');
+    // Área
+    final areaStr = prefs.getString('areaSeleccionada');
+    if (areaStr != null) {
+      _areaSeleccionada = json.decode(areaStr);
     }
 
     notifyListeners();
   }
 
-  /// Agregar un componente/periférico al carrito
-  Future<void> agregarComponente(int idComponente) async {
-    if (!_componentesSeleccionados.contains(idComponente)) {
-      _componentesSeleccionados.add(idComponente);
+  Future<void> agregarComponente(
+    BuildContext context,
+    ComponenteUpdate comp,
+  ) async {
+    final existe = _componentesSeleccionados.any((c) => c.id == comp.id);
+    if (!existe) {
+      _componentesSeleccionados.add(comp);
       await _guardarComponentes();
       notifyListeners();
+    } else {
+      // Mostrar SnackBar de aviso
+      SnackBarUtil.mostrarSnackBarPersonalizado(
+        context: context,
+        mensaje: 'El componente ya fue agregado',
+        icono: Icons.warning_amber_rounded,
+        colorFondo: Colors.redAccent,
+        duracion: const Duration(seconds: 2),
+      );
     }
   }
 
-  /// Quitar un componente del carrito
+  /// Quitar componente
   Future<void> quitarComponente(int idComponente) async {
-    _componentesSeleccionados.remove(idComponente);
+    _componentesSeleccionados.removeWhere((comp) => comp.id == idComponente);
     await _guardarComponentes();
     notifyListeners();
   }
 
-  /// Seleccionar el área
-  Future<void> seleccionarArea(int idArea) async {
-    _idAreaSeleccionada = idArea;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('idAreaSeleccionada', idArea);
-    notifyListeners();
-  }
-
-  /// Limpiar todos los datos del case actual
-  Future<void> limpiarCase() async {
-    _modoCarrito = false;
-    _componentesSeleccionados.clear();
-    _idAreaSeleccionada = null;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('modoCarrito');
-    await prefs.remove('componentesSeleccionados');
-    await prefs.remove('idAreaSeleccionada');
-    notifyListeners();
-  }
-
-  /// Guardar lista de componentes en SharedPreferences
+  /// Guardar componentes en SharedPreferences
   Future<void> _guardarComponentes() async {
     final prefs = await SharedPreferences.getInstance();
-    final lista = _componentesSeleccionados.map((e) => e.toString()).toList();
-    await prefs.setStringList('componentesSeleccionados', lista);
+    final listaJson = _componentesSeleccionados
+        .map(
+          (c) => json.encode({
+            "id_componente": c.id,
+            "id_tipo": c.idTipo,
+            "codigo_inventario": c.codigoInventario,
+            "nombre_tipo": c.nombreTipo,
+            "tipo_nombre": c.tipoNombre,
+            "estado": c.estado,
+            "imagenes": c.imagenesBase64,
+          }),
+        )
+        .toList();
+    await prefs.setStringList('componentesSeleccionados', listaJson);
+  }
+
+  /// Seleccionar área (guarda todos los datos del área)
+  Future<void> seleccionarArea(Map<String, dynamic> area) async {
+    _areaSeleccionada = area;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('areaSeleccionada', json.encode(area));
+    notifyListeners();
+  }
+
+  /// Limpiar todo
+  Future<void> limpiarCase() async {
+    _componentesSeleccionados.clear();
+    _areaSeleccionada = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('componentesSeleccionados');
+    await prefs.remove('areaSeleccionada');
+    notifyListeners();
   }
 }

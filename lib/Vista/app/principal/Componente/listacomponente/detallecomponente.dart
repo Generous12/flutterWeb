@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
-import 'package:dismissible_page/dismissible_page.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -10,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
 import 'package:proyecto_web/Controlador/Componentes/list_Update_Component.dart';
+import 'package:proyecto_web/Widgets/ZoomImage.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/dropdownbutton.dart';
@@ -625,74 +625,5 @@ extension ComponenteUpdateExtension on ComponenteUpdate {
     } catch (e) {
       return null;
     }
-  }
-}
-
-class ZoomableImagePage extends StatefulWidget {
-  final Uint8List imgBytes;
-  const ZoomableImagePage({super.key, required this.imgBytes});
-
-  @override
-  State<ZoomableImagePage> createState() => _ZoomableImagePageState();
-}
-
-class _ZoomableImagePageState extends State<ZoomableImagePage> {
-  bool showCloseButton = true;
-
-  @override
-  Widget build(BuildContext context) {
-    return DismissiblePage(
-      isFullScreen: true,
-      disabled: true,
-      onDismissed: () => Navigator.of(context).pop(),
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: Stack(
-          children: [
-            InteractiveViewer(
-              panEnabled: true,
-              scaleEnabled: true,
-              minScale: 1.0,
-              maxScale: 5.0,
-              constrained: true,
-              child: Align(
-                alignment: Alignment.center,
-                child: Image.memory(widget.imgBytes, fit: BoxFit.contain),
-              ),
-            ),
-            Positioned(
-              bottom: 30,
-              left: 0,
-              right: 0,
-              child: SafeArea(
-                top: false,
-                bottom: true,
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 300),
-                  opacity: showCloseButton ? 1.0 : 0.0,
-                  child: Center(
-                    child: GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black54,
-                          shape: BoxShape.circle,
-                        ),
-                        padding: const EdgeInsets.all(12),
-                        child: const Icon(
-                          Icons.close,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

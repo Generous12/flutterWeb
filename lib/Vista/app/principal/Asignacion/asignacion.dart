@@ -1,9 +1,61 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Asignacion/Carrito/CarritocaseService.dart';
+import 'package:proyecto_web/Controlador/Componentes/list_Update_Component.dart';
+import 'package:proyecto_web/Vista/app/principal/Areas/listaareas.dart';
+import 'package:proyecto_web/Vista/app/principal/Componente/listacomponente/listageneralcomponente.dart';
+import 'package:proyecto_web/Widgets/ZoomImage.dart';
+import 'package:proyecto_web/Widgets/boton.dart';
+import 'package:proyecto_web/Widgets/navegator.dart';
 
-class AsignacionScreen extends StatelessWidget {
+class AsignacionScreen extends StatefulWidget {
   const AsignacionScreen({super.key});
+
+  @override
+  State<AsignacionScreen> createState() => _AsignacionScreenState();
+}
+
+class _AsignacionScreenState extends State<AsignacionScreen> {
+  Future<void> _confirmarAsignacion(
+    BuildContext context,
+    CaseProvider caseProv,
+  ) async {
+    if (caseProv.componentesSeleccionados.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay componentes para asignar.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final area = caseProv.areaSeleccionada;
+    if (area == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Seleccione un área antes de confirmar.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Simular guardado o proceso
+    await Future.delayed(const Duration(seconds: 1));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Asignación confirmada exitosamente.'),
+        backgroundColor: Colors.green,
+      ),
+    );
+
+    await caseProv.limpiarCase();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,148 +67,251 @@ class AsignacionScreen extends StatelessWidget {
           title: const Text('Asignación de Case'),
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,
+          actions: [
+            IconButton(
+              icon: const Icon(Iconsax.buildings),
+              tooltip: 'Ir a Áreas',
+              onPressed: () {
+                navegarConSlideDerecha(
+                  context,
+                  const ListaAreasScreen(),
+                  onVolver: () {
+                    setState(() {});
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.black,
+          shape: const CircleBorder(),
+          onPressed: () {
+            navegarConSlideDerecha(
+              context,
+              const ComponentesCarrito(),
+              onVolver: () {
+                setState(() {});
+              },
+            );
+          },
+          child: const Icon(Iconsax.add, color: Colors.white, size: 28),
         ),
         body: Padding(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    caseProv.modoCarrito
-                        ? 'Modo Carrito: Activado'
-                        : 'Modo Carrito: Desactivado',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  Switch(
-                    value: caseProv.modoCarrito,
-                    activeColor: Colors.green,
-                    onChanged: (_) {
-                      caseProv.toggleModoCarrito();
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              Text(
-                'Componentes seleccionados:',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              // --- ÁREA ---
+              if (caseProv.areaSeleccionada != null) ...[
+                const Text(
+                  'Área',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
-              ),
-              const SizedBox(height: 10),
-
-              Expanded(
-                child: caseProv.componentesSeleccionados.isEmpty
-                    ? const Center(
-                        child: Text(
-                          'No hay componentes seleccionados.',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: caseProv.componentesSeleccionados.length,
-                        itemBuilder: (context, index) {
-                          final id = caseProv.componentesSeleccionados[index];
-                          return Card(
-                            margin: const EdgeInsets.symmetric(vertical: 5),
-                            child: ListTile(
-                              title: Text('Componente ID: $id'),
-                              trailing: IconButton(
-                                icon: const Icon(
-                                  Icons.delete,
-                                  color: Colors.red,
-                                ),
-                                onPressed: () {
-                                  caseProv.quitarComponente(id);
-                                },
-                              ),
-                            ),
-                          );
-                        },
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
                       ),
-              ),
-
-              const SizedBox(height: 15),
-
-              DropdownButtonFormField<int>(
-                value: caseProv.idAreaSeleccionada,
-                decoration: const InputDecoration(
-                  labelText: 'Seleccionar Área',
-                  border: OutlineInputBorder(),
+                    ],
+                  ),
+                  child: Text(
+                    caseProv.areaSeleccionada!['nombre'] ?? 'Área sin nombre',
+                    style: const TextStyle(fontSize: 16),
+                  ),
                 ),
-                items: const [
-                  DropdownMenuItem(value: 1, child: Text('Área de Soporte')),
-                  DropdownMenuItem(value: 2, child: Text('Área de Desarrollo')),
-                  DropdownMenuItem(
-                    value: 3,
-                    child: Text('Área Administrativa'),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value != null) caseProv.seleccionarArea(value);
-                },
-              ),
+                const Divider(height: 32),
+              ],
 
-              const SizedBox(height: 20),
-
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  icon: const Icon(Icons.check_circle_outline),
-                  label: const Text('Confirmar Asignación'),
-                  onPressed: () {
-                    if (!caseProv.modoCarrito) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Activa el modo carrito para realizar una asignación.',
-                          ),
-                          backgroundColor: Colors.orange,
+              if (caseProv.componentesSeleccionados.any(
+                (c) => c.tipoNombre.toLowerCase().contains('periférico'),
+              )) ...[
+                const Text(
+                  'Periféricos',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                const SizedBox(height: 8),
+                ...caseProv.componentesSeleccionados
+                    .where(
+                      (c) => c.tipoNombre.toLowerCase().contains('periférico'),
+                    )
+                    .map(
+                      (componente) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: _buildComponenteTile(
+                          context,
+                          componente,
+                          caseProv,
                         ),
-                      );
-                      return;
-                    }
-
-                    if (caseProv.componentesSeleccionados.isEmpty ||
-                        caseProv.idAreaSeleccionada == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Selecciona al menos un componente y un área antes de confirmar.',
-                          ),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Asignación creada correctamente ✅'),
-                        backgroundColor: Colors.green,
                       ),
-                    );
+                    )
+                    .toList(),
+                const Divider(height: 32),
+              ],
 
-                    caseProv.limpiarCase();
-                  },
+              if (caseProv.componentesSeleccionados.any(
+                (c) => !c.tipoNombre.toLowerCase().contains('periférico'),
+              )) ...[
+                const Text(
+                  'Componentes',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
-              ),
+                const SizedBox(height: 8),
+                ...caseProv.componentesSeleccionados
+                    .where(
+                      (c) => !c.tipoNombre.toLowerCase().contains('periférico'),
+                    )
+                    .map(
+                      (componente) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: _buildComponenteTile(
+                          context,
+                          componente,
+                          caseProv,
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ],
             ],
+          ),
+        ),
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.all(12),
+          child: LoadingOverlayButton(
+            text: "Confirmar Asignación",
+            icon: Iconsax.tick_circle,
+            color: Colors.black,
+            onPressedLogic: () async => _confirmarAsignacion(context, caseProv),
           ),
         ),
       ),
     );
   }
+}
+
+Widget _buildComponenteTile(
+  BuildContext context,
+  ComponenteUpdate componente,
+  CaseProvider caseProv,
+) {
+  Uint8List? firstValidImage;
+  for (final b64 in componente.imagenesBase64) {
+    final bytes = componente.imagenBytes(
+      componente.imagenesBase64.indexOf(b64),
+    );
+    if (bytes != null) {
+      firstValidImage = bytes;
+      break;
+    }
+  }
+
+  return Container(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.08),
+          blurRadius: 6,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      leading: GestureDetector(
+        onTap: () {
+          final imagenesUint8 = componente.imagenesBase64
+              .map(
+                (b64) => componente.imagenBytes(
+                  componente.imagenesBase64.indexOf(b64),
+                ),
+              )
+              .whereType<Uint8List>()
+              .toList();
+
+          if (imagenesUint8.isNotEmpty) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => ZoomableGalleryPage(
+                  imagenes: imagenesUint8,
+                  initialIndex: 0,
+                ),
+              ),
+            );
+          }
+        },
+        child: Hero(
+          tag: 'componente_${componente.id}_img',
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: firstValidImage != null
+                ? Image.memory(
+                    firstValidImage,
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.cover,
+                  )
+                : Container(
+                    width: 70,
+                    height: 70,
+                    color: Colors.grey.shade100,
+                    child: const Icon(
+                      Iconsax.cpu,
+                      color: Colors.black45,
+                      size: 34,
+                    ),
+                  ),
+          ),
+        ),
+      ),
+      title: Text(
+        componente.nombreTipo,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              componente.codigoInventario,
+              style: const TextStyle(fontSize: 13, color: Colors.black54),
+            ),
+            const SizedBox(height: 2),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: componente.estado == 'Disponible'
+                    ? Colors.green.withOpacity(0.1)
+                    : Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                componente.estado,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: componente.estado == 'Disponible'
+                      ? Colors.green[700]
+                      : Colors.orange[700],
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      trailing: IconButton(
+        icon: const Icon(Icons.delete_rounded, color: Colors.redAccent),
+        onPressed: () => caseProv.quitarComponente(componente.id),
+      ),
+    ),
+  );
 }

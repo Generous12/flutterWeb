@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:provider/provider.dart';
+import 'package:proyecto_web/Controlador/Asignacion/Carrito/CarritocaseService.dart';
 import 'package:proyecto_web/Controlador/Componentes/eliminar_componente.dart';
 import 'package:proyecto_web/Controlador/Componentes/list_Update_Component.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/listacomponente/detallecomponente.dart';
@@ -351,22 +353,38 @@ class _ComponentesListState extends State<ComponentesList> {
                           final c = componentes[index];
                           Color stockColor;
                           String stockTexto;
-                          if (c.estado == "Mantenimiento") {
-                            stockColor = const Color.fromARGB(255, 255, 17, 0);
-                            stockTexto = 'Está en Mantenimiento';
-                          } else if (c.estado == "En uso") {
-                            stockColor = const Color.fromARGB(255, 255, 230, 0);
-                            stockTexto = 'Está en Uso';
-                          } else if (c.estado == "Dañado") {
-                            stockColor = const Color.fromARGB(255, 128, 0, 0);
-                            stockTexto = 'Está Dañado';
-                          } else if (c.estado == "Arreglado") {
-                            stockColor = const Color.fromARGB(255, 0, 102, 204);
-                            stockTexto = 'Ha sido Arreglado';
-                          } else {
-                            stockColor = const Color.fromARGB(255, 0, 167, 6);
-                            stockTexto = 'Se encuentra Disponible';
+
+                          switch (c.estado) {
+                            case "Mantenimiento":
+                              stockColor = const Color(0xFFFF6B6B);
+                              stockTexto = 'En Mantenimiento';
+                              break;
+
+                            case "En uso":
+                              stockColor = const Color(0xFFFFC107);
+                              stockTexto = 'En Uso';
+                              break;
+
+                            case "Dañado":
+                              stockColor = const Color(0xFFB71C1C);
+                              stockTexto = 'Dañado';
+                              break;
+
+                            case "Arreglado":
+                              stockColor = const Color(0xFF42A5F5);
+                              stockTexto = 'Arreglado';
+                              break;
+
+                            case "Pendiente":
+                              stockColor = const Color(0xFF9C27B0);
+                              stockTexto = 'Pendiente de revisión';
+                              break;
+
+                            default:
+                              stockColor = const Color(0xFF2ECC71);
+                              stockTexto = 'Disponible';
                           }
+
                           return Card(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(0),
@@ -552,5 +570,438 @@ extension ComponenteUpdateExtension on ComponenteUpdate {
     } catch (e) {
       return null;
     }
+  }
+}
+
+class ComponentesCarrito extends StatefulWidget {
+  const ComponentesCarrito({super.key});
+
+  @override
+  State<ComponentesCarrito> createState() => _ComponentesCarritonState();
+}
+
+class _ComponentesCarritonState extends State<ComponentesCarrito> {
+  final ComponenteUpdateService service = ComponenteUpdateService();
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+
+  List<ComponenteUpdate> componentes = [];
+  bool loading = true;
+  bool loadingMore = false;
+  bool allLoaded = false;
+  Set<int> seleccionados = {};
+  bool modoSeleccion = false;
+  String busqueda = '';
+  int _lastRequestId = 0;
+  int offset = 0;
+  final int limit = 20;
+  String filtroTipo = 'General';
+  @override
+  void initState() {
+    super.initState();
+    fetchComponentes();
+    _scrollController.addListener(_scrollListener);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> fetchComponentes({bool reset = false}) async {
+    final currentRequestId = ++_lastRequestId;
+
+    if (reset) {
+      offset = 0;
+      allLoaded = false;
+      componentes.clear();
+    }
+
+    if (allLoaded) return;
+    final isInitialLoad = offset == 0;
+    setState(() {
+      loading = isInitialLoad;
+      loadingMore = !isInitialLoad;
+    });
+
+    try {
+      final nuevos = await service.listar(
+        busqueda: busqueda,
+        tipo: filtroTipo,
+        offset: offset,
+        limit: limit,
+      );
+
+      if (currentRequestId != _lastRequestId) return;
+
+      if (!mounted) return;
+      setState(() {
+        if (reset) {
+          componentes = nuevos;
+        } else {
+          componentes.addAll(nuevos);
+        }
+        offset += nuevos.length;
+        allLoaded = nuevos.length < limit;
+        loading = false;
+        loadingMore = false;
+      });
+    } catch (e) {
+      if (currentRequestId != _lastRequestId) return;
+      if (!mounted) return;
+      setState(() {
+        loading = false;
+        loadingMore = false;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+    }
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 100 &&
+        !loadingMore &&
+        !allLoaded) {
+      fetchComponentes();
+    }
+  }
+
+  void _onSearchChanged(String value) async {
+    busqueda = value;
+    offset = 0;
+    allLoaded = false;
+    setState(() {
+      componentes.clear();
+      loading = true;
+    });
+
+    try {
+      final nuevos = await service.listar(
+        busqueda: busqueda,
+        tipo: filtroTipo,
+        offset: offset,
+        limit: limit,
+      );
+
+      setState(() {
+        componentes = nuevos;
+        offset += nuevos.length;
+        if (nuevos.length < limit) allLoaded = true;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      setState(() {
+        loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final caseProv = Provider.of<CaseProvider>(context, listen: false);
+
+    return SafeArea(
+      child: Scaffold(
+        body: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
+              child: Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 238, 238, 238),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Row(
+                      children: [
+                        if (modoSeleccion)
+                          IconButton(
+                            icon: const Icon(
+                              Iconsax.close_circle,
+                              color: Colors.black,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                seleccionados.clear();
+                                modoSeleccion = false;
+                              });
+                            },
+                          ),
+                        Expanded(
+                          child: modoSeleccion
+                              ? Text(
+                                  "Seleccionados ${seleccionados.length}",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              : TextField(
+                                  controller: _searchController,
+                                  onChanged: _onSearchChanged,
+                                  decoration: InputDecoration(
+                                    hintText: 'Buscar componente',
+                                    border: InputBorder.none,
+                                    prefixIcon: IconButton(
+                                      icon: const Icon(
+                                        Iconsax.arrow_left,
+                                        color: Colors.black,
+                                      ),
+                                      onPressed: () => Navigator.pop(context),
+                                    ),
+                                    suffixIcon:
+                                        _searchController.text.isNotEmpty
+                                        ? IconButton(
+                                            icon: const Icon(
+                                              LucideIcons.eraser,
+                                              color: Colors.black,
+                                            ),
+                                            onPressed: () {
+                                              _searchController.clear();
+                                              _onSearchChanged('');
+                                            },
+                                          )
+                                        : const Icon(
+                                            Iconsax.search_normal,
+                                            color: Colors.black,
+                                          ),
+                                  ),
+                                ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            modoSeleccion
+                                ? Iconsax.add_circle
+                                : filtroTipo == "General"
+                                ? Iconsax.filter
+                                : Iconsax.close_circle,
+                            color: Colors.black,
+                          ),
+                          onPressed: () async {
+                            if (modoSeleccion) {
+                              if (seleccionados.isEmpty) return;
+                              for (final id in seleccionados) {
+                                final comp = componentes.firstWhere(
+                                  (c) => c.id == id,
+                                );
+                                await caseProv.agregarComponente(context, comp);
+                              }
+                              setState(() {
+                                seleccionados.clear();
+                                modoSeleccion = false;
+                              });
+                            } else {
+                              if (filtroTipo != "General") {
+                                setState(() {
+                                  filtroTipo = "General";
+                                  componentes.clear();
+                                  loading = true;
+                                });
+                                fetchComponentes(reset: true);
+                              } else {
+                                showModalBottomSheet(
+                                  context: context,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(20),
+                                    ),
+                                  ),
+                                  builder: (context) {
+                                    return SafeArea(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            ListTile(
+                                              leading: const Icon(
+                                                Iconsax.mouse,
+                                              ),
+                                              title: const Text("Periféricos"),
+                                              onTap: () {
+                                                Navigator.pop(context);
+                                                filtroTipo = "Periféricos";
+                                                fetchComponentes(reset: true);
+                                              },
+                                            ),
+                                            ListTile(
+                                              leading: const Icon(Iconsax.cpu),
+                                              title: const Text("Componentes"),
+                                              onTap: () {
+                                                Navigator.pop(context);
+                                                filtroTipo = "Componentes";
+                                                fetchComponentes(reset: true);
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              }
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: loading && componentes.isEmpty
+                  ? const Center(
+                      child: CircularProgressIndicator(color: Colors.blue),
+                    )
+                  : ListView.builder(
+                      controller: _scrollController,
+                      itemCount: componentes.length + (loadingMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index >= componentes.length) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 10),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+
+                        final c = componentes[index];
+                        final seleccionado = seleccionados.contains(c.id);
+
+                        Color stockColor;
+                        String stockTexto;
+                        switch (c.estado) {
+                          case "Mantenimiento":
+                            stockColor = const Color(0xFFFF1100);
+                            stockTexto = 'Está en Mantenimiento';
+                            break;
+                          case "En uso":
+                            stockColor = const Color(0xFFFFE600);
+                            stockTexto = 'Está en Uso';
+                            break;
+                          case "Dañado":
+                            stockColor = const Color(0xFF800000);
+                            stockTexto = 'Está Dañado';
+                            break;
+                          case "Arreglado":
+                            stockColor = const Color(0xFF0066CC);
+                            stockTexto = 'Ha sido Arreglado';
+                            break;
+                          default:
+                            stockColor = const Color(0xFF00A706);
+                            stockTexto = 'Disponible';
+                        }
+
+                        return Card(
+                          margin: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(0),
+                          ),
+                          color: seleccionado
+                              ? Colors.blue.withOpacity(0.2)
+                              : Colors.white,
+                          child: InkWell(
+                            onTap: () {
+                              if (modoSeleccion) {
+                                setState(() {
+                                  if (seleccionado) {
+                                    seleccionados.remove(c.id);
+                                    if (seleccionados.isEmpty)
+                                      modoSeleccion = false;
+                                  } else {
+                                    seleccionados.add(c.id);
+                                  }
+                                });
+                              } else {
+                                navegarConSlideDerecha(
+                                  context,
+                                  ComponenteDetail(componente: c),
+                                  onVolver: () => fetchComponentes(reset: true),
+                                );
+                              }
+                            },
+                            onLongPress: () {
+                              setState(() {
+                                modoSeleccion = true;
+                                seleccionados.add(c.id);
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                children: [
+                                  _buildFirstImage(c),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          c.nombreTipo,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          c.codigoInventario,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black54,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 4,
+                                            horizontal: 8,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: stockColor,
+                                            borderRadius: BorderRadius.circular(
+                                              90,
+                                            ),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              stockTexto,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Iconsax.arrow_right_3,
+                                    color: Colors.black,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
