@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:proyecto_web/Controlador/Asignacion/Carrito/CarritocaseService.dart';
 import 'package:proyecto_web/Controlador/Provider/componentService.dart';
 import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
 import 'package:proyecto_web/Vista/app/autenticacion/loginapp.dart';
@@ -30,6 +31,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider<UsuarioProvider>.value(value: usuarioProvider),
         ChangeNotifierProvider(create: (_) => ComponentService()),
+        ChangeNotifierProvider(create: (_) => CaseProvider()),
       ],
       child: const MyApp(),
     ),
