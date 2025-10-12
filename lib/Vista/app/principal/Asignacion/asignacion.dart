@@ -56,7 +56,6 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
   @override
   Widget build(BuildContext context) {
     final caseProv = Provider.of<CaseProvider>(context);
-
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -98,9 +97,26 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
           child: ListView(
             children: [
               if (caseProv.areaSeleccionada != null) ...[
-                const Text(
-                  'Área',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Área',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      onPressed: () {
+                        Provider.of<CaseProvider>(
+                          context,
+                          listen: false,
+                        ).quitarAreaSeleccionada();
+                      },
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -117,7 +133,8 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
                     ],
                   ),
                   child: Text(
-                    caseProv.areaSeleccionada!['nombre'] ?? 'Área sin nombre',
+                    caseProv.areaSeleccionada!['nombre_area'] ??
+                        'Área sin nombre',
                     style: const TextStyle(fontSize: 16),
                   ),
                 ),

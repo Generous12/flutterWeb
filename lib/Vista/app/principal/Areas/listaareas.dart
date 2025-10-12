@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Areas/areasService.dart';
+import 'package:proyecto_web/Controlador/Asignacion/Carrito/CarritocaseService.dart';
 import 'package:proyecto_web/Vista/app/principal/Areas/crearAreas.dart';
 import 'package:proyecto_web/Vista/app/principal/Areas/detallearea.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
@@ -307,7 +309,7 @@ class _ListaAreasScreenState extends State<ListaAreasScreen> {
   }
 }
 
-//ASGINAR AREAS AL ASIGNAR
+//ASiGNAR AREAS AL ASIGNAR
 class AreasCarrito extends StatefulWidget {
   const AreasCarrito({super.key});
 
@@ -349,6 +351,15 @@ class _AreasCarritoState extends State<AreasCarrito> {
 
   Future<void> _refresh() async {
     _cargarAreas();
+  }
+
+  void _agregarAreaAlCarrito(BuildContext context, Map<String, dynamic> area) {
+    final caseProvider = Provider.of<CaseProvider>(context, listen: false);
+    if (caseProvider.areaSeleccionada != null &&
+        caseProvider.areaSeleccionada!["id_area"] == area["id_area"]) {
+      return;
+    }
+    caseProvider.seleccionarArea(area, context: context);
   }
 
   @override
@@ -421,11 +432,12 @@ class _AreasCarritoState extends State<AreasCarrito> {
               return const Center(child: CircularProgressIndicator());
             }
             if (snapshot.hasError) {
-              return Center(child: Text(" Error: ${snapshot.error}"));
+              return Center(child: Text("Error: ${snapshot.error}"));
             }
             if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return const Center(child: Text("No hay áreas registradas"));
             }
+
             final areas = snapshot.data!;
             final sinSubniveles = areas
                 .where(
@@ -436,6 +448,7 @@ class _AreasCarritoState extends State<AreasCarrito> {
                           a["total_subsubareas"] == null),
                 )
                 .toList();
+
             final conSubniveles = areas
                 .where(
                   (a) =>
@@ -448,67 +461,29 @@ class _AreasCarritoState extends State<AreasCarrito> {
 
             return RefreshIndicator(
               onRefresh: _refresh,
-              child: ListView.builder(
-                itemCount: ordenadas.length,
-                itemBuilder: (context, index) {
-                  final area = ordenadas[index];
-                  final esSinSubniveles =
-                      (area["total_subareas"] ?? 0) == 0 &&
-                      (area["total_subsubareas"] ?? 0) == 0;
-                  final estaSeleccionada = _selectedAreas.contains(
-                    area["id_area"],
-                  );
+              child: Consumer<CaseProvider>(
+                builder: (context, caseProv, _) {
+                  return ListView.builder(
+                    itemCount: ordenadas.length,
+                    itemBuilder: (context, index) {
+                      final area = ordenadas[index];
 
-                  return GestureDetector(
-                    onLongPress: () {
-                      if (esSinSubniveles) {
-                        setState(() {
-                          if (estaSeleccionada) {
-                            _selectedAreas.remove(area["id_area"]);
-                          } else {
-                            _selectedAreas.add(area["id_area"]);
-                          }
-                        });
-                      }
-                    },
-                    child: Card(
-                      color: estaSeleccionada
-                          ? Colors.black.withOpacity(0.1)
-                          : Colors.white,
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 2,
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        title: Text(
-                          area["nombre_area"],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        subtitle: Text(
-                          "Subáreas: ${area["total_subareas"]}  •  Sub-subáreas: ${area["total_subsubareas"]}",
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        trailing: esSinSubniveles
-                            ? (estaSeleccionada
-                                  ? const Icon(
-                                      Icons.check_circle,
-                                      color: Colors.black,
-                                    )
-                                  : const Icon(Icons.radio_button_unchecked))
-                            : const Icon(Icons.arrow_forward_ios, size: 18),
-                        onTap: () {
-                          if (_selectedAreas.isNotEmpty && esSinSubniveles) {
+                      final esSinSubniveles =
+                          (area["total_subareas"] ?? 0) == 0 &&
+                          (area["total_subsubareas"] ?? 0) == 0;
+
+                      final estaSeleccionada = _selectedAreas.contains(
+                        area["id_area"],
+                      );
+
+                      // 👇 Verifica si ya está en el provider
+                      final estaEnCarrito =
+                          caseProv.areaSeleccionada?["id_area"] ==
+                          area["id_area"];
+
+                      return GestureDetector(
+                        onLongPress: () {
+                          if (esSinSubniveles) {
                             setState(() {
                               if (estaSeleccionada) {
                                 _selectedAreas.remove(area["id_area"]);
@@ -516,20 +491,77 @@ class _AreasCarritoState extends State<AreasCarrito> {
                                 _selectedAreas.add(area["id_area"]);
                               }
                             });
-                          } else {
-                            navegarConSlideDerecha(
-                              context,
-                              DetalleAreaScreen(area: area),
-                              onVolver: () {
-                                setState(() {
-                                  _refresh();
-                                });
-                              },
-                            );
                           }
                         },
-                      ),
-                    ),
+                        child: Card(
+                          color: estaSeleccionada
+                              ? Colors.black.withOpacity(0.1)
+                              : Colors.white,
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 2,
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            title: Text(
+                              area["nombre_area"],
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            subtitle: Text(
+                              "Subáreas: ${area["total_subareas"]}  •  Sub-subáreas: ${area["total_subsubareas"]}",
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            trailing: esSinSubniveles
+                                ? (estaEnCarrito
+                                      ? const Icon(
+                                          Icons.check_circle,
+                                          color: Colors.green,
+                                        )
+                                      : const Icon(
+                                          Icons.radio_button_unchecked,
+                                        ))
+                                : const Icon(Icons.arrow_forward_ios, size: 18),
+
+                            onTap: () async {
+                              if (esSinSubniveles) {
+                                _agregarAreaAlCarrito(context, area);
+
+                                final caseProv = Provider.of<CaseProvider>(
+                                  context,
+                                  listen: false,
+                                );
+                                await caseProv.seleccionarArea(
+                                  area,
+                                  context: context,
+                                );
+
+                                setState(() {});
+                              } else {
+                                navegarConSlideDerecha(
+                                  context,
+                                  DetalleAreaScreen(area: area),
+                                  onVolver: () {
+                                    setState(() {
+                                      _refresh();
+                                    });
+                                  },
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),

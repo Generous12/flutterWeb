@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class HistorialService {
   final String baseUrl =
-      "http://192.168.18.23/proyecto_web/backend/procedimientoAlm/historial/gestionarhistorial.php";
+      "http://192.168.137.137/proyecto_web/backend/procedimientoAlm/historial/gestionarhistorial.php";
   Future<List<Map<String, dynamic>>> listarHistorial({
     int page = 1,
     int limit = 30,
