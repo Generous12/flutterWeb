@@ -1,14 +1,21 @@
 // ignore_for_file: unused_field
 
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Areas/areasService.dart';
 import 'package:proyecto_web/Controlador/Asignacion/Carrito/CarritocaseService.dart';
+import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:proyecto_web/Widgets/toastalertSo.dart';
 
 class DetalleAreaScreen extends StatefulWidget {
   final Map<String, dynamic> area;
-  const DetalleAreaScreen({super.key, required this.area});
+  final bool modoCarrito;
+  const DetalleAreaScreen({
+    super.key,
+    required this.area,
+    this.modoCarrito = false,
+  });
 
   @override
   State<DetalleAreaScreen> createState() => _DetalleAreaScreenState();
@@ -24,6 +31,19 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
   void initState() {
     super.initState();
     _cargarDatos();
+  }
+
+  Future<void> _quitarAsignacion(int idArea) async {
+    final resp = await _areaService.quitarAsignacionArea(idArea);
+    SnackBarUtil.mostrarSnackBarPersonalizado(
+      context: context,
+      mensaje: resp["message"],
+      icono: resp["success"] == true
+          ? Iconsax.trash
+          : Icons.warning_amber_rounded,
+      colorFondo: Colors.black,
+    );
+    if (resp["success"] == true) _cargarDatos();
   }
 
   Future<void> _cargarDatos() async {
@@ -118,7 +138,10 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                   InkWell(
                                     borderRadius: BorderRadius.circular(16),
                                     onTap: () async {
-                                      if (tieneSubSub) {
+                                      if (widget.modoCarrito) {
+                                        // Si está en modo carrito, quitar asignación directamente
+                                        await _quitarAsignacion(sub["id_area"]);
+                                      } else if (tieneSubSub) {
                                         ToastUtil.showWarning(
                                           "Selecciona una sub-subárea dentro de esta subárea.",
                                         );
@@ -152,21 +175,37 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                               ),
                                             ),
                                           ),
-                                          esSeleccionada
-                                              ? const Icon(
-                                                  Icons.check_circle,
-                                                  color: Colors.green,
-                                                  size: 26,
-                                                )
-                                              : const Icon(
-                                                  Icons.radio_button_unchecked,
-                                                  color: Colors.grey,
-                                                  size: 26,
-                                                ),
+                                          if (widget.modoCarrito)
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.link_off,
+                                                color: Colors.redAccent,
+                                                size: 26,
+                                              ),
+                                              onPressed: () =>
+                                                  _quitarAsignacion(
+                                                    sub["id_area"],
+                                                  ),
+                                            )
+                                          else
+                                            (esSeleccionada
+                                                ? const Icon(
+                                                    Icons.check_circle,
+                                                    color: Colors.green,
+                                                    size: 26,
+                                                  )
+                                                : const Icon(
+                                                    Icons
+                                                        .radio_button_unchecked,
+                                                    color: Colors.grey,
+                                                    size: 26,
+                                                  )),
                                         ],
                                       ),
                                     ),
                                   ),
+
+                                  // Sub-subáreas
                                   if (tieneSubSub)
                                     Column(
                                       children: subSubDeEsta.map((subsub) {
@@ -204,24 +243,42 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                                 fontSize: 14,
                                               ),
                                             ),
-                                            trailing: esSeleccionadaSubSub
-                                                ? const Icon(
-                                                    Icons.check_circle,
-                                                    color: Colors.green,
-                                                    size: 22,
+                                            trailing: widget.modoCarrito
+                                                ? IconButton(
+                                                    icon: const Icon(
+                                                      Icons.link_off,
+                                                      color: Colors.redAccent,
+                                                      size: 22,
+                                                    ),
+                                                    onPressed: () =>
+                                                        _quitarAsignacion(
+                                                          subsub["id_area"],
+                                                        ),
                                                   )
-                                                : const Icon(
-                                                    Icons
-                                                        .radio_button_unchecked,
-                                                    color: Colors.grey,
-                                                    size: 22,
-                                                  ),
+                                                : (esSeleccionadaSubSub
+                                                      ? const Icon(
+                                                          Icons.check_circle,
+                                                          color: Colors.green,
+                                                          size: 22,
+                                                        )
+                                                      : const Icon(
+                                                          Icons
+                                                              .radio_button_unchecked,
+                                                          color: Colors.grey,
+                                                          size: 22,
+                                                        )),
                                             onTap: () async {
-                                              await caseProv.seleccionarArea(
-                                                subsub,
-                                                context: context,
-                                              );
-                                              Navigator.pop(context);
+                                              if (widget.modoCarrito) {
+                                                await _quitarAsignacion(
+                                                  subsub["id_area"],
+                                                );
+                                              } else {
+                                                await caseProv.seleccionarArea(
+                                                  subsub,
+                                                  context: context,
+                                                );
+                                                Navigator.pop(context);
+                                              }
                                             },
                                           ),
                                         );

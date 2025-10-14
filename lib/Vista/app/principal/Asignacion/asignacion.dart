@@ -140,7 +140,6 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
                 ),
                 const Divider(height: 32),
               ],
-
               if (caseProv.componentesSeleccionados.any(
                 (c) => c.tipoNombre.toLowerCase().contains('periférico'),
               )) ...[
@@ -166,7 +165,6 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
                     .toList(),
                 const Divider(height: 32),
               ],
-
               if (caseProv.componentesSeleccionados.any(
                 (c) => !c.tipoNombre.toLowerCase().contains('periférico'),
               )) ...[

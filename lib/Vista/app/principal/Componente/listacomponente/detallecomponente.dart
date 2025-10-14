@@ -581,7 +581,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 10),
                 CustomTextField(
                   controller: codigoController,

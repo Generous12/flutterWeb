@@ -269,7 +269,7 @@ class _ListaAreasScreenState extends State<ListaAreasScreen> {
                           } else {
                             navegarConSlideDerecha(
                               context,
-                              DetalleAreaScreen(area: area),
+                              DetalleAreaScreen(area: area, modoCarrito: true),
                               onVolver: () {
                                 setState(() {
                                   _refresh();
@@ -476,7 +476,7 @@ class _AreasCarritoState extends State<AreasCarrito> {
                         area["id_area"],
                       );
 
-                      // 👇 Verifica si ya está en el provider
+                      // Verifica si ya está en el provider
                       final estaEnCarrito =
                           caseProv.areaSeleccionada?["id_area"] ==
                           area["id_area"];
