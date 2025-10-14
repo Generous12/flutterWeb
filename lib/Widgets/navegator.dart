@@ -77,6 +77,32 @@ void navegarConSlideDerecha(
   });
 }
 
+Future<dynamic> navegarConSlideDerechaBool(
+  BuildContext context,
+  Widget pantalla, {
+  VoidCallback? onVolver,
+}) async {
+  final result = await Navigator.push(
+    context,
+    PageRouteBuilder(
+      pageBuilder: (_, __, ___) => pantalla,
+      transitionsBuilder: (_, anim, __, child) {
+        const begin = Offset(1.0, 0.0);
+        const end = Offset.zero;
+        const curve = Curves.ease;
+        final tween = Tween(
+          begin: begin,
+          end: end,
+        ).chain(CurveTween(curve: curve));
+        return SlideTransition(position: anim.drive(tween), child: child);
+      },
+    ),
+  );
+
+  if (onVolver != null) onVolver();
+  return result; // ✅ devolver el resultado del Navigator
+}
+
 void navegarConSlideIzquierda(
   BuildContext context,
   Widget pantalla, {

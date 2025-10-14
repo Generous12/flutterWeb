@@ -475,12 +475,9 @@ class _AreasCarritoState extends State<AreasCarrito> {
                       final estaSeleccionada = _selectedAreas.contains(
                         area["id_area"],
                       );
-
-                      // Verifica si ya está en el provider
                       final estaEnCarrito =
                           caseProv.areaSeleccionada?["id_area"] ==
                           area["id_area"];
-
                       return GestureDetector(
                         onLongPress: () {
                           if (esSinSubniveles) {
@@ -494,7 +491,14 @@ class _AreasCarritoState extends State<AreasCarrito> {
                           }
                         },
                         child: Card(
-                          color: estaSeleccionada
+                          color:
+                              (caseProv.areaSeleccionada != null &&
+                                  (caseProv.areaSeleccionada!["id_area"] ==
+                                          area["id_area"] ||
+                                      caseProv.areaSeleccionada!["id_area_padre"] ==
+                                          area["id_area"] ||
+                                      caseProv.areaSeleccionada!["id_area_abue"] ==
+                                          area["id_area"]))
                               ? Colors.black.withOpacity(0.1)
                               : Colors.white,
                           margin: const EdgeInsets.symmetric(

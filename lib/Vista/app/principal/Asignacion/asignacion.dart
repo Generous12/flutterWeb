@@ -90,37 +90,23 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
               },
             );
           },
-          child: const Icon(Iconsax.add, color: Colors.white, size: 28),
+          child: const Icon(Iconsax.component, color: Colors.white, size: 28),
         ),
         body: Padding(
           padding: const EdgeInsets.all(20),
           child: ListView(
             children: [
               if (caseProv.areaSeleccionada != null) ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Área',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
-                      onPressed: () {
-                        Provider.of<CaseProvider>(
-                          context,
-                          listen: false,
-                        ).quitarAreaSeleccionada();
-                      },
-                    ),
-                  ],
+                const Text(
+                  'Área',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -132,13 +118,43 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
                       ),
                     ],
                   ),
-                  child: Text(
-                    caseProv.areaSeleccionada!['nombre_area'] ??
-                        'Área sin nombre',
-                    style: const TextStyle(fontSize: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          (() {
+                            final area = caseProv.areaSeleccionada!;
+                            final jerarquia = area["jerarquia"];
+
+                            if (jerarquia != null &&
+                                jerarquia is List &&
+                                jerarquia.isNotEmpty) {
+                              return jerarquia.join(" > ");
+                            }
+
+                            return area["nombre_area"] ?? "Área sin nombre";
+                          })(),
+                          style: const TextStyle(fontSize: 16),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          color: Colors.red,
+                        ),
+                        onPressed: () {
+                          Provider.of<CaseProvider>(
+                            context,
+                            listen: false,
+                          ).quitarAreaSeleccionada();
+                        },
+                      ),
+                    ],
                   ),
                 ),
-                const Divider(height: 32),
+                const SizedBox(height: 15),
               ],
               if (caseProv.componentesSeleccionados.any(
                 (c) => c.tipoNombre.toLowerCase().contains('periférico'),
@@ -163,7 +179,7 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
                       ),
                     )
                     .toList(),
-                const Divider(height: 32),
+                const SizedBox(height: 8),
               ],
               if (caseProv.componentesSeleccionados.any(
                 (c) => !c.tipoNombre.toLowerCase().contains('periférico'),

@@ -104,7 +104,7 @@ class CaseProvider extends ChangeNotifier {
       );
 
       if (confirmado != true) {
-        ToastUtil.showInfo("Acción cancelada por el usuario");
+        Navigator.pop(context);
         return;
       }
 

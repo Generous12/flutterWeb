@@ -146,10 +146,11 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                           "Selecciona una sub-subárea dentro de esta subárea.",
                                         );
                                       } else {
-                                        await caseProv.seleccionarArea(
-                                          sub,
-                                          context: context,
-                                        );
+                                        await caseProv.seleccionarArea({
+                                          ...sub,
+                                          "id_area_padre":
+                                              widget.area["id_area"],
+                                        }, context: context);
                                         Navigator.pop(context);
                                       }
                                     },
@@ -273,10 +274,13 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                                   subsub["id_area"],
                                                 );
                                               } else {
-                                                await caseProv.seleccionarArea(
-                                                  subsub,
-                                                  context: context,
-                                                );
+                                                await caseProv.seleccionarArea({
+                                                  ...subsub,
+                                                  "id_area_padre": widget
+                                                      .area["id_area"], // el área actual (subárea padre)
+                                                  "id_area_abue": widget
+                                                      .area["id_area_padre"], // el abuelo si existe
+                                                }, context: context);
                                                 Navigator.pop(context);
                                               }
                                             },
