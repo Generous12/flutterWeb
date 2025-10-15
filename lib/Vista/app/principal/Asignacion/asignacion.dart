@@ -140,10 +140,7 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(
-                          Icons.delete_outline,
-                          color: Colors.red,
-                        ),
+                        icon: const Icon(Iconsax.trash, color: Colors.red),
                         onPressed: () {
                           Provider.of<CaseProvider>(
                             context,
@@ -335,7 +332,7 @@ Widget _buildComponenteTile(
         ),
       ),
       trailing: IconButton(
-        icon: const Icon(Icons.delete_rounded, color: Colors.redAccent),
+        icon: const Icon(Iconsax.trash, color: Colors.redAccent),
         onPressed: () => caseProv.quitarComponente(componente.id),
       ),
     ),

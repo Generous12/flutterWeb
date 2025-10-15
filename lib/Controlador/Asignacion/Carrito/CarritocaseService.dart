@@ -43,8 +43,6 @@ class CaseProvider extends ChangeNotifier {
       _componentesSeleccionados.add(comp);
       await _guardarComponentes();
       notifyListeners();
-
-      ToastUtil.showSuccess("Componente agregado al carrito ");
     } else {
       ToastUtil.showWarning("El componente ya fue agregado ");
     }
@@ -63,8 +61,6 @@ class CaseProvider extends ChangeNotifier {
     _componentesSeleccionados.removeWhere((comp) => comp.id == idComponente);
     await _guardarComponentes();
     notifyListeners();
-
-    ToastUtil.showError("Componente eliminado del carrito");
   }
 
   Future<void> _guardarComponentes() async {
@@ -114,8 +110,6 @@ class CaseProvider extends ChangeNotifier {
     _areaSeleccionada = nuevaArea;
     await prefs.setString('areaSeleccionada', json.encode(nuevaArea));
     notifyListeners();
-
-    ToastUtil.showSuccess("Área agregada correctamente ");
   }
 
   /// Limpiar todo
@@ -149,7 +143,5 @@ class CaseProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('areaSeleccionada');
     notifyListeners();
-
-    ToastUtil.showError("Área eliminada de la asignación");
   }
 }
