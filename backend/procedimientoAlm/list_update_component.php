@@ -24,68 +24,44 @@ $limit         = $data['limit'] ?? null;
 $nuevo_tipo_nombre = $data['nuevo_tipo_nombre'] ?? null;
 $estado            = $data['nuevoestado'] ?? null;
 try {
-   if ($action == 'listar') {
+if ($action == 'listar') {
+    // Parámetros recibidos del cuerpo JSON
+    $busqueda = $data['busqueda'] ?? '';
+    $tipo = $data['tipo'] ?? 'General';
+    $offset = isset($data['offset']) ? intval($data['offset']) : null;
+    $limit = isset($data['limit']) ? intval($data['limit']) : null;
+    $estado_asignacion = $data['estado_asignacion'] ?? null;
+
     if ($offset !== null && $limit !== null) {
-        $stmt = $conn->prepare("
-            SELECT DISTINCT
-                c.id_componente,
-                c.id_tipo,  
-                c.codigo_inventario,
-                c.estado,
-                c.imagenes,
-                c.tipo_nombre,
-                tc.nombre_tipo
-            FROM Componente c
-             INNER JOIN Tipo_Componente tc ON c.id_tipo = tc.id_tipo
-                WHERE (? = 'General' OR c.tipo_nombre = ?)
-                  AND (
-                         c.codigo_inventario LIKE CONCAT('%', ?, '%')
-                      OR tc.nombre_tipo LIKE CONCAT('%', ?, '%')
-                      OR c.tipo_nombre LIKE CONCAT('%', ?, '%')
-                  )
-                LIMIT ?, ?
-        ");
-      $stmt->bind_param("sssssii", $tipo, $tipo, $busqueda, $busqueda, $busqueda, $offset, $limit);
+        $stmt = $conn->prepare("CALL ListarComponentesPaginado(?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssiis", $busqueda, $tipo, $offset, $limit, $estado_asignacion);
     } else {
-        $stmt = $conn->prepare("
-            SELECT DISTINCT
-                c.id_componente,
-                c.id_tipo,  
-                c.codigo_inventario,
-                c.estado,
-                c.imagenes,
-                c.tipo_nombre,
-                tc.nombre_tipo
-            FROM Componente c
-            INNER JOIN Tipo_Componente tc ON c.id_tipo = tc.id_tipo
-                WHERE (? = 'General' OR c.tipo_nombre = ?)
-                  AND (
-                         c.codigo_inventario LIKE CONCAT('%', ?, '%')
-                      OR tc.nombre_tipo LIKE CONCAT('%', ?, '%')
-                      OR c.tipo_nombre LIKE CONCAT('%', ?, '%')
-                  )
-        ");
-        $stmt->bind_param("sssss", $tipo, $tipo, $busqueda, $busqueda, $busqueda);
+        // Si no hay paginación, usa valores por defecto (-1, -1 para que entre en el ELSE del procedimiento)
+        $stmt = $conn->prepare("CALL ListarComponentesPaginado(?, ?, ?, ?, ?)");
+        $fakeOffset = -1;
+        $fakeLimit = -1;
+        $stmt->bind_param("ssiis", $busqueda, $tipo, $fakeOffset, $fakeLimit, $estado_asignacion);
     }
 
     $stmt->execute();
     $result = $stmt->get_result();
+
     $componentes = [];
     while ($row = $result->fetch_assoc()) {
-    $imagenes = json_decode($row['imagenes'], true) ?: [];
-    $imagenesNum = [null, null, null, null];
-
-    for ($i = 0; $i < 4; $i++) {
-        if (isset($imagenes[$i])) {
-            $imagenesNum[$i] = $imagenes[$i];
+        $imagenes = json_decode($row['imagenes'], true) ?: [];
+        $imagenesNum = [null, null, null, null];
+        for ($i = 0; $i < 4; $i++) {
+            if (isset($imagenes[$i])) {
+                $imagenesNum[$i] = $imagenes[$i];
+            }
         }
+        $row['imagenes'] = $imagenesNum;
+        $componentes[] = $row;
     }
 
-    $row['imagenes'] = $imagenesNum;
-    $componentes[] = $row;
+    $response = ["success" => true, "data" => $componentes];
 }
-  $response = ["success" => true, "data" => $componentes];
-}
+
  elseif ($action == 'actualizar') {
     $nuevo_codigo = $data['nuevo_codigo'] ?? null;
     $nuevo_nombre_tipo = $data['nuevo_nombre_tipo'] ?? null;

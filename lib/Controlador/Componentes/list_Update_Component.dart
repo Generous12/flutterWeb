@@ -10,6 +10,7 @@ class ComponenteUpdate {
   final String tipoNombre;
 
   final String estado;
+  final String? estadoAsignacion;
   final List<String?> imagenesBase64;
   ComponenteUpdate({
     required this.id,
@@ -18,6 +19,7 @@ class ComponenteUpdate {
     required this.nombreTipo,
     required this.tipoNombre,
     required this.estado,
+    this.estadoAsignacion,
     required this.imagenesBase64,
   });
   factory ComponenteUpdate.fromJson(Map<String, dynamic> json) {
@@ -46,6 +48,7 @@ class ComponenteUpdate {
       nombreTipo: json['nombre_tipo'],
       tipoNombre: json['tipo_nombre'] ?? '',
       estado: json['estado'],
+      estadoAsignacion: json['estado_asignacion'],
       imagenesBase64: imagenes,
     );
   }
@@ -84,6 +87,7 @@ class ComponenteUpdateService {
     String tipo = 'General',
     int? offset,
     int? limit,
+    String? estadoAsignacion,
   }) async {
     final Map<String, dynamic> body = {
       "action": "listar",
@@ -94,6 +98,9 @@ class ComponenteUpdateService {
     if (offset != null && limit != null) {
       body["offset"] = offset;
       body["limit"] = limit;
+    }
+    if (estadoAsignacion != null && estadoAsignacion.isNotEmpty) {
+      body["estado_asignacion"] = estadoAsignacion;
     }
 
     final response = await http.post(

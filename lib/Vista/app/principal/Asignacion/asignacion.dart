@@ -235,6 +235,9 @@ Widget _buildComponenteTile(
     }
   }
 
+  final String estadoAsig = componente.estadoAsignacion ?? 'Desconocido';
+  final bool noAsignado = estadoAsig.toLowerCase() == 'no asignado';
+
   return Container(
     decoration: BoxDecoration(
       color: Colors.white,
@@ -308,22 +311,20 @@ Widget _buildComponenteTile(
               componente.codigoInventario,
               style: const TextStyle(fontSize: 13, color: Colors.black54),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: componente.estado == 'Disponible'
+                color: noAsignado
                     ? Colors.green.withOpacity(0.1)
                     : Colors.orange.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                componente.estado,
+                estadoAsig,
                 style: TextStyle(
                   fontSize: 12,
-                  color: componente.estado == 'Disponible'
-                      ? Colors.green[700]
-                      : Colors.orange[700],
+                  color: noAsignado ? Colors.green[700] : Colors.orange[700],
                   fontWeight: FontWeight.w600,
                 ),
               ),

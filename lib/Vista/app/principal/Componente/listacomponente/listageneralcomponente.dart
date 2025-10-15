@@ -597,6 +597,7 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
   int offset = 0;
   final int limit = 20;
   String filtroTipo = 'General';
+  String? filtroEstadoAsignacion;
 
   @override
   void initState() {
@@ -634,6 +635,7 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
         tipo: filtroTipo,
         offset: offset,
         limit: limit,
+        estadoAsignacion: filtroEstadoAsignacion,
       );
 
       if (currentRequestId != _lastRequestId) return;
@@ -844,6 +846,32 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
                                                 fetchComponentes(reset: true);
                                               },
                                             ),
+                                            const Divider(),
+                                            const Text(
+                                              "Filtrar por estado de asignación",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+
+                                            ListTile(
+                                              title: const Text("Asignado"),
+                                              onTap: () {
+                                                filtroEstadoAsignacion =
+                                                    "Asignado";
+                                                Navigator.pop(context);
+                                                fetchComponentes(reset: true);
+                                              },
+                                            ),
+                                            ListTile(
+                                              title: const Text("No Asignado"),
+                                              onTap: () {
+                                                filtroEstadoAsignacion =
+                                                    "No Asignado";
+                                                Navigator.pop(context);
+                                                fetchComponentes(reset: true);
+                                              },
+                                            ),
                                           ],
                                         ),
                                       ),
@@ -904,6 +932,14 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
                             stockColor = const Color(0xFF00A706);
                             stockTexto = 'Disponible';
                         }
+                        final asignado =
+                            (c.estadoAsignacion?.toLowerCase() == "asignado");
+                        final asignColor = asignado
+                            ? Colors.green
+                            : Colors.grey[500];
+                        final asignTexto = asignado
+                            ? "Asignado"
+                            : "No Asignado";
 
                         return Opacity(
                           opacity: yaAgregado ? 0.5 : 1.0,
@@ -958,12 +994,39 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
                                             ),
                                           ),
                                           const SizedBox(height: 4),
-                                          Text(
-                                            c.codigoInventario,
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.black54,
-                                            ),
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  c.codigoInventario,
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.black54,
+                                                  ),
+                                                ),
+                                              ),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 2,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: asignColor!
+                                                      .withOpacity(0.2),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: Text(
+                                                  asignTexto,
+                                                  style: TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: asignColor,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                           const SizedBox(height: 6),
                                           Container(

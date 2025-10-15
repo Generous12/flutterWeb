@@ -73,7 +73,7 @@ class CaseProvider extends ChangeNotifier {
             "codigo_inventario": c.codigoInventario,
             "nombre_tipo": c.nombreTipo,
             "tipo_nombre": c.tipoNombre,
-            "estado": c.estado,
+            "estado_asignacion": c.estadoAsignacion,
             "imagenes": c.imagenesBase64,
           }),
         )
