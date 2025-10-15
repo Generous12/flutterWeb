@@ -1000,7 +1000,7 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
                                                 child: Text(
                                                   c.codigoInventario,
                                                   style: const TextStyle(
-                                                    fontSize: 14,
+                                                    fontSize: 12,
                                                     color: Colors.black54,
                                                   ),
                                                 ),
@@ -1053,11 +1053,6 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
                                         ],
                                       ),
                                     ),
-                                    if (!yaAgregado)
-                                      const Icon(
-                                        Iconsax.arrow_right_3,
-                                        color: Colors.black,
-                                      ),
                                     if (yaAgregado)
                                       const Icon(
                                         Icons.check_circle,

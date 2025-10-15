@@ -4,19 +4,27 @@ import 'package:fluttertoast/fluttertoast.dart';
 class ToastUtil {
   /// 🟢 Éxito
   static void showSuccess(String message) {
-    _showToast(message, Colors.greenAccent.shade700, Icons.check_circle);
+    _showToast(
+      message,
+      const Color.fromARGB(112, 0, 200, 83),
+      Icons.check_circle,
+    );
   }
 
   /// 🔴 Error
   static void showError(String message) {
-    _showToast(message, Colors.redAccent.shade700, Icons.error_outline);
+    _showToast(
+      message,
+      const Color.fromARGB(133, 213, 0, 0),
+      Icons.error_outline,
+    );
   }
 
   /// 🟠 Advertencia
   static void showWarning(String message) {
     _showToast(
       message,
-      Colors.orangeAccent.shade700,
+      const Color.fromARGB(102, 255, 111, 0),
       Icons.warning_amber_rounded,
     );
   }

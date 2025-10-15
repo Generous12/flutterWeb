@@ -17,7 +17,6 @@ class CaseProvider extends ChangeNotifier {
   Future<void> cargarEstado() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Componentes
     final componentesStr = prefs.getStringList('componentesSeleccionados');
     if (componentesStr != null) {
       _componentesSeleccionados = componentesStr
@@ -25,7 +24,6 @@ class CaseProvider extends ChangeNotifier {
           .toList();
     }
 
-    // Área
     final areaStr = prefs.getString('areaSeleccionada');
     if (areaStr != null) {
       _areaSeleccionada = json.decode(areaStr);
@@ -38,13 +36,17 @@ class CaseProvider extends ChangeNotifier {
     BuildContext context,
     ComponenteUpdate comp,
   ) async {
+    if (comp.estadoAsignacion == 'Asignado') {
+      ToastUtil.showWarning("El componente ya está asignado");
+      return;
+    }
     final existe = _componentesSeleccionados.any((c) => c.id == comp.id);
     if (!existe) {
       _componentesSeleccionados.add(comp);
       await _guardarComponentes();
       notifyListeners();
     } else {
-      ToastUtil.showWarning("El componente ya fue agregado ");
+      ToastUtil.showWarning("El componente ya fue agregado");
     }
   }
 
