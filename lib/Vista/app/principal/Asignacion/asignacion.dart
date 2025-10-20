@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Asignacion/Carrito/CarritocaseService.dart';
+import 'package:proyecto_web/Controlador/Asignacion/registroasignacion.dart';
 import 'package:proyecto_web/Controlador/Componentes/list_Update_Component.dart';
 import 'package:proyecto_web/Vista/app/principal/Areas/listaareas.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/listacomponente/listageneralcomponente.dart';
 import 'package:proyecto_web/Widgets/ZoomImage.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
+import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
+import 'package:proyecto_web/Widgets/toastalertSo.dart';
 
 class AsignacionScreen extends StatefulWidget {
   const AsignacionScreen({super.key});
@@ -23,34 +26,64 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
     CaseProvider caseProv,
   ) async {
     if (caseProv.componentesSeleccionados.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No hay componentes para asignar.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      ToastUtil.showError("No hay componentes por asignar");
       return;
     }
 
     final area = caseProv.areaSeleccionada;
     if (area == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Seleccione un área antes de confirmar.'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      ToastUtil.showInfo("Seleccione un area primero");
       return;
     }
-    await Future.delayed(const Duration(seconds: 1));
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Asignación confirmada exitosamente.'),
-        backgroundColor: Colors.green,
-      ),
+    final confirmar = await showCustomDialog(
+      context: context,
+      title: 'Confirmar Asignación',
+      message:
+          '¿Deseas confirmar la asignación de los componentes seleccionados al área "${area["nombre_area"]}"?',
+      confirmButtonText: 'Confirmar',
+      cancelButtonText: 'Cancelar',
     );
-    await caseProv.limpiarCase();
+
+    if (confirmar != true) return;
+
+    try {
+      final casePrincipal = caseProv.componentesSeleccionados.first;
+      final componentesSecundarios = caseProv.componentesSeleccionados
+          .skip(1)
+          .map((c) => {"id_componente": c.id})
+          .toList();
+
+      final service = RegistrarAsignacionService();
+      final result = await service.registrarAsignacion(
+        idCase: casePrincipal.id,
+        idArea: area["id_area"],
+        componentes: componentesSecundarios,
+      );
+
+      Navigator.of(context).pop();
+      if (result["success"] == true) {
+        ToastUtil.showSuccess("Asignacion realizada con exito");
+        await caseProv.limpiarCase();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result["message"] ?? "Error al registrar asignación.",
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error de conexión: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override

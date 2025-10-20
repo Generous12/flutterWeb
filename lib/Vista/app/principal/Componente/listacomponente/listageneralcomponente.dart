@@ -435,7 +435,7 @@ class _ComponentesListState extends State<ComponentesList> {
                                             color: Colors.black,
                                             size: 50,
                                           )
-                                        : _buildFirstImage(c),
+                                        : ComponenteImageHero(c: c),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Column(
@@ -508,43 +508,53 @@ class _ComponentesListState extends State<ComponentesList> {
   }
 }
 
-Widget _buildFirstImage(ComponenteUpdate c) {
-  Uint8List? firstBytes;
-  int firstIndex = -1;
+class ComponenteImageHero extends StatelessWidget {
+  final ComponenteUpdate c;
 
-  for (int i = 0; i < c.imagenesBase64.length; i++) {
-    final bytes = c.imagenBytes(i);
-    if (bytes != null) {
-      firstBytes = bytes;
-      firstIndex = i;
-      break;
+  const ComponenteImageHero({super.key, required this.c});
+
+  Uint8List? _getFirstBytes() {
+    for (int i = 0; i < c.imagenesBase64.length; i++) {
+      final bytes = c.imagenBytes(i);
+      if (bytes != null) return bytes;
     }
+    return null;
   }
 
-  if (firstBytes == null) {
-    return const Icon(Iconsax.folder5, color: Colors.black, size: 50);
-  }
+  @override
+  Widget build(BuildContext context) {
+    final firstBytes = _getFirstBytes();
+    int firstIndex = firstBytes != null
+        ? c.imagenesBase64.indexWhere(
+            (b64) => c.imagenBytes(c.imagenesBase64.indexOf(b64)) != null,
+          )
+        : -1;
 
-  return Hero(
-    tag: 'imagen_${c.id}_$firstIndex',
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Image.memory(
-        firstBytes,
-        width: 80,
-        height: 80,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            width: 80,
-            height: 80,
-            color: Colors.grey[300],
-            child: const Icon(Icons.broken_image, color: Colors.grey),
-          );
-        },
+    if (firstBytes == null) {
+      return const Icon(Iconsax.folder5, color: Colors.black, size: 50);
+    }
+
+    return Hero(
+      tag: 'imagen_${c.id}_$firstIndex',
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.memory(
+          firstBytes,
+          width: 80,
+          height: 80,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              width: 80,
+              height: 80,
+              color: Colors.grey[300],
+              child: const Icon(Icons.broken_image, color: Colors.grey),
+            );
+          },
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 extension ComponenteUpdateExtension on ComponenteUpdate {
@@ -585,6 +595,8 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
   final ComponenteUpdateService service = ComponenteUpdateService();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
+  final ValueNotifier<Set<int>> seleccionadosNotifier = ValueNotifier({});
+  final ValueNotifier<bool> modoSeleccionNotifier = ValueNotifier(false);
 
   List<ComponenteUpdate> componentes = [];
   bool loading = true;
@@ -935,12 +947,11 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
                         final asignado =
                             (c.estadoAsignacion?.toLowerCase() == "asignado");
                         final asignColor = asignado
-                            ? Colors.green
+                            ? Colors.red
                             : Colors.grey[500];
                         final asignTexto = asignado
                             ? "Asignado"
                             : "No Asignado";
-
                         return Opacity(
                           opacity: yaAgregado ? 0.5 : 1.0,
                           child: Card(
@@ -979,7 +990,7 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
                                 padding: const EdgeInsets.all(12),
                                 child: Row(
                                   children: [
-                                    _buildFirstImage(c),
+                                    ComponenteImageHero(c: c),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Column(

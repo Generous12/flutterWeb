@@ -5,6 +5,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Areas/areasService.dart';
 import 'package:proyecto_web/Controlador/Asignacion/Carrito/CarritocaseService.dart';
+import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:proyecto_web/Widgets/toastalertSo.dart';
 
@@ -34,7 +35,19 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
   }
 
   Future<void> _quitarAsignacion(int idArea) async {
+    final confirmar = await showCustomDialog(
+      context: context,
+      title: 'Confirmar acción',
+      message: '¿Deseas quitar la asignación de esta área?',
+      confirmButtonText: 'Sí, quitar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: Colors.redAccent,
+    );
+
+    if (confirmar != true) return;
+
     final resp = await _areaService.quitarAsignacionArea(idArea);
+
     SnackBarUtil.mostrarSnackBarPersonalizado(
       context: context,
       mensaje: resp["message"],
@@ -43,6 +56,7 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
           : Icons.warning_amber_rounded,
       colorFondo: Colors.black,
     );
+
     if (resp["success"] == true) _cargarDatos();
   }
 
@@ -138,20 +152,19 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                   InkWell(
                                     borderRadius: BorderRadius.circular(16),
                                     onTap: () async {
-                                      if (widget.modoCarrito) {
-                                        // Si está en modo carrito, quitar asignación directamente
-                                        await _quitarAsignacion(sub["id_area"]);
-                                      } else if (tieneSubSub) {
-                                        ToastUtil.showWarning(
-                                          "Selecciona una sub-subárea dentro de esta subárea.",
-                                        );
-                                      } else {
-                                        await caseProv.seleccionarArea({
-                                          ...sub,
-                                          "id_area_padre":
-                                              widget.area["id_area"],
-                                        }, context: context);
-                                        Navigator.pop(context);
+                                      if (!widget.modoCarrito) {
+                                        if (tieneSubSub) {
+                                          ToastUtil.showWarning(
+                                            "Selecciona una sub-subárea dentro de esta subárea.",
+                                          );
+                                        } else {
+                                          await caseProv.seleccionarArea({
+                                            ...sub,
+                                            "id_area_padre":
+                                                widget.area["id_area"],
+                                          }, context: context);
+                                          Navigator.pop(context);
+                                        }
                                       }
                                     },
                                     child: Padding(
@@ -205,8 +218,6 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                       ),
                                     ),
                                   ),
-
-                                  // Sub-subáreas
                                   if (tieneSubSub)
                                     Column(
                                       children: subSubDeEsta.map((subsub) {
@@ -269,17 +280,13 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                                           size: 22,
                                                         )),
                                             onTap: () async {
-                                              if (widget.modoCarrito) {
-                                                await _quitarAsignacion(
-                                                  subsub["id_area"],
-                                                );
-                                              } else {
+                                              if (!widget.modoCarrito) {
                                                 await caseProv.seleccionarArea({
                                                   ...subsub,
-                                                  "id_area_padre": widget
-                                                      .area["id_area"], // el área actual (subárea padre)
+                                                  "id_area_padre":
+                                                      widget.area["id_area"],
                                                   "id_area_abue": widget
-                                                      .area["id_area_padre"], // el abuelo si existe
+                                                      .area["id_area_padre"],
                                                 }, context: context);
                                                 Navigator.pop(context);
                                               }

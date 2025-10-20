@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:proyecto_web/Clases/plantillasComponente.dart';
 import 'package:proyecto_web/Controlador/Provider/componentService.dart';
 import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
-import 'package:proyecto_web/Vista/app/principal/inicio.dart';
+import 'package:proyecto_web/Vista/app/principal/Asignacion/asignacion.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/cropper.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
@@ -20,6 +20,7 @@ import 'package:proyecto_web/Widgets/dropdownbutton.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
+import 'package:proyecto_web/Widgets/toastalertSo.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 
 class FlujoCrearComponente extends StatefulWidget {
@@ -115,7 +116,6 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
   }
 
   Future<void> _guardarComponenteFinal() async {
-    print(" Botón Finalizado presionado, mostrando diálogo de confirmación");
     final confirmado = await showCustomDialog(
       context: context,
       title: "Confirmar",
@@ -124,16 +124,13 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
       cancelButtonText: "No",
     );
 
-    if (confirmado != true) {
-      print("⏹ Usuario canceló la acción");
-      return;
-    }
+    if (confirmado != true) return;
 
-    print(" Usuario confirmó, intentando guardar en backend");
     final usuarioProvider = Provider.of<UsuarioProvider>(
       context,
       listen: false,
     );
+
     final exito = await Provider.of<ComponentService>(context, listen: false)
         .guardarEnBackendB(
           idUsuarioCreador: usuarioProvider.idUsuario ?? "",
@@ -144,30 +141,37 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
       await showCustomDialog(
         context: context,
         title: "Error",
-        message: "Componente no guardado",
+        message: "❌ El componente no se guardó correctamente.",
         confirmButtonText: "Cerrar",
       );
       return;
     }
 
-    final continuar = await showCustomDialog(
+    final accion = await showCustomDialog(
       context: context,
       title: "Éxito",
-      message: "Componente guardado correctamente.\n\n¿Deseas registrar otro?",
-      confirmButtonText: "Sí",
-      cancelButtonText: "No",
+      message:
+          "Componente guardado correctamente.\n\n¿Qué deseas hacer a continuación?",
+      confirmButtonText: "Registrar otro",
+      cancelButtonText: "Crear asignación",
     );
 
     final provider = Provider.of<ComponentService>(context, listen: false);
+    provider.reset();
 
-    if (continuar == true) {
-      print(" Usuario quiere seguir registrando");
-      provider.reset();
-      navegarYRemoverConSlideIzquierda(context, const FlujoCrearComponente());
+    if (accion == true) {
+      setState(() {
+        pasoActual = 0;
+        puedeContinuar = false;
+      });
+
+      tipoComponenteKey.currentState?.reset();
+      componenteFormKey.currentState?.reset();
+      valorAtributoFormKey.currentState?.reset();
+
+      ToastUtil.showSuccess("Crear nuevo componente");
     } else {
-      print(" Usuario quiere volver al inicio");
-      provider.reset();
-      navegarYRemoverConSlideIzquierda(context, const InicioScreen());
+      navegarConSlideDerecha(context, const AsignacionScreen());
     }
   }
 
@@ -540,7 +544,6 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
   ];
 
   final TextEditingController nombreController = TextEditingController();
-
   final List<Map<String, dynamic>> atributos = [];
   final List<String> tipos = ["Texto", "Número", "Fecha"];
   final Map<String, String> abreviaturas = {
@@ -548,6 +551,15 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
     "Número": "N",
     "Fecha": "F",
   };
+  void reset() {
+    nombreController.clear();
+    for (var attr in atributos) {
+      (attr["controller"] as TextEditingController).dispose();
+    }
+    atributos.clear();
+    widget.onValidChange(false);
+    setState(() {});
+  }
 
   @override
   void didChangeDependencies() {
@@ -555,24 +567,21 @@ class _TipoYAtributoFormState extends State<TipoYAtributoForm> {
 
     final provider = Provider.of<ComponentService>(context, listen: false);
 
-    // Solo actualizar si tipoSeleccionado no es null
     if (provider.tipoSeleccionado != null) {
       nombreController.text = provider.tipoSeleccionado!.nombre;
 
-      // Limpiamos atributos antiguos
       for (var attr in atributos) {
         (attr["controller"] as TextEditingController).dispose();
       }
       atributos.clear();
 
-      // Agregamos atributos del provider
       for (var attr in provider.atributos) {
         final controller = TextEditingController(text: attr.nombre);
         controller.addListener(_validate);
         atributos.add({"controller": controller, "tipo": attr.tipoDato});
       }
       _validate();
-      setState(() {}); // Para refrescar UI
+      setState(() {});
     }
   }
 
@@ -1051,6 +1060,24 @@ class _ComponenteFormState extends State<ComponenteForm> {
     return "$prefix-$datePart-$randomNumber";
   }
 
+  void reset() {
+    codigoController.clear();
+
+    // Limpiar imágenes
+    for (var img in _imagenesSeleccionadas) {
+      if (img.existsSync()) {
+        // opcional: eliminar físicamente si deseas
+        // img.deleteSync();
+      }
+    }
+    _imagenesSeleccionadas.clear();
+    _imagenPrincipal = null;
+    _tipoSeleccionado = null;
+    _estadoSeleccionado = "Disponible";
+    widget.onValidChange(false);
+    setState(() {});
+  }
+
   @override
   void dispose() {
     codigoController.dispose();
@@ -1242,6 +1269,15 @@ class _ValorAtributoFormState extends State<ValorAtributoForm> {
     widget.onValidChange(
       controllers.values.any((c) => c.text.trim().isNotEmpty),
     );
+  }
+
+  void reset() {
+    setState(() {
+      for (var controller in controllers.values) {
+        controller.clear();
+      }
+      widget.onValidChange(false);
+    });
   }
 
   void guardar(ComponentService provider) {

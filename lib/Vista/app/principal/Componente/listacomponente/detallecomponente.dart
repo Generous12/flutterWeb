@@ -344,7 +344,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
             foregroundColor: Colors.white,
           ),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(7, 10, 7, 10),
+            padding: const EdgeInsets.fromLTRB(7, 8, 7, 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -7,6 +9,7 @@ import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/dropdownbutton.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
+import 'package:proyecto_web/Widgets/toastalertSo.dart';
 
 class CrearAreaScreen extends StatefulWidget {
   const CrearAreaScreen({super.key});
@@ -174,22 +177,9 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
 
       if (!mounted) return;
 
-      showCustomDialog(
-        context: context,
-        title: resp["success"] ? "Éxito" : "Error",
-        message: resp["message"],
-        confirmButtonText: "Cerrar",
-        onConfirm: () {
-          Navigator.of(context).pop();
-        },
-      );
+      ToastUtil.showSuccess("Se asignó el área correctamente");
     } else {
-      SnackBarUtil.mostrarSnackBarPersonalizado(
-        context: context,
-        mensaje: "Selecciona primero un área o subárea destino",
-        icono: Icons.warning_amber_rounded,
-        colorFondo: Colors.black,
-      );
+      ToastUtil.showWarning("Selecciona primero un área o subárea destino");
     }
   }
 
