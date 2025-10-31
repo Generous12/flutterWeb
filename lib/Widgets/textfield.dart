@@ -92,18 +92,18 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
           cursorColor: colorScheme.onBackground,
           enabled: widget.enabled,
-          style: TextStyle(fontSize: 14, color: colorScheme.onBackground),
+          style: TextStyle(fontSize: 15, color: colorScheme.onBackground),
           decoration: InputDecoration(
             labelText: widget.label,
             labelStyle: TextStyle(
-              fontSize: 12,
+              fontSize: 14,
               color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
             ),
             floatingLabelBehavior: FloatingLabelBehavior.auto,
             alignLabelWithHint: isMultiline,
             hintText: widget.hintText,
             hintStyle: TextStyle(
-              fontSize: 12,
+              fontSize: 14,
               color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
             ),
             filled: true,

@@ -3,22 +3,39 @@ import 'package:http/http.dart' as http;
 
 class AreaService {
   final String baseUrl =
-      "http://192.168.8.25/proyecto_web/backend/procedimientoAlm/areas_padre_sub.php";
+      "http://192.168.18.26/proyecto_web/backend/procedimientoAlm/areas_padre_sub.php";
 
-  Future<Map<String, dynamic>> crearAreaPadre(String nombreArea) async {
+  Future<Map<String, dynamic>> crearAreaPadre({
+    required String nombreArea,
+    String? jefeArea,
+    String? correoContacto,
+    String? telefonoContacto,
+    String? descripcion,
+  }) async {
     final resp = await http.post(
       Uri.parse(baseUrl),
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"accion": "crearAreaPadre", "nombre_area": nombreArea}),
+      body: jsonEncode({
+        "accion": "crearAreaPadre",
+        "nombre_area": nombreArea,
+        "jefe_area": jefeArea,
+        "correo_contacto": correoContacto,
+        "telefono_contacto": telefonoContacto,
+        "descripcion": descripcion,
+      }),
     );
 
     return jsonDecode(resp.body);
   }
 
-  Future<Map<String, dynamic>> crearSubArea(
-    String nombreArea,
-    int idAreaPadre,
-  ) async {
+  Future<Map<String, dynamic>> crearSubArea({
+    required String nombreArea,
+    required int idAreaPadre,
+    String? jefeArea,
+    String? correoContacto,
+    String? telefonoContacto,
+    String? descripcion,
+  }) async {
     final resp = await http.post(
       Uri.parse(baseUrl),
       headers: {"Content-Type": "application/json"},
@@ -26,6 +43,10 @@ class AreaService {
         "accion": "crearSubArea",
         "nombre_area": nombreArea,
         "id_area_padre": idAreaPadre,
+        "jefe_area": jefeArea,
+        "correo_contacto": correoContacto,
+        "telefono_contacto": telefonoContacto,
+        "descripcion": descripcion,
       }),
     );
 

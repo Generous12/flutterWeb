@@ -1,21 +1,24 @@
 // ignore_for_file: unused_field
-
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Areas/areasService.dart';
 import 'package:proyecto_web/Controlador/Asignacion/Carrito/CarritocaseService.dart';
+import 'package:proyecto_web/Vista/app/principal/Areas/casesAsignados/caseyaAsignado.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
+import 'package:proyecto_web/Widgets/navegator.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:proyecto_web/Widgets/toastalertSo.dart';
 
 class DetalleAreaScreen extends StatefulWidget {
   final Map<String, dynamic> area;
   final bool modoCarrito;
+  final bool modoVercases;
   const DetalleAreaScreen({
     super.key,
     required this.area,
     this.modoCarrito = false,
+    this.modoVercases = false,
   });
 
   @override
@@ -152,7 +155,15 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                   InkWell(
                                     borderRadius: BorderRadius.circular(16),
                                     onTap: () async {
-                                      if (!widget.modoCarrito) {
+                                      if (widget.modoVercases) {
+                                        navegarConSlideDerecha(
+                                          context,
+                                          CasesDeAreaScreen(
+                                            idArea: sub["id_area"],
+                                            nombreArea: sub["nombre_area"],
+                                          ),
+                                        );
+                                      } else if (widget.modoCarrito) {
                                         if (tieneSubSub) {
                                           ToastUtil.showWarning(
                                             "Selecciona una sub-subárea dentro de esta subárea.",
@@ -189,7 +200,7 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                               ),
                                             ),
                                           ),
-                                          if (widget.modoCarrito)
+                                          if (widget.modoVercases)
                                             IconButton(
                                               icon: const Icon(
                                                 Icons.link_off,
@@ -255,7 +266,7 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                                 fontSize: 14,
                                               ),
                                             ),
-                                            trailing: widget.modoCarrito
+                                            trailing: widget.modoVercases
                                                 ? IconButton(
                                                     icon: const Icon(
                                                       Icons.link_off,
@@ -280,7 +291,16 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                                           size: 22,
                                                         )),
                                             onTap: () async {
-                                              if (!widget.modoCarrito) {
+                                              if (widget.modoVercases) {
+                                                navegarConSlideDerecha(
+                                                  context,
+                                                  CasesDeAreaScreen(
+                                                    idArea: subsub["id_area"],
+                                                    nombreArea:
+                                                        subsub["nombre_area"],
+                                                  ),
+                                                );
+                                              } else if (widget.modoCarrito) {
                                                 await caseProv.seleccionarArea({
                                                   ...subsub,
                                                   "id_area_padre":
@@ -288,7 +308,9 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                                   "id_area_abue": widget
                                                       .area["id_area_padre"],
                                                 }, context: context);
-                                                Navigator.pop(context);
+
+                                                if (context.mounted)
+                                                  Navigator.pop(context);
                                               }
                                             },
                                           ),

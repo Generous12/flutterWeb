@@ -21,7 +21,12 @@ class CrearAreaScreen extends StatefulWidget {
 class _CrearAreaScreenState extends State<CrearAreaScreen> {
   final TextEditingController _nombreController = TextEditingController();
   List<TextEditingController> _subareaControllers = [];
-
+  final TextEditingController _jefeAreaController = TextEditingController();
+  final TextEditingController _correoContactoController =
+      TextEditingController();
+  final TextEditingController _telefonoContactoController =
+      TextEditingController();
+  final TextEditingController _descripcionController = TextEditingController();
   int? _idAreaPadreSeleccionada;
   int? _idSubAreaSeleccionada;
   List<Map<String, dynamic>> _subareasDisponibles = [];
@@ -31,6 +36,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
   String? _nombreAreaReasignadaSeleccionada;
   final AreaService _areaService = AreaService();
   bool _mostrarReasignar = false;
+  bool _mostrarCamposInfo = true;
 
   @override
   void initState() {
@@ -38,6 +44,56 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
     if (_idAreaPadreSeleccionada != null) {
       _cargarSubAreas(_idAreaPadreSeleccionada!);
     }
+  }
+
+  bool get huboCambio {
+    if (_nombreController.text.trim().isNotEmpty ||
+        _jefeAreaController.text.trim().isNotEmpty ||
+        _correoContactoController.text.trim().isNotEmpty ||
+        _telefonoContactoController.text.trim().isNotEmpty ||
+        _descripcionController.text.trim().isNotEmpty) {
+      return true;
+    }
+
+    for (var ctrl in _subareaControllers) {
+      if (ctrl.text.trim().isNotEmpty) return true;
+    }
+
+    if (_idAreaPadreSeleccionada != null ||
+        (_nombreAreaPadreSeleccionada != null &&
+            _nombreAreaPadreSeleccionada!.trim().isNotEmpty)) {
+      return true;
+    }
+
+    if (_idSubAreaSeleccionada != null ||
+        (_nombreSubareaSeleccionada != null &&
+            _nombreSubareaSeleccionada!.trim().isNotEmpty)) {
+      return true;
+    }
+
+    if (_nombreAreaReasignadaSeleccionada != null &&
+        _nombreAreaReasignadaSeleccionada!.trim().isNotEmpty) {
+      return true;
+    }
+
+    if (_mostrarReasignar == true) return true;
+    if (_mostrarCamposInfo == false) return true;
+
+    return false;
+  }
+
+  Future<bool> _onWillPop() async {
+    if (huboCambio) {
+      final salir = await showCustomDialog(
+        context: context,
+        title: "Cambios sin guardar",
+        message: "Tienes cambios sin guardar. ¿Deseas salir de todas formas?",
+        confirmButtonText: "Salir",
+        cancelButtonText: "Cancelar",
+      );
+      return salir ?? false;
+    }
+    return true;
   }
 
   void _limpiarCampos() {
@@ -52,6 +108,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
       _subareasDisponibles.clear();
       _areasDisponiblesReasignar.clear();
       _nombreAreaReasignadaSeleccionada = null;
+      _mostrarCamposInfo = true;
     });
   }
 
@@ -100,6 +157,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                     _idSubAreaSeleccionada = null;
                     _subareasDisponibles.clear();
                     _nombreController.text = _nombreAreaPadreSeleccionada!;
+                    _mostrarCamposInfo = false;
                   });
                   await _cargarSubAreas(_idAreaPadreSeleccionada!);
                   Navigator.pop(context);
@@ -188,8 +246,15 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () async {
+              final salir = await _onWillPop();
+              if (salir) Navigator.of(context).pop();
+            },
+          ),
           toolbarHeight: 48,
-          title: const Text("Crear Área", style: TextStyle(fontSize: 19)),
+          title: const Text("Crear Área", style: TextStyle(fontSize: 20)),
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,
           actions: [
@@ -221,10 +286,69 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (_mostrarCamposInfo) ...[
+                        Row(
+                          children: const [
+                            Text(
+                              "Datos relevantes del Área",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Divider(color: Colors.grey, thickness: 1),
+                            ),
+                          ],
+                        ),
+                        CustomTextField(
+                          controller: _jefeAreaController,
+                          label: "Jefe del Área",
+                          hintText: "Ejemplo: Carlos Pérez",
+                          prefixIcon: Iconsax.user,
+                        ),
+                        CustomTextField(
+                          controller: _correoContactoController,
+                          label: "Correo de Contacto (Opcional)",
+                          hintText: "ejemplo@empresa.com",
+                          prefixIcon: Iconsax.sms,
+                          isNumeric: false,
+                        ),
+                        CustomTextField(
+                          controller: _telefonoContactoController,
+                          label: "Teléfono de Contacto (Opcional)",
+                          hintText: "+51 900 123 456",
+                          prefixIcon: Iconsax.mobile,
+                          isNumeric: true,
+                        ),
+                        CustomTextField(
+                          controller: _descripcionController,
+                          label: "Descripción del Área (Opcional)",
+                          hintText: "Descripción general de esta área...",
+                          prefixIcon: Iconsax.note,
+                          maxLines: 3,
+                        ),
+                      ],
+                      Row(
+                        children: const [
+                          Text(
+                            "Crear un Área o selecciona una",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Divider(color: Colors.grey, thickness: 1),
+                          ),
+                        ],
+                      ),
                       CustomTextField(
                         controller: _nombreController,
                         hintText: "Ejemplo: Área de Producción",
-                        label: "Crea o selecciona una Área",
+                        label: "Crea o selecciona un Área",
                         readOnly: false,
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -247,6 +371,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                                 _mostrarReasignar = false;
                                 _areasDisponiblesReasignar.clear();
                                 _nombreAreaReasignadaSeleccionada = null;
+                                _mostrarCamposInfo = true;
                               });
                             } else {
                               setState(() {
@@ -257,10 +382,11 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 8),
                       if (_subareasDisponibles.isNotEmpty) ...[
                         CustomDropdownSelector(
-                          labelText: "Selecciona una Subárea",
+                          labelText:
+                              "Selecciona una Subárea del área seleccionado ",
                           hintText: "Selecciona una subárea",
                           value: _nombreSubareaSeleccionada,
                           items: _subareasDisponibles
@@ -290,11 +416,12 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 2),
-              if (_mostrarReasignar) ...[
-                const SizedBox(height: 9),
+
+              if (_mostrarReasignar &&
+                  _areasDisponiblesReasignar.isNotEmpty) ...[
+                const SizedBox(height: 8),
                 CustomDropdownSelector(
-                  labelText: "Reasignar Área existente",
+                  labelText: "Áreas Padres disponibles",
                   hintText: "Selecciona un área disponible",
                   value: _nombreAreaReasignadaSeleccionada,
                   items: _areasDisponiblesReasignar
@@ -314,11 +441,11 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                   onTap: _cargarAreasDisponiblesReasignar,
                 ),
               ],
-              const SizedBox(height: 15),
+
               Row(
                 children: const [
                   Text(
-                    "Crear Subáreas",
+                    "Crear Subáreas o Sub-subáreas",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   SizedBox(width: 8),
@@ -327,7 +454,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
               ),
               _subareaControllers.isEmpty
                   ? Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Row(
                         children: const [
                           Icon(
@@ -401,9 +528,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                   confirmButtonText: "Sí",
                   cancelButtonText: "No",
                 );
-
                 if (!confirmado) return;
-
                 try {
                   int idPadre;
 
@@ -412,8 +537,13 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                         _idSubAreaSeleccionada ?? _idAreaPadreSeleccionada!;
                   } else {
                     final respPadre = await _areaService.crearAreaPadre(
-                      _nombreController.text.trim(),
+                      nombreArea: _nombreController.text.trim(),
+                      jefeArea: _jefeAreaController.text.trim(),
+                      correoContacto: _correoContactoController.text.trim(),
+                      telefonoContacto: _telefonoContactoController.text.trim(),
+                      descripcion: _descripcionController.text.trim(),
                     );
+
                     if (respPadre["success"] != true) {
                       showCustomDialog(
                         context: context,
@@ -431,7 +561,15 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                   for (final c in _subareaControllers) {
                     final nombreSub = c.text.trim();
                     if (nombreSub.isNotEmpty) {
-                      await _areaService.crearSubArea(nombreSub, idPadre);
+                      await _areaService.crearSubArea(
+                        nombreArea: nombreSub,
+                        idAreaPadre: idPadre,
+                        jefeArea: _jefeAreaController.text.trim(),
+                        correoContacto: _correoContactoController.text.trim(),
+                        telefonoContacto: _telefonoContactoController.text
+                            .trim(),
+                        descripcion: _descripcionController.text.trim(),
+                      );
                     }
                   }
 

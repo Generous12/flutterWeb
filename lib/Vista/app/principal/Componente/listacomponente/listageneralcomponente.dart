@@ -148,7 +148,7 @@ class _ComponentesListState extends State<ComponentesList> {
         body: Column(
           children: [
             Container(
-              padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: Column(
                 children: [
                   Container(
@@ -386,6 +386,7 @@ class _ComponentesListState extends State<ComponentesList> {
                           }
 
                           return Card(
+                            key: ValueKey(c.id),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(0),
                             ),
@@ -435,7 +436,11 @@ class _ComponentesListState extends State<ComponentesList> {
                                             color: Colors.black,
                                             size: 50,
                                           )
-                                        : ComponenteImageHero(c: c),
+                                        : ComponenteImageHero(
+                                            key: ValueKey("img-${c.id}"),
+                                            c: c,
+                                          ),
+
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Column(
@@ -445,7 +450,7 @@ class _ComponentesListState extends State<ComponentesList> {
                                           Text(
                                             c.nombreTipo,
                                             style: const TextStyle(
-                                              fontSize: 16,
+                                              fontSize: 18,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -513,7 +518,7 @@ class ComponenteImageHero extends StatelessWidget {
 
   const ComponenteImageHero({super.key, required this.c});
 
-  Uint8List? _getFirstBytes() {
+  Uint8List? _getFirstValidBytes() {
     for (int i = 0; i < c.imagenesBase64.length; i++) {
       final bytes = c.imagenBytes(i);
       if (bytes != null) return bytes;
@@ -523,26 +528,23 @@ class ComponenteImageHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final firstBytes = _getFirstBytes();
-    int firstIndex = firstBytes != null
-        ? c.imagenesBase64.indexWhere(
-            (b64) => c.imagenBytes(c.imagenesBase64.indexOf(b64)) != null,
-          )
-        : -1;
+    final bytes = _getFirstValidBytes();
 
-    if (firstBytes == null) {
+    if (bytes == null) {
       return const Icon(Iconsax.folder5, color: Colors.black, size: 50);
     }
 
     return Hero(
-      tag: 'imagen_${c.id}_$firstIndex',
+      tag: 'imagen_${c.id}',
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Image.memory(
-          firstBytes,
+          bytes,
+          key: ValueKey(c.id),
           width: 80,
           height: 80,
           fit: BoxFit.cover,
+          gaplessPlayback: true,
           errorBuilder: (context, error, stackTrace) {
             return Container(
               width: 80,
@@ -990,7 +992,10 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
                                 padding: const EdgeInsets.all(12),
                                 child: Row(
                                   children: [
-                                    ComponenteImageHero(c: c),
+                                    ComponenteImageHero(
+                                      key: ValueKey("img-${c.id}"),
+                                      c: c,
+                                    ),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Column(

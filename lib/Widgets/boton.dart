@@ -176,7 +176,7 @@ class _LoadingOverlayButtonHabilitarState
                   ],
                   Text(
                     widget.text,
-                    style: TextStyle(fontSize: 16.7, color: textColor),
+                    style: TextStyle(fontSize: 19, color: textColor),
                   ),
                 ],
               ),

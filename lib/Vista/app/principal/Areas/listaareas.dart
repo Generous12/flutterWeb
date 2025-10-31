@@ -269,7 +269,7 @@ class _ListaAreasScreenState extends State<ListaAreasScreen> {
                           } else {
                             navegarConSlideDerecha(
                               context,
-                              DetalleAreaScreen(area: area, modoCarrito: true),
+                              DetalleAreaScreen(area: area, modoVercases: true),
                               onVolver: () {
                                 setState(() {
                                   _refresh();
@@ -553,7 +553,10 @@ class _AreasCarritoState extends State<AreasCarrito> {
                               } else {
                                 navegarConSlideDerecha(
                                   context,
-                                  DetalleAreaScreen(area: area),
+                                  DetalleAreaScreen(
+                                    area: area,
+                                    modoCarrito: true,
+                                  ),
                                   onVolver: () {
                                     setState(() {
                                       _refresh();

@@ -73,9 +73,10 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   fonts:
-    - family: FunnelDisplay
+    - family: Afacad
       fonts:
-        - asset: assets/fonts/FunnelDisplay-VariableFont_wght.ttf
+        - asset: assets/fonts/Afacad-Italic-VariableFont_wght.ttf
+        - asset: assets/fonts/Afacad-VariableFont_wght.ttf
 
 
   # The following line ensures that the Material Icons font is

@@ -22,35 +22,55 @@ $accion = $data["accion"] ?? "";
 
 try {
     if ($accion === "crearAreaPadre") {
-        $nombre = $data["nombre_area"] ?? "";
-        $stmt = $conn->prepare("CALL sp_crearAreaPadre(?, @id_area)");
-        $stmt->bind_param("s", $nombre);
-        $stmt->execute();
 
-        $result = $conn->query("SELECT @id_area AS id_area");
-        $id_area = $result->fetch_assoc()["id_area"];
+    $nombre = $data["nombre_area"] ?? "";
+    $jefe = $data["jefe_area"] ?? null;
+    $correo = $data["correo_contacto"] ?? null;
+    $telefono = $data["telefono_contacto"] ?? null;
+    $descripcion = $data["descripcion"] ?? null;
 
-        $response = ["success" => true, "message" => "Área padre creada ✅", "id_area" => $id_area];
-    }
+    $stmt = $conn->prepare(
+        "CALL sp_crearAreaPadre(?, ?, ?, ?, ?, @id_area)"
+    );
+    $stmt->bind_param("sssss", $nombre, $jefe, $correo, $telefono, $descripcion);
+    $stmt->execute();
+
+    $result = $conn->query("SELECT @id_area AS id_area");
+    $id_area = $result->fetch_assoc()["id_area"];
+
+    $response = [
+        "success" => true,
+        "message" => "Área padre creada ✅",
+        "id_area" => $id_area
+    ];
+}
 
 
     elseif ($accion === "crearSubArea") {
-        $nombre = $data["nombre_area"] ?? "";
-        $id_padre = $data["id_area_padre"] ?? 0;
 
-        $stmt = $conn->prepare("CALL sp_crearSubArea(?, ?, @id_area)");
-        $stmt->bind_param("si", $nombre, $id_padre);
-        $stmt->execute();
+    $nombre = $data["nombre_area"] ?? "";
+    $id_padre = $data["id_area_padre"] ?? 0;
 
-        $result = $conn->query("SELECT @id_area AS id_area");
-        $id_area = $result->fetch_assoc()["id_area"];
+    $jefe = $data["jefe_area"] ?? null;
+    $correo = $data["correo_contacto"] ?? null;
+    $telefono = $data["telefono_contacto"] ?? null;
+    $descripcion = $data["descripcion"] ?? null;
 
-        if ($id_area) {
-            $response = ["success" => true, "message" => "Subárea creada ✅", "id_area" => $id_area];
-        } else {
-            $response = ["success" => false, "message" => "❌ Área padre no existe"];
-        }
+    $stmt = $conn->prepare(
+        "CALL sp_crearSubArea(?, ?, ?, ?, ?, ?, @id_area)"
+    );
+    $stmt->bind_param("sissss", $nombre, $id_padre, $jefe, $correo, $telefono, $descripcion);
+    $stmt->execute();
+
+    $result = $conn->query("SELECT @id_area AS id_area");
+    $id_area = $result->fetch_assoc()["id_area"];
+
+    if ($id_area) {
+        $response = ["success" => true, "message" => "Subárea creada ✅", "id_area" => $id_area];
+    } else {
+        $response = ["success" => false, "message" => "❌ Área padre no existe"];
     }
+}
 
     elseif ($accion === "listarAreasPadres") {
         $result = $conn->query("CALL sp_listarAreasPadres()");

@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Web Test',
       theme: ThemeData(
-        fontFamily: 'FunnelDisplay',
+        fontFamily: 'Afacad',
         scaffoldBackgroundColor: Colors.white,
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,

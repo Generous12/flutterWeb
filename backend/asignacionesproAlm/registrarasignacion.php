@@ -23,15 +23,11 @@ try {
             throw new Exception("Faltan parámetros obligatorios (id_case o id_area)");
         }
 
-        // Convertir a JSON para pasar al procedimiento almacenado
         $componentes_json = json_encode($componentes, JSON_UNESCAPED_UNICODE);
-
-        // Preparar y ejecutar el procedimiento almacenado
         $stmt = $conn->prepare("CALL RegistrarAsignacion(?, ?, ?)");
         $stmt->bind_param("iis", $id_case, $id_area, $componentes_json);
         $stmt->execute();
 
-        // Obtener resultado del SELECT final del procedimiento
         $result = $stmt->get_result();
         $row = $result ? $result->fetch_assoc() : null;
 

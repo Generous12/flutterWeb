@@ -103,7 +103,7 @@ class CustomDropdownSelector extends StatelessWidget {
                     item,
                     textAlign: TextAlign.start,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 15,
                       color: isDarkMode ? Colors.white : Colors.black,
                     ),
                   ),
