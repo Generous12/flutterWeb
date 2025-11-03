@@ -20,8 +20,7 @@ if (!$conn) {
 
 $accion = $data["accion"] ?? "";
 
-try {
-    if ($accion === "crearAreaPadre") {
+try {  if ($accion === "crearAreaPadre") {
 
     $nombre = $data["nombre_area"] ?? "";
     $jefe = $data["jefe_area"] ?? null;
@@ -43,10 +42,7 @@ try {
         "message" => "Área padre creada ✅",
         "id_area" => $id_area
     ];
-}
-
-
-    elseif ($accion === "crearSubArea") {
+}   elseif ($accion === "crearSubArea") {
 
     $nombre = $data["nombre_area"] ?? "";
     $id_padre = $data["id_area_padre"] ?? 0;
