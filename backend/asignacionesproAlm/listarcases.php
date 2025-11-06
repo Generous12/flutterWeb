@@ -11,7 +11,7 @@ error_reporting(E_ERROR | E_PARSE);
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 $data = json_decode(file_get_contents("php://input"), true);
-$response = ["success" => false, "message" => "Acción no válida"];
+$response = ["success" => false];
 
 try {
     if (!isset($data["accion"])) {
@@ -20,15 +20,14 @@ try {
 
     $accion = $data["accion"];
 
-  $conn = $conn;
-
-
     switch ($accion) {
+
         case "listar":
+
             $id_area = $data["id_area"] ?? null;
             $limit = $data["limit"] ?? 10;
             $offset = $data["offset"] ?? 0;
-            $busqueda = $data["busqueda"] ?? null;
+            $busqueda = $data["busqueda"] ?? "";
 
             if (!$id_area) {
                 throw new Exception("Falta el parámetro id_area.");
@@ -37,12 +36,16 @@ try {
             $stmt = $conn->prepare("CALL sp_listarCasesasginadoAunaArea(?, ?, ?, ?)");
             $stmt->bind_param("iiis", $id_area, $limit, $offset, $busqueda);
             $stmt->execute();
-            $result = $stmt->get_result();
 
+            $result = $stmt->get_result();
             $cases = [];
+
             while ($row = $result->fetch_assoc()) {
                 $cases[] = $row;
             }
+
+            // ✅ Limpieza de resultsets
+            while ($conn->more_results() && $conn->next_result()) {;}
 
             $response = [
                 "success" => true,
@@ -53,7 +56,8 @@ try {
             $stmt->close();
             break;
 
-        case "detalle":
+          case "detalle":
+
             $id_case_asignado = $data["id_case_asignado"] ?? null;
 
             if (!$id_case_asignado) {
@@ -64,16 +68,20 @@ try {
             $stmt->bind_param("i", $id_case_asignado);
             $stmt->execute();
 
+            // ✅ 1er SELECT → Información del CASE principal
             $result1 = $stmt->get_result();
             $case_info = $result1->fetch_assoc();
 
+            // ✅ 2do SELECT → Componentes secundarios
             $stmt->next_result();
-
             $result2 = $stmt->get_result();
+
             $componentes = [];
             while ($row = $result2->fetch_assoc()) {
                 $componentes[] = $row;
             }
+
+            while ($conn->more_results() && $conn->next_result()) {;}
 
             $response = [
                 "success" => true,
@@ -85,14 +93,16 @@ try {
             $stmt->close();
             break;
 
+
         default:
             throw new Exception("Acción no válida.");
+
     }
 
 } catch (Exception $e) {
     $response = [
         "success" => false,
-        "message" => $e->getMessage()
+        "message" => "Error: " . $e->getMessage()
     ];
 }
 

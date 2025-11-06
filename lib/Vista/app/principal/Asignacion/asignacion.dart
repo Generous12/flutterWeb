@@ -49,21 +49,21 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
 
     try {
       final casePrincipal = caseProv.componentesSeleccionados.first;
-      final componentesSecundarios = caseProv.componentesSeleccionados
-          .skip(1)
-          .map((c) => {"id_componente": c.id})
-          .toList();
+
+      // ✅ Construir el JSON correcto según tu nueva estructura
+      final jsonAsignacion = caseProv.construirJsonAsignacion(casePrincipal.id);
 
       final service = RegistrarAsignacionService();
       final result = await service.registrarAsignacion(
-        idCase: casePrincipal.id,
-        idArea: area["id_area"],
-        componentes: componentesSecundarios,
+        idCase: jsonAsignacion["id_componente_case"],
+        idArea: jsonAsignacion["id_area"],
+        componentes: jsonAsignacion["componentes"],
       );
 
       Navigator.of(context).pop();
+
       if (result["success"] == true) {
-        ToastUtil.showSuccess("Asignacion realizada con exito");
+        ToastUtil.showSuccess("Asignación realizada con éxito");
         await caseProv.limpiarCase();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

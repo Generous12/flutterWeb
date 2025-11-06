@@ -145,4 +145,24 @@ class CaseProvider extends ChangeNotifier {
     await prefs.remove('areaSeleccionada');
     notifyListeners();
   }
+
+  Map<String, dynamic> construirJsonAsignacion(int idCase) {
+    if (_areaSeleccionada == null) {
+      throw Exception("No se seleccionó un área.");
+    }
+
+    return {
+      "id_componente_case": idCase,
+      "id_area": _areaSeleccionada!["id_area"],
+      "componentes": _componentesSeleccionados.map((c) {
+        return {
+          "id_componente": c.id,
+          "fecha_instalacion": DateTime.now().toIso8601String().substring(
+            0,
+            10,
+          ),
+        };
+      }).toList(),
+    };
+  }
 }
