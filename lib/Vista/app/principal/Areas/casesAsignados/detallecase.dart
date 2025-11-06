@@ -67,18 +67,6 @@ class _DetalleCaseScreenState extends State<DetalleCaseScreen> {
                       _buildSectionTitle("Información General"),
                       const SizedBox(height: 8),
                       _infoRow("ID Asignación", caseData["id_case_asignado"]),
-                      _infoRow("Nombre del Case", caseData["nombre_case"]),
-                      _infoRow(
-                        "Código Inventario",
-                        caseData["codigo_inventario"],
-                      ),
-                      _infoRow("Marca", caseData["marca"]),
-                      _infoRow("Modelo", caseData["modelo"]),
-                      _infoRow("Serie", caseData["serie"]),
-                      _infoRow(
-                        "Estado Asignación",
-                        caseData["estado_asignacion"],
-                      ),
                       _infoRow(
                         "Área Asignada",
                         caseData["nombre_area_asignada"],
@@ -90,28 +78,83 @@ class _DetalleCaseScreenState extends State<DetalleCaseScreen> {
                       _infoRow("Estado", caseData["estado"]),
                       const Divider(height: 32),
 
-                      _buildSectionTitle("Componentes Asociados"),
+                      _buildSectionTitle("Case Principal"),
+                      const SizedBox(height: 8),
+                      Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                caseData["nombre_case"] ?? "Sin nombre",
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              _infoRow(
+                                "Código Inventario",
+                                caseData["codigo_inventario"],
+                              ),
+
+                              _infoRow(
+                                "Estado Asignación",
+                                caseData["estado_asignacion"],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const Divider(height: 32),
+
+                      /// ✅ PERIFÉRICOS ASOCIADOS
+                      _buildSectionTitle("Periféricos Asociados"),
                       const SizedBox(height: 8),
 
                       if (_componentes.isEmpty)
-                        const Text("No hay componentes asociados."),
+                        const Text("No hay periféricos asociados."),
                       ..._componentes.map(
                         (comp) => Card(
                           margin: const EdgeInsets.symmetric(vertical: 6),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: ListTile(
-                            title: Text(
-                              comp["nombre_componente"] ?? "Sin nombre",
-                            ),
-                            subtitle: Column(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  "Código Inventario: ${comp["codigo_inventario"] ?? '-'}",
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        comp["nombre_componente"] ??
+                                            "Sin nombre",
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      comp["codigo_inventario"] ?? "-",
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.blueGrey,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-
+                                const SizedBox(height: 6),
                                 Text(
                                   "Estado Asignación: ${comp["estado_asignacion"] ?? '-'}",
                                 ),

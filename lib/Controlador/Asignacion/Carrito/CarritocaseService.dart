@@ -83,7 +83,6 @@ class CaseProvider extends ChangeNotifier {
     await prefs.setStringList('componentesSeleccionados', listaJson);
   }
 
-  /// Seleccionar área (guarda todos los datos del área)
   Future<void> seleccionarArea(
     Map<String, dynamic> nuevaArea, {
     required BuildContext context,

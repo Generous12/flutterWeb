@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -12,12 +11,10 @@ import 'package:provider/provider.dart';
 import 'package:proyecto_web/Clases/plantillasComponente.dart';
 import 'package:proyecto_web/Controlador/Provider/componentService.dart';
 import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
-import 'package:proyecto_web/Vista/app/principal/Asignacion/asignacion.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/cropper.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/dropdownbutton.dart';
-import 'package:proyecto_web/Widgets/navegator.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
 import 'package:proyecto_web/Widgets/toastalertSo.dart';
@@ -153,7 +150,7 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
       message:
           "Componente guardado correctamente.\n\n¿Qué deseas hacer a continuación?",
       confirmButtonText: "Registrar otro",
-      cancelButtonText: "Crear asignación",
+      cancelButtonText: "Salir",
     );
 
     final provider = Provider.of<ComponentService>(context, listen: false);
@@ -171,7 +168,7 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
 
       ToastUtil.showSuccess("Crear nuevo componente");
     } else {
-      navegarConSlideDerecha(context, const AsignacionScreen());
+      Navigator.pop(context);
     }
   }
 

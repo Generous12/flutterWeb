@@ -109,6 +109,10 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
       _areasDisponiblesReasignar.clear();
       _nombreAreaReasignadaSeleccionada = null;
       _mostrarCamposInfo = true;
+      _jefeAreaController.clear();
+      _correoContactoController.clear();
+      _telefonoContactoController.clear();
+      _descripcionController.clear();
     });
   }
 
