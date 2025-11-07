@@ -40,9 +40,7 @@ class _ListaAreasScreenState extends State<ListaAreasScreen> {
     });
   }
 
-  Future<void> _eliminarSeleccionadas() async {
-    if (_selectedAreas.isEmpty) return;
-
+  Future<void> _eliminarAreasSinSubniveles() async {
     await showCustomDialog(
       context: context,
       title: "Eliminar áreas",
@@ -55,6 +53,7 @@ class _ListaAreasScreenState extends State<ListaAreasScreen> {
           final result = await AreaService().eliminarAreasSinSubniveles();
           final count = result["total_eliminadas"] ?? 0;
 
+          // Refrescar lista de áreas
           setState(() {
             _selectedAreas.clear();
             _cargarAreas(reset: true);
@@ -155,7 +154,7 @@ class _ListaAreasScreenState extends State<ListaAreasScreen> {
                       ),
                       IconButton(
                         icon: const Icon(Iconsax.trash, color: Colors.white),
-                        onPressed: _eliminarSeleccionadas,
+                        onPressed: _eliminarAreasSinSubniveles,
                       ),
                     ],
                   ),

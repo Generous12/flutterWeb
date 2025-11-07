@@ -31,10 +31,6 @@ class AreaService {
   Future<Map<String, dynamic>> crearSubArea({
     required String nombreArea,
     required int idAreaPadre,
-    String? jefeArea,
-    String? correoContacto,
-    String? telefonoContacto,
-    String? descripcion,
   }) async {
     final resp = await http.post(
       Uri.parse(baseUrl),
@@ -43,10 +39,6 @@ class AreaService {
         "accion": "crearSubArea",
         "nombre_area": nombreArea,
         "id_area_padre": idAreaPadre,
-        "jefe_area": jefeArea,
-        "correo_contacto": correoContacto,
-        "telefono_contacto": telefonoContacto,
-        "descripcion": descripcion,
       }),
     );
 
@@ -177,13 +169,29 @@ class AreaService {
   }
 
   Future<Map<String, dynamic>> eliminarAreasSinSubniveles() async {
-    final resp = await http.post(
-      Uri.parse(baseUrl),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"accion": "eliminarAreasSinSubniveles"}),
-    );
+    try {
+      final resp = await http.post(
+        Uri.parse(baseUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"accion": "eliminarAreasSinSubniveles"}),
+      );
 
-    final decoded = jsonDecode(resp.body);
-    return decoded;
+      if (resp.statusCode == 200) {
+        final decoded = jsonDecode(resp.body);
+        return decoded;
+      } else {
+        return {
+          "success": false,
+          "message": "Error en la solicitud: ${resp.statusCode}",
+          "total_eliminadas": 0,
+        };
+      }
+    } catch (e) {
+      return {
+        "success": false,
+        "message": "Excepción: $e",
+        "total_eliminadas": 0,
+      };
+    }
   }
 }

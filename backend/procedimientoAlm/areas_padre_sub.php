@@ -112,14 +112,14 @@ try {  if ($accion === "crearAreaPadre") {
     $limit = $data["limit"] ?? 10;
     $offset = $data["offset"] ?? 0;
 
-    // ✅ Parámetros opcionales de actualización
+    //  Parámetros opcionales de actualización
     $id_area_actualizar = $data["id_area_actualizar"] ?? null;
     $jefe_area = $data["jefe_area"] ?? null;
     $correo_contacto = $data["correo_contacto"] ?? null;
     $telefono_contacto = $data["telefono_contacto"] ?? null;
     $descripcion = $data["descripcion"] ?? null;
 
-    // ✅ Llamada al PROCEDIMIENTO con 8 parámetros
+    //  Llamada al PROCEDIMIENTO con 8 parámetros
     $stmt = $conn->prepare("CALL sp_detalleAreaPadre(?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param(
         "iiisssss",
@@ -166,15 +166,36 @@ elseif ($accion === "quitarAsignacionArea") {
 
         $response = ["success" => true, "message" => "Área asignada correctamente ✅"];
     }elseif ($accion === "eliminarAreasSinSubniveles") {
-    $result = $conn->query("CALL EliminarAreasSinSubniveles()");
-    $row = $result->fetch_assoc();
+    // Ejecutar el procedimiento almacenado
+    if ($result = $conn->query("CALL EliminarAreasSinSubniveles()")) {
 
-    $response = [
-        "success" => true,
-        "message" => "Áreas padre sin subniveles eliminadas ✅",
-        "total_eliminadas" => $row["total_eliminadas"] ?? 0
-    ];
+        // Obtener el resultado del SELECT dentro del procedimiento
+        $row = $result->fetch_assoc();
+
+        // Liberar el primer conjunto de resultados
+        $result->close();
+
+        // Liberar posibles resultados adicionales para evitar problemas con siguientes queries
+        while ($conn->more_results() && $conn->next_result()) {
+            $extraResult = $conn->use_result();
+            if ($extraResult instanceof mysqli_result) {
+                $extraResult->close();
+            }
+        }
+
+        $response = [
+            "success" => true,
+            "message" => "Áreas padre sin subniveles eliminadas ✅",
+            "total_eliminadas" => $row["total_eliminadas"] ?? 0
+        ];
+    } else {
+        $response = [
+            "success" => false,
+            "message" => "Error al ejecutar el procedimiento: " . $conn->error
+        ];
+    }
 }
+
 
 
 

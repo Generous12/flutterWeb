@@ -568,11 +568,6 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                       await _areaService.crearSubArea(
                         nombreArea: nombreSub,
                         idAreaPadre: idPadre,
-                        jefeArea: _jefeAreaController.text.trim(),
-                        correoContacto: _correoContactoController.text.trim(),
-                        telefonoContacto: _telefonoContactoController.text
-                            .trim(),
-                        descripcion: _descripcionController.text.trim(),
                       );
                     }
                   }

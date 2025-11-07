@@ -33,7 +33,6 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
   bool _cargando = true;
   List<dynamic> _areas = [];
 
-  // Controladores para los campos generales del área
   late TextEditingController _jefeAreaController;
   late TextEditingController _correoContactoController;
   late TextEditingController _telefonoContactoController;
