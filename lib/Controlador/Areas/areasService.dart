@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class AreaService {
   final String baseUrl =
-      "http://192.168.18.20/proyecto_web/backend/procedimientoAlm/areas_padre_sub.php";
+      "http://192.168.8.25/proyecto_web/backend/procedimientoAlm/areas_padre_sub.php";
 
   Future<Map<String, dynamic>> crearAreaPadre({
     required String nombreArea,
@@ -94,16 +94,32 @@ class AreaService {
     int idAreaPadre, {
     int limit = 10,
     int offset = 0,
+
+    // ✅ Campos opcionales para actualización
+    int? idAreaActualizar,
+    String? jefeArea,
+    String? correoContacto,
+    String? telefonoContacto,
+    String? descripcion,
   }) async {
+    final body = {
+      "accion": "detalleAreaPadre",
+      "id_area_padre": idAreaPadre,
+      "limit": limit,
+      "offset": offset,
+    };
+
+    // ✅ Solo enviamos los parámetros de actualización si no son nulos
+    if (idAreaActualizar != null) body["id_area_actualizar"] = idAreaActualizar;
+    if (jefeArea != null) body["jefe_area"] = jefeArea;
+    if (correoContacto != null) body["correo_contacto"] = correoContacto;
+    if (telefonoContacto != null) body["telefono_contacto"] = telefonoContacto;
+    if (descripcion != null) body["descripcion"] = descripcion;
+
     final resp = await http.post(
       Uri.parse(baseUrl),
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "accion": "detalleAreaPadre",
-        "id_area_padre": idAreaPadre,
-        "limit": limit,
-        "offset": offset,
-      }),
+      body: jsonEncode(body),
     );
 
     final decoded = jsonDecode(resp.body);

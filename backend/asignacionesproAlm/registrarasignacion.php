@@ -23,20 +23,15 @@ try {
         if (!$id_case || !$id_area) {
             throw new Exception("Faltan parámetros obligatorios (id_case, id_area).");
         }
-
-        // ✅ Convertir componentes a JSON
         $componentes_json = json_encode($componentes, JSON_UNESCAPED_UNICODE);
 
-        // ✅ Preparar la llamada
         $stmt = $conn->prepare("CALL RegistrarAsignacion(?, ?, ?)");
         $stmt->bind_param("iis", $id_case, $id_area, $componentes_json);
         $stmt->execute();
 
-        // ✅ Capturar resultados
         $result = $stmt->get_result();
         $row = $result ? $result->fetch_assoc() : null;
 
-        // ✅ IMPORTANTE: limpiar múltiples resultsets del procedimiento
         while ($conn->more_results() && $conn->next_result()) {;}
 
         if ($row && isset($row["id_case_asignado"])) {

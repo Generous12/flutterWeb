@@ -8,6 +8,7 @@ import 'package:proyecto_web/Vista/app/principal/Areas/casesAsignados/caseyaAsig
 import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
+import 'package:proyecto_web/Widgets/textfield.dart';
 import 'package:proyecto_web/Widgets/toastalertSo.dart';
 
 class DetalleAreaScreen extends StatefulWidget {
@@ -31,10 +32,31 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
   List<dynamic> _detalleAreas = [];
   bool _cargando = true;
   List<dynamic> _areas = [];
+
+  // Controladores para los campos generales del área
+  late TextEditingController _jefeAreaController;
+  late TextEditingController _correoContactoController;
+  late TextEditingController _telefonoContactoController;
+  late TextEditingController _descripcionController;
+
   @override
   void initState() {
     super.initState();
+    _jefeAreaController = TextEditingController();
+    _correoContactoController = TextEditingController();
+    _telefonoContactoController = TextEditingController();
+    _descripcionController = TextEditingController();
+
     _cargarDatos();
+  }
+
+  @override
+  void dispose() {
+    _jefeAreaController.dispose();
+    _correoContactoController.dispose();
+    _telefonoContactoController.dispose();
+    _descripcionController.dispose();
+    super.dispose();
   }
 
   Future<void> _quitarAsignacion(int idArea) async {
@@ -68,6 +90,15 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
 
     final todas = await _areaService.listarAreasPadresGeneral(limit: 100);
     final detalle = await _areaService.detalleAreaPadre(widget.area["id_area"]);
+
+    // Inicializar los controladores con los datos del área padre
+    if (detalle.isNotEmpty) {
+      final areaPadre = detalle.first;
+      _jefeAreaController.text = areaPadre["jefe_area"] ?? '';
+      _correoContactoController.text = areaPadre["correo_contacto"] ?? '';
+      _telefonoContactoController.text = areaPadre["telefono_contacto"] ?? '';
+      _descripcionController.text = areaPadre["descripcion"] ?? '';
+    }
 
     setState(() {
       _areas = todas
@@ -109,6 +140,35 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                     return ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
+                        // === Campos generales del área (afuera de los cards) ===
+                        CustomTextField(
+                          controller: _jefeAreaController,
+                          label: "Jefe del Área",
+                          hintText: "Ejemplo: Carlos Pérez",
+                          prefixIcon: Iconsax.user,
+                        ),
+                        CustomTextField(
+                          controller: _correoContactoController,
+                          label: "Correo de Contacto (Opcional)",
+                          hintText: "ejemplo@empresa.com",
+                          prefixIcon: Iconsax.sms,
+                        ),
+                        CustomTextField(
+                          controller: _telefonoContactoController,
+                          label: "Teléfono de Contacto (Opcional)",
+                          hintText: "+51 900 123 456",
+                          prefixIcon: Iconsax.mobile,
+                          isNumeric: true,
+                        ),
+                        CustomTextField(
+                          controller: _descripcionController,
+                          label: "Descripción del Área (Opcional)",
+                          hintText: "Descripción general de esta área...",
+                          prefixIcon: Iconsax.note,
+                          maxLines: 3,
+                        ),
+
+                        const SizedBox(height: 24),
                         const Text(
                           "Subáreas",
                           style: TextStyle(
@@ -118,6 +178,8 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                           ),
                         ),
                         const SizedBox(height: 12),
+
+                        // === Lista de subáreas ===
                         if (subAreas.isEmpty)
                           const Center(
                             child: Text(
@@ -152,6 +214,7 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                               ),
                               child: Column(
                                 children: [
+                                  // === Card subárea ===
                                   InkWell(
                                     borderRadius: BorderRadius.circular(16),
                                     onTap: () async {
@@ -229,6 +292,7 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                       ),
                                     ),
                                   ),
+                                  // === Sub-subáreas ===
                                   if (tieneSubSub)
                                     Column(
                                       children: subSubDeEsta.map((subsub) {
@@ -308,7 +372,6 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                                   "id_area_abue": widget
                                                       .area["id_area_padre"],
                                                 }, context: context);
-
                                                 if (context.mounted)
                                                   Navigator.pop(context);
                                               }

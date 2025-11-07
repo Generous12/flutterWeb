@@ -106,27 +106,49 @@ try {  if ($accion === "crearAreaPadre") {
 
         $response = ["success" => true, "subareas" => $subareas];
     } elseif ($accion === "detalleAreaPadre") {
-        $id_padre = $data["id_area_padre"] ?? 0;
-        $limit = $data["limit"] ?? 10;
-        $offset = $data["offset"] ?? 0;
 
-        $stmt = $conn->prepare("CALL sp_detalleAreaPadre(?, ?, ?)");
-        $stmt->bind_param("iii", $id_padre, $limit, $offset);
-        $stmt->execute();
+    // Parámetros obligatorios
+    $id_padre = $data["id_area_padre"] ?? 0;
+    $limit = $data["limit"] ?? 10;
+    $offset = $data["offset"] ?? 0;
 
-        $result = $stmt->get_result();
-        $areas = $result->fetch_all(MYSQLI_ASSOC);
+    // ✅ Parámetros opcionales de actualización
+    $id_area_actualizar = $data["id_area_actualizar"] ?? null;
+    $jefe_area = $data["jefe_area"] ?? null;
+    $correo_contacto = $data["correo_contacto"] ?? null;
+    $telefono_contacto = $data["telefono_contacto"] ?? null;
+    $descripcion = $data["descripcion"] ?? null;
 
-        foreach ($areas as &$a) {
-            if ($a["id_area_padre"] == $id_padre) {
-                $a["tipo_area"] = "Subárea";
-            } else {
-                $a["tipo_area"] = "Sub-Subárea";
-            }
+    // ✅ Llamada al PROCEDIMIENTO con 8 parámetros
+    $stmt = $conn->prepare("CALL sp_detalleAreaPadre(?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param(
+        "iiisssss",
+        $id_padre,
+        $limit,
+        $offset,
+        $id_area_actualizar,
+        $jefe_area,
+        $correo_contacto,
+        $telefono_contacto,
+        $descripcion
+    );
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $areas = $result->fetch_all(MYSQLI_ASSOC);
+
+    // Tu lógica original sigue igual (no la cambié)
+    foreach ($areas as &$a) {
+        if ($a["id_area_padre"] == $id_padre) {
+            $a["tipo_area"] = "Subárea";
+        } else {
+            $a["tipo_area"] = "Sub-Subárea";
         }
+    }
 
-        $response = ["success" => true, "areas" => $areas];
-    } elseif ($accion === "quitarAsignacionArea") {
+    $response = ["success" => true, "areas" => $areas];
+}
+elseif ($accion === "quitarAsignacionArea") {
             $id_area = $data["id_area"] ?? 0;
 
             $stmt = $conn->prepare("CALL sp_quitarAsignacionArea(?)");

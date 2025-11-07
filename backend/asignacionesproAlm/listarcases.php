@@ -44,7 +44,6 @@ try {
                 $cases[] = $row;
             }
 
-            // ✅ Limpieza de resultsets
             while ($conn->more_results() && $conn->next_result()) {;}
 
             $response = [
@@ -56,7 +55,7 @@ try {
             $stmt->close();
             break;
 
-          case "detalle":
+        case "detalle":
 
             $id_case_asignado = $data["id_case_asignado"] ?? null;
 
@@ -68,11 +67,11 @@ try {
             $stmt->bind_param("i", $id_case_asignado);
             $stmt->execute();
 
-            // ✅ 1er SELECT → Información del CASE principal
+            //  1er SELECT → Información del CASE principal
             $result1 = $stmt->get_result();
             $case_info = $result1->fetch_assoc();
 
-            // ✅ 2do SELECT → Componentes secundarios
+            //  2do SELECT → Componentes secundarios
             $stmt->next_result();
             $result2 = $stmt->get_result();
 

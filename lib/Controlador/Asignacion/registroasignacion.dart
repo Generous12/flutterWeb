@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class RegistrarAsignacionService {
   final String baseUrl =
-      "http://192.168.18.20/proyecto_web/backend/asignacionesproAlm/registrarasignacion.php";
+      "http://192.168.8.25/proyecto_web/backend/asignacionesproAlm/registrarasignacion.php";
 
   final String baseUrlA =
       "http://192.168.18.20/proyecto_web/backend/asignacionesproAlm/listarcases.php";
