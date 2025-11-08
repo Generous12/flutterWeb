@@ -573,12 +573,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                   }
 
                   _limpiarCampos();
-                  showCustomDialog(
-                    context: context,
-                    title: "Éxito",
-                    message: "Área y subáreas guardadas correctamente.",
-                    confirmButtonText: "Cerrar",
-                  );
+                  Navigator.pop(context);
                 } catch (e) {
                   showCustomDialog(
                     context: context,

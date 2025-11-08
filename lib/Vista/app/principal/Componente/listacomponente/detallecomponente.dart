@@ -528,7 +528,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                           ),
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey.shade400),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(18),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -552,7 +552,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                     Expanded(
                       flex: 1,
                       child: CustomDropdownSelector(
-                        labelText: "Tipo",
+                        labelText: "Elije un tipo",
                         hintText: "Selecciona...",
                         value: _tipoSeleccionado,
                         items: const ["Componentes", "Periféricos"],

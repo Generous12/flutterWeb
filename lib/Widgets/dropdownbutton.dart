@@ -37,32 +37,33 @@ class CustomDropdownSelector extends StatelessWidget {
           decoration: InputDecoration(
             labelText: labelText,
             labelStyle: TextStyle(
-              fontSize: 13,
-              color: const Color.fromARGB(255, 0, 0, 0),
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
             ),
             filled: true,
             fillColor: Colors.white,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 5,
-              vertical: 20,
+              vertical: 17,
             ),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(18),
               borderSide: BorderSide(
-                color: const Color.fromARGB(255, 0, 0, 0),
+                color: Colors.black.withOpacity(0.3),
                 width: 1,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.black, width: 1.2),
+              borderRadius: BorderRadius.circular(18),
+              borderSide: BorderSide(color: Colors.black, width: 1.6),
             ),
           ),
           dropdownStyleData: DropdownStyleData(
             isOverButton: false,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(18),
               color: Colors.white,
             ),
             elevation: 4,
