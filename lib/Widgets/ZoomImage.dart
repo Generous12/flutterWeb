@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:dismissible_page/dismissible_page.dart';
 import 'package:flutter/material.dart';
 
+//ZOOM DE IMAENES
 class ZoomableImagePage extends StatelessWidget {
   final Uint8List imgBytes;
 

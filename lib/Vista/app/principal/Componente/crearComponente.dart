@@ -337,6 +337,7 @@ class _FlujoCrearComponenteState extends State<FlujoCrearComponente> {
   }
 }
 
+//RESUMEN FINAL DE LOS DATOS A REGISTRAR
 class _ResumenComponente extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -1327,6 +1328,7 @@ class _ValorAtributoFormState extends State<ValorAtributoForm> {
   }
 }
 
+//DISEÑO DE LOS CARDS PARA EL RESUMEN FINAL
 class _InfoCard extends StatelessWidget {
   final IconData icon;
   final String title;

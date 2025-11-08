@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -28,12 +27,18 @@ class ComponenteDetail extends StatefulWidget {
 class _ComponenteDetailState extends State<ComponenteDetail> {
   late TextEditingController nombreController;
   late TextEditingController codigoController;
-
+  final List<String> _otrosEstados = ["Dañado", "Arreglado"];
+  final List<String> _estadosPrincipales = [
+    "Disponible",
+    "Mantenimiento",
+    "En uso",
+  ];
   bool isLoading = false;
   String? _tipoSeleccionado;
   String? _estadoseleccionado;
 
   List<String?> _imagenesNuevas = List.filled(4, null);
+
   @override
   void initState() {
     super.initState();
@@ -75,6 +80,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
     return false;
   }
 
+  //LOGICA PARA EVITAR SALIR SIN HABER VERIFICADO CAMBIOS
   Future<bool> _onWillPop() async {
     if (huboCambio) {
       final salir = await showCustomDialog(
@@ -88,14 +94,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
     }
     return true;
   }
-
-  final List<String> _estadosPrincipales = [
-    "Disponible",
-    "Mantenimiento",
-    "En uso",
-  ];
-
-  final List<String> _otrosEstados = ["Dañado", "Arreglado"];
 
   void _mostrarModalEstados(BuildContext context) {
     showModalBottomSheet(
@@ -353,6 +351,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: 4,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    //ESTILO Y FORMA DE LOS CARD QUE CONTIENEN LOS DATOS
                     crossAxisCount: 2,
                     mainAxisSpacing: 8,
                     crossAxisSpacing: 8,
@@ -411,7 +410,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                if (tieneImagen)
+                                if (tieneImagen) //VER IMAGEN CON ZOOM
                                   InkWell(
                                     onTap: () {
                                       Navigator.of(context).push(
@@ -604,31 +603,5 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
         ),
       ),
     );
-  }
-}
-
-extension ComponenteUpdateExtension on ComponenteUpdate {
-  Uint8List? imagenBytes(int index) {
-    if (index < 0 || index >= imagenesBase64.length) return null;
-
-    String? base64Str = imagenesBase64[index];
-    if (base64Str == null) return null;
-
-    base64Str = base64Str.trim();
-    if (base64Str.isEmpty) return null;
-
-    try {
-      final regex = RegExp(r'data:image/[^;]+;base64,');
-      base64Str = base64Str.replaceAll(regex, '');
-
-      final mod = base64Str.length % 4;
-      if (mod != 0) {
-        base64Str = base64Str.padRight(base64Str.length + (4 - mod), '=');
-      }
-
-      return base64Decode(base64Str);
-    } catch (e) {
-      return null;
-    }
   }
 }
