@@ -5,7 +5,7 @@ import 'package:proyecto_web/Controlador/Usuarios/usuariosservice.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/dropdownbutton.dart';
-import 'package:proyecto_web/Widgets/passwordvalidator.dart';
+import 'package:proyecto_web/Widgets/logicaspeque%C3%B1as.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
 

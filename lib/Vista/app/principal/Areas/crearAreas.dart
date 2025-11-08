@@ -240,6 +240,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
       if (!mounted) return;
 
       ToastUtil.showSuccess("Se asignó el área correctamente");
+      Navigator.pop(context);
     } else {
       ToastUtil.showWarning("Selecciona primero un área o subárea destino");
     }
@@ -421,8 +422,7 @@ class _CrearAreaScreenState extends State<CrearAreaScreen> {
                 ),
               ),
 
-              if (_mostrarReasignar &&
-                  _areasDisponiblesReasignar.isNotEmpty) ...[
+              if (_mostrarReasignar) ...[
                 const SizedBox(height: 8),
                 CustomDropdownSelector(
                   labelText: "Áreas Padres disponibles",

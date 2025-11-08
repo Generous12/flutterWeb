@@ -72,14 +72,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       margin: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: isDark ? const Color.fromARGB(255, 20, 20, 20) : Colors.white,
       ),
       child: TextField(
         controller: widget.controller,
@@ -95,28 +88,26 @@ class _CustomTextFieldState extends State<CustomTextField> {
         readOnly: widget.readOnly,
         onTap: widget.onTap,
         enabled: widget.enabled,
-        cursorColor: colorScheme.primary,
+        cursorColor: Colors.black,
         style: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w400,
-          color: colorScheme.onSurface,
+          color: Colors.black,
         ),
+
         decoration: InputDecoration(
           labelText: widget.label,
-          disabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide(color: Colors.transparent, width: 0),
-          ),
 
           labelStyle: TextStyle(
             fontSize: 14,
-            color: colorScheme.primary.withOpacity(0.8),
+            color: Colors.black.withOpacity(0.8),
           ),
           floatingLabelStyle: TextStyle(
-            color: colorScheme.primary,
+            color: Colors.black,
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
+
           alignLabelWithHint: isMultiline,
           hintText: widget.hintText,
           hintStyle: TextStyle(
@@ -125,7 +116,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
           ),
 
           filled: false,
-
           contentPadding: const EdgeInsets.symmetric(
             vertical: 18,
             horizontal: 16,
@@ -141,6 +131,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   ),
                 )
               : null,
+
           prefixIconConstraints: const BoxConstraints(
             minWidth: 38,
             minHeight: 38,
@@ -152,7 +143,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   ? IconButton(
                       icon: Icon(
                         _obscureText ? LucideIcons.eye : LucideIcons.eyeOff,
-                        color: colorScheme.onBackground,
+                        color: Colors.black,
                       ),
                       onPressed: () {
                         setState(() {
@@ -163,21 +154,25 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   : null),
 
           counterText: widget.showCounter ? null : "",
-
-          // Borde elegante
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
             borderSide: BorderSide(
-              color: isDark
-                  ? Colors.grey.shade700
-                  : Colors.black.withOpacity(0.3),
+              color: Colors.black.withOpacity(0.3),
               width: 1,
             ),
           ),
 
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide(color: colorScheme.primary, width: 1.6),
+            borderSide: BorderSide(color: Colors.black, width: 1.6),
+          ),
+
+          disabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide(
+              color: Colors.black.withOpacity(0.3),
+              width: 1,
+            ),
           ),
 
           errorText: widget.errorText,

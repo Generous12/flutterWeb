@@ -38,12 +38,10 @@ class CustomDropdownSelector extends StatelessWidget {
             labelText: labelText,
             labelStyle: TextStyle(
               fontSize: 13,
-              color: isDarkMode
-                  ? Colors.grey[300]
-                  : const Color.fromARGB(255, 100, 100, 100),
+              color: const Color.fromARGB(255, 0, 0, 0),
             ),
             filled: true,
-            fillColor: isDarkMode ? Colors.grey[900] : Colors.white,
+            fillColor: Colors.white,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 5,
               vertical: 20,
@@ -52,25 +50,20 @@ class CustomDropdownSelector extends StatelessWidget {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: isDarkMode
-                    ? Colors.grey[700]!
-                    : const Color.fromARGB(255, 0, 0, 0),
+                color: const Color.fromARGB(255, 0, 0, 0),
                 width: 1,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: isDarkMode ? Colors.white : Colors.black,
-                width: 1.2,
-              ),
+              borderSide: BorderSide(color: Colors.black, width: 1.2),
             ),
           ),
           dropdownStyleData: DropdownStyleData(
             isOverButton: false,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
-              color: isDarkMode ? Colors.grey[900] : Colors.white,
+              color: Colors.white,
             ),
             elevation: 4,
           ),

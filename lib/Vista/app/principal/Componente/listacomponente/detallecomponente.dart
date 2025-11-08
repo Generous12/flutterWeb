@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -12,6 +11,7 @@ import 'package:proyecto_web/Widgets/ZoomImage.dart';
 import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/dropdownbutton.dart';
+import 'package:proyecto_web/Widgets/logicaspeque%C3%B1as.dart';
 import 'package:proyecto_web/Widgets/textfield.dart';
 
 class ComponenteDetail extends StatefulWidget {
@@ -203,21 +203,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
         });
       }
     }
-  }
-
-  String generarCodigoInventario(String nombre) {
-    final cleanName = nombre.replaceAll(' ', '').toUpperCase();
-    final prefix = cleanName.length >= 3
-        ? cleanName.substring(0, 3)
-        : cleanName;
-
-    final now = DateTime.now();
-    final datePart =
-        "${now.year % 100}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}";
-
-    final randomNumber = (100 + Random().nextInt(900)).toString();
-
-    return "$prefix-$datePart-$randomNumber";
   }
 
   Future<void> _guardarCambios() async {
