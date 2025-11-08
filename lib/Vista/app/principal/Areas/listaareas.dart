@@ -231,7 +231,7 @@ class _ListaAreasScreenState extends State<ListaAreasScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      elevation: 2,
+                      elevation: 0,
                       child: ListTile(
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -498,16 +498,16 @@ class _AreasCarritoState extends State<AreasCarrito> {
                                           area["id_area"] ||
                                       caseProv.areaSeleccionada!["id_area_abue"] ==
                                           area["id_area"]))
-                              ? Colors.black.withOpacity(0.1)
+                              ? const Color(0xFF00136A).withOpacity(0.1)
                               : Colors.white,
                           margin: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                            horizontal: 0,
+                            vertical: 0,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(0),
                           ),
-                          elevation: 2,
+                          elevation: 0,
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,

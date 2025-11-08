@@ -74,8 +74,6 @@ try {  if ($accion === "crearAreaPadre") {
 
         $response = ["success" => true, "areas" => $areas];
     }
-
-
     elseif ($accion === "listarAreasPadresGeneral") {
         $limit = $data["limit"] ?? 10;
         $offset = $data["offset"] ?? 0;
@@ -105,7 +103,7 @@ try {  if ($accion === "crearAreaPadre") {
         $subareas = $result->fetch_all(MYSQLI_ASSOC);
 
         $response = ["success" => true, "subareas" => $subareas];
-    } elseif ($accion === "detalleAreaPadre") {
+} elseif ($accion === "detalleAreaPadre") {
 
     // Parámetros obligatorios
     $id_padre = $data["id_area_padre"] ?? 0;
@@ -147,8 +145,7 @@ try {  if ($accion === "crearAreaPadre") {
     }
 
     $response = ["success" => true, "areas" => $areas];
-}
-elseif ($accion === "quitarAsignacionArea") {
+}elseif ($accion === "quitarAsignacionArea") {
             $id_area = $data["id_area"] ?? 0;
 
             $stmt = $conn->prepare("CALL sp_quitarAsignacionArea(?)");
@@ -165,42 +162,76 @@ elseif ($accion === "quitarAsignacionArea") {
         $stmt->execute();
 
         $response = ["success" => true, "message" => "Área asignada correctamente ✅"];
-    }elseif ($accion === "eliminarAreasSinSubniveles") {
-    // Ejecutar el procedimiento almacenado
-    if ($result = $conn->query("CALL EliminarAreasSinSubniveles()")) {
+}elseif ($accion === "eliminarAreasSinSubniveles") {
+        // Ejecutar el procedimiento almacenado
+        if ($result = $conn->query("CALL EliminarAreasSinSubniveles()")) {
 
-        // Obtener el resultado del SELECT dentro del procedimiento
-        $row = $result->fetch_assoc();
+            // Obtener el resultado del SELECT dentro del procedimiento
+            $row = $result->fetch_assoc();
 
-        // Liberar el primer conjunto de resultados
-        $result->close();
+            //   el primer conjunto de resultados
+            $result->close();
 
-        // Liberar posibles resultados adicionales para evitar problemas con siguientes queries
-        while ($conn->more_results() && $conn->next_result()) {
-            $extraResult = $conn->use_result();
-            if ($extraResult instanceof mysqli_result) {
-                $extraResult->close();
+            // Liberar posibles resultados adicionales para evitar problemas con siguientes queries
+            while ($conn->more_results() && $conn->next_result()) {
+                $extraResult = $conn->use_result();
+                if ($extraResult instanceof mysqli_result) {
+                    $extraResult->close();
+                }
             }
-        }
 
-        $response = [
-            "success" => true,
-            "message" => "Áreas padre sin subniveles eliminadas ✅",
-            "total_eliminadas" => $row["total_eliminadas"] ?? 0
-        ];
-    } else {
-        $response = [
-            "success" => false,
-            "message" => "Error al ejecutar el procedimiento: " . $conn->error
-        ];
-    }
+            $response = [
+                "success" => true,
+                "message" => "Áreas padre sin subniveles eliminadas ",
+                "total_eliminadas" => $row["total_eliminadas"] ?? 0
+            ];
+        } else {
+            $response = [
+                "success" => false,
+                "message" => "Error al ejecutar el procedimiento: " . $conn->error
+            ];
+        }
+}elseif ($accion === "actualizarAreaPadre") {
+
+    $idArea      = $data["id_area"] ?? 0;
+    $jefe        = $data["jefe_area"] ?? null;
+    $correo      = $data["correo_contacto"] ?? null;
+    $telefono    = $data["telefono_contacto"] ?? null;
+    $descripcion = $data["descripcion"] ?? null;
+
+    $stmt = $conn->prepare("CALL sp_detalleAreaPadre(?, 0, 0, ?, ?, ?, ?, ?)");
+
+    $stmt->bind_param(
+        "iissss",
+        $idArea,      // p_id_area_padre
+        $idArea,      // p_id_area_actualizar
+        $jefe,
+        $correo,
+        $telefono,
+        $descripcion
+    );
+
+    $stmt->execute();
+
+    $response = [
+        "success" => true,
+        "message" => "Área actualizada correctamente "
+    ];
+}
+ else {
+
+    echo json_encode([
+        "success" => false,
+        "message" => "Acción no válida"
+    ]);
 }
 
 
 
 
+
 } catch (Exception $e) {
-    $response = ["success" => false, "message" => "⚠️ Error: " . $e->getMessage()];
+    $response = ["success" => false, "message" => " Error: " . $e->getMessage()];
 }
 
 echo json_encode($response, JSON_UNESCAPED_UNICODE);

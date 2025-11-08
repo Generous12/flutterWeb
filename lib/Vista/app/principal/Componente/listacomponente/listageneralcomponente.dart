@@ -957,6 +957,7 @@ class _ComponentesCarritonState extends State<ComponentesCarrito> {
                         return Opacity(
                           opacity: yaAgregado ? 0.5 : 1.0,
                           child: Card(
+                            elevation: 0,
                             margin: EdgeInsets.zero,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(0),

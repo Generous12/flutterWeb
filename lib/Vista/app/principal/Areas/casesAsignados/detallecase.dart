@@ -50,6 +50,7 @@ class _DetalleCaseScreenState extends State<DetalleCaseScreen> {
       child: Scaffold(
         backgroundColor: const Color(0xFFF4F5F7),
         appBar: AppBar(
+          toolbarHeight: 48,
           backgroundColor: Colors.black,
           iconTheme: const IconThemeData(color: Colors.white),
           title: const Text(
@@ -107,7 +108,6 @@ class _DetalleCaseScreenState extends State<DetalleCaseScreen> {
     );
   }
 
-  // ✅ TARJETA PARA CADA COMPONENTE
   Widget _buildComponenteCard(dynamic comp) {
     return Card(
       elevation: 3,

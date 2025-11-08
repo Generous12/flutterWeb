@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class AreaService {
   final String baseUrl =
-      "http://192.168.8.25/proyecto_web/backend/procedimientoAlm/areas_padre_sub.php";
+      "http://192.168.18.20/proyecto_web/backend/procedimientoAlm/areas_padre_sub.php";
 
   Future<Map<String, dynamic>> crearAreaPadre({
     required String nombreArea,
@@ -193,5 +193,36 @@ class AreaService {
         "total_eliminadas": 0,
       };
     }
+  }
+
+  Future<bool> actualizarAreaPadre({
+    required int idArea,
+    required String jefeArea,
+    required String correoContacto,
+    required String telefonoContacto,
+    required String descripcion,
+  }) async {
+    final response = await http.post(
+      Uri.parse(baseUrl),
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: jsonEncode({
+        "accion": "actualizarAreaPadre",
+        "id_area": idArea,
+        "jefe_area": jefeArea,
+        "correo_contacto": correoContacto,
+        "telefono_contacto": telefonoContacto,
+        "descripcion": descripcion,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data["success"] == true;
+    }
+
+    return false;
   }
 }

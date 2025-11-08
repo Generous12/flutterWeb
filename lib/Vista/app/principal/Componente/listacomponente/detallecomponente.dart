@@ -344,7 +344,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
             foregroundColor: Colors.white,
           ),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(7, 8, 7, 0),
+            padding: const EdgeInsets.fromLTRB(7, 4, 7, 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -392,6 +392,7 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                                       fit: BoxFit.cover,
                                       width: double.infinity,
                                       height: double.infinity,
+                                      gaplessPlayback: true,
                                     )
                                   : marcadoParaEliminar
                                   ? null
@@ -610,17 +611,22 @@ extension ComponenteUpdateExtension on ComponenteUpdate {
   Uint8List? imagenBytes(int index) {
     if (index < 0 || index >= imagenesBase64.length) return null;
 
-    final String? raw = imagenesBase64[index];
-    if (raw == null || raw.isEmpty) return null;
+    String? base64Str = imagenesBase64[index];
+    if (base64Str == null) return null;
+
+    base64Str = base64Str.trim();
+    if (base64Str.isEmpty) return null;
 
     try {
-      String normalized = raw.contains(",") ? raw.split(",").last : raw;
-      normalized = normalized.replaceAll('\n', '').trim();
-      final mod = normalized.length % 4;
-      if (mod > 0) {
-        normalized = normalized.padRight(normalized.length + (4 - mod), '=');
+      final regex = RegExp(r'data:image/[^;]+;base64,');
+      base64Str = base64Str.replaceAll(regex, '');
+
+      final mod = base64Str.length % 4;
+      if (mod != 0) {
+        base64Str = base64Str.padRight(base64Str.length + (4 - mod), '=');
       }
-      return base64Decode(normalized);
+
+      return base64Decode(base64Str);
     } catch (e) {
       return null;
     }

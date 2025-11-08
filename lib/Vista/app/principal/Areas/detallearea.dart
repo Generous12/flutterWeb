@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Areas/areasService.dart';
 import 'package:proyecto_web/Controlador/Asignacion/Carrito/CarritocaseService.dart';
 import 'package:proyecto_web/Vista/app/principal/Areas/casesAsignados/caseyaAsignado.dart';
+import 'package:proyecto_web/Widgets/boton.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
 import 'package:proyecto_web/Widgets/snackbar.dart';
@@ -32,6 +33,7 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
   List<dynamic> _detalleAreas = [];
   bool _cargando = true;
   List<dynamic> _areas = [];
+  final AreaService areaService = AreaService();
 
   late TextEditingController _jefeAreaController;
   late TextEditingController _correoContactoController;
@@ -90,7 +92,6 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
     final todas = await _areaService.listarAreasPadresGeneral(limit: 100);
     final detalle = await _areaService.detalleAreaPadre(widget.area["id_area"]);
 
-    // Inicializar los controladores con los datos del área padre
     if (detalle.isNotEmpty) {
       final areaPadre = detalle.first;
       _jefeAreaController.text = areaPadre["jefe_area"] ?? '';
@@ -139,34 +140,35 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                     return ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
-                        // === Campos generales del área (afuera de los cards) ===
-                        CustomTextField(
-                          controller: _jefeAreaController,
-                          label: "Jefe del Área",
-                          hintText: "Ejemplo: Carlos Pérez",
-                          prefixIcon: Iconsax.user,
-                        ),
-                        CustomTextField(
-                          controller: _correoContactoController,
-                          label: "Correo de Contacto (Opcional)",
-                          hintText: "ejemplo@empresa.com",
-                          prefixIcon: Iconsax.sms,
-                        ),
-                        CustomTextField(
-                          controller: _telefonoContactoController,
-                          label: "Teléfono de Contacto (Opcional)",
-                          hintText: "+51 900 123 456",
-                          prefixIcon: Iconsax.mobile,
-                          isNumeric: true,
-                        ),
-                        CustomTextField(
-                          controller: _descripcionController,
-                          label: "Descripción del Área (Opcional)",
-                          hintText: "Descripción general de esta área...",
-                          prefixIcon: Iconsax.note,
-                          maxLines: 3,
-                        ),
-
+                        if (!widget.modoCarrito) ...[
+                          CustomTextField(
+                            controller: _jefeAreaController,
+                            label: "Jefe del Área",
+                            hintText: "Ejemplo: Carlos Pérez",
+                            prefixIcon: Iconsax.user,
+                          ),
+                          CustomTextField(
+                            controller: _correoContactoController,
+                            label: "Correo de Contacto (Opcional)",
+                            hintText: "ejemplo@empresa.com",
+                            prefixIcon: Iconsax.sms,
+                          ),
+                          CustomTextField(
+                            controller: _telefonoContactoController,
+                            label: "Teléfono de Contacto (Opcional)",
+                            hintText: "900 123 456",
+                            prefixIcon: Iconsax.mobile,
+                            isNumeric: true,
+                            maxLength: 9,
+                          ),
+                          CustomTextField(
+                            controller: _descripcionController,
+                            label: "Descripción del Área (Opcional)",
+                            hintText: "Descripción general de esta área...",
+                            prefixIcon: Iconsax.note,
+                            maxLines: 3,
+                          ),
+                        ],
                         const SizedBox(height: 24),
                         const Text(
                           "Subáreas",
@@ -178,7 +180,6 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // === Lista de subáreas ===
                         if (subAreas.isEmpty)
                           const Center(
                             child: Text(
@@ -213,7 +214,6 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                               ),
                               child: Column(
                                 children: [
-                                  // === Card subárea ===
                                   InkWell(
                                     borderRadius: BorderRadius.circular(16),
                                     onTap: () async {
@@ -291,7 +291,6 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                       ),
                                     ),
                                   ),
-                                  // === Sub-subáreas ===
                                   if (tieneSubSub)
                                     Column(
                                       children: subSubDeEsta.map((subsub) {
@@ -388,6 +387,59 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                   },
                 ),
               ),
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 5, 16, 5),
+            child: LoadingOverlayButtonHabilitar(
+              text: "Actualizar Datos",
+              enabled: true,
+              onPressedLogic: () async {
+                final confirmado = await showCustomDialog(
+                  context: context,
+                  title: "Confirmar",
+                  message: "¿Deseas guardar los cambios?",
+                  confirmButtonText: "Sí",
+                  cancelButtonText: "No",
+                );
+
+                if (!confirmado) return;
+
+                try {
+                  final ok = await areaService.actualizarAreaPadre(
+                    idArea: widget.area["id_area"],
+                    jefeArea: _jefeAreaController.text,
+                    correoContacto: _correoContactoController.text,
+                    telefonoContacto: _telefonoContactoController.text,
+                    descripcion: _descripcionController.text,
+                  );
+
+                  if (ok) {
+                    showCustomDialog(
+                      context: context,
+                      title: "Éxito",
+                      message: "Datos actualizados correctamente",
+                      confirmButtonText: "Cerrar",
+                    );
+                  } else {
+                    showCustomDialog(
+                      context: context,
+                      title: "Error",
+                      message: "No se pudo actualizar, intenta nuevamente",
+                      confirmButtonText: "Cerrar",
+                    );
+                  }
+                } catch (e) {
+                  showCustomDialog(
+                    context: context,
+                    title: "Error",
+                    message: "Excepción: $e",
+                    confirmButtonText: "Cerrar",
+                  );
+                }
+              },
+            ),
+          ),
+        ),
       ),
     );
   }
