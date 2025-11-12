@@ -742,6 +742,7 @@ class _ComponenteDetailAsignacionState
             backgroundColor: Colors.black,
             title: const Text("Detalle del Componente"),
             foregroundColor: Colors.white,
+            toolbarHeight: 48,
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(18),
@@ -750,16 +751,13 @@ class _ComponenteDetailAsignacionState
               children: [
                 _buildSectionTitle("Información básica"),
                 const SizedBox(height: 10),
-
                 CustomTextField(
                   controller: nombreController,
                   label: "Nombre del componente",
                   hintText: "Ingresa el nombre del componente",
                   enabled: false,
-
                   prefixIcon: Iconsax.cpu,
                 ),
-
                 CustomTextField(
                   controller: codigoController,
                   label: "Código de inventario",

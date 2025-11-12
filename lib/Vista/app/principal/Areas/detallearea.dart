@@ -264,6 +264,23 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                       borderRadius: BorderRadius.circular(16),
                                       onTap: () async {
                                         if (widget.modoVercases) {
+                                          if (!tieneSubSub) {
+                                            // Solo navega si la subárea no tiene sub-subáreas
+                                            navegarConSlideDerecha(
+                                              context,
+                                              CasesDeAreaScreen(
+                                                idArea: sub["id_area"],
+                                                nombreArea: sub["nombre_area"],
+                                              ),
+                                            );
+                                          } else {
+                                            // Si tiene sub-subáreas, no navega (solo permiten las internas)
+                                            ToastUtil.showInfo(
+                                              "Selecciona una sub-subárea dentro de esta subárea.",
+                                            );
+                                          }
+                                        }
+                                        /* if (widget.modoVercases) {
                                           navegarConSlideDerecha(
                                             context,
                                             CasesDeAreaScreen(
@@ -271,7 +288,8 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                               nombreArea: sub["nombre_area"],
                                             ),
                                           );
-                                        } else if (widget.modoCarrito) {
+                                        } */
+                                        else if (widget.modoCarrito) {
                                           if (tieneSubSub) {
                                             ToastUtil.showWarning(
                                               "Selecciona una sub-subárea dentro de esta subárea.",
