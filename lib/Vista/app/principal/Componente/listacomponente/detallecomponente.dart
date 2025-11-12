@@ -751,20 +751,22 @@ class _ComponenteDetailAsignacionState
                 _buildSectionTitle("Información básica"),
                 const SizedBox(height: 10),
 
-                _buildTextField(
+                CustomTextField(
                   controller: nombreController,
                   label: "Nombre del componente",
-                  icon: Iconsax.cpu,
-                ),
-                const SizedBox(height: 16),
+                  hintText: "Ingresa el nombre del componente",
+                  enabled: false,
 
-                _buildTextField(
+                  prefixIcon: Iconsax.cpu,
+                ),
+
+                CustomTextField(
                   controller: codigoController,
                   label: "Código de inventario",
-                  icon: Iconsax.code,
+                  hintText: "Código generado automáticamente",
+                  prefixIcon: Iconsax.code,
                   enabled: false,
                 ),
-                const SizedBox(height: 20),
 
                 _buildSectionTitle("Tipo y estado"),
                 const SizedBox(height: 10),
@@ -804,27 +806,23 @@ class _ComponenteDetailAsignacionState
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: DropdownButtonFormField<String>(
-                        decoration: InputDecoration(
-                          labelText: "Tipo",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
+                      child: CustomDropdownSelector(
+                        labelText: "Tipo",
+                        hintText: "Selecciona un tipo",
                         value: _tipoSeleccionado,
-                        items: _tipos
-                            .map(
-                              (t) => DropdownMenuItem(value: t, child: Text(t)),
-                            )
-                            .toList(),
-                        onChanged: (val) =>
-                            setState(() => _tipoSeleccionado = val),
+                        items: _tipos,
+                        enabled: false,
+                        onChanged: (val) {
+                          setState(() => _tipoSeleccionado = val);
+                        },
+                        onClear: () {
+                          setState(() => _tipoSeleccionado = null);
+                        },
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 40),
-
                 Center(
                   child: LoadingOverlayButtonHabilitar(
                     text: "Guardar cambios",
@@ -838,25 +836,6 @@ class _ComponenteDetailAsignacionState
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    bool enabled = true,
-  }) {
-    return TextField(
-      controller: controller,
-      enabled: enabled,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: Colors.black),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-        filled: true,
-        fillColor: enabled ? Colors.white : Colors.grey.shade100,
       ),
     );
   }
