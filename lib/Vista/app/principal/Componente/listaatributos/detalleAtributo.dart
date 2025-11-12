@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Clases/plantillasComponente.dart';
@@ -292,7 +293,7 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
           appBar: AppBar(
             toolbarHeight: 48,
             backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-            elevation: 2,
+            elevation: 0,
             leading: IconButton(
               onPressed: () async {
                 final salir = await _onWillPop();
@@ -312,7 +313,7 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
             actions: [
               IconButton(
                 onPressed: _addAtributo,
-                icon: const Icon(Icons.add, color: Colors.blueAccent),
+                icon: const Icon(Iconsax.add, color: Colors.blueAccent),
               ),
               IconButton(
                 onPressed: () async {
@@ -334,7 +335,7 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                     });
                   }
                 },
-                icon: const Icon(Icons.grid_view, color: Colors.blueAccent),
+                icon: const Icon(Iconsax.grid_1, color: Colors.blueAccent),
                 tooltip: "Seleccionar plantilla",
               ),
             ],
@@ -443,7 +444,7 @@ class _DetalleAtributoPageState extends State<DetalleAtributoPage> {
                               ? const Color.fromARGB(255, 241, 249, 255)
                               : Colors.white,
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(8, 5, 8, 5),
+                            padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [

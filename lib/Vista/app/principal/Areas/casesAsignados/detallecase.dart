@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:proyecto_web/Controlador/Asignacion/registroasignacion.dart';
+import 'package:proyecto_web/Controlador/Componentes/list_Update_Component.dart';
+import 'package:proyecto_web/Vista/app/principal/Componente/listacomponente/detallecomponente.dart';
+import 'package:proyecto_web/Widgets/navegator.dart';
 
 class DetalleCaseScreen extends StatefulWidget {
   final int idCaseAsignado;
@@ -109,44 +112,61 @@ class _DetalleCaseScreenState extends State<DetalleCaseScreen> {
   }
 
   Widget _buildComponenteCard(dynamic comp) {
-    return Card(
-      elevation: 3,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    comp["nombre_componente"] ?? "Sin nombre",
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () {
+        final componente = ComponenteUpdate.fromJson({
+          'id_componente': comp['id_componente'],
+          'id_tipo': comp['id_tipo'] ?? 0,
+          'codigo_inventario': comp['codigo_inventario'] ?? '',
+          'nombre_tipo': comp['nombre_tipo'] ?? '',
+          'tipo_nombre': comp['nombre_componente'] ?? '',
+          'estado': comp['estado'] ?? 'Desconocido',
+          'estado_asignacion': comp['estado_asignacion'] ?? '',
+        });
+
+        navegarConSlideDerecha(
+          context,
+          ComponenteDetailAsignacion(componente: componente),
+        );
+      },
+      child: Card(
+        elevation: 3,
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      comp["nombre_tipo"] ?? "Sin nombre",
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                Text(
-                  comp["codigo_inventario"] ?? "-",
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.blueGrey,
+                  Text(
+                    comp["codigo_inventario"] ?? "-",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.blueGrey,
+                    ),
                   ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 8),
-
-            _infoSub("Estado Asignación", comp["estado_asignacion"]),
-            _infoSub("Fecha Instalación", comp["fecha_instalacion"]),
-            _infoSub("Fecha Retiro", comp["fecha_retiro"]),
-          ],
+                ],
+              ),
+              const SizedBox(height: 8),
+              _infoSub("Estado Asignación", comp["estado_asignacion"]),
+              _infoSub("Fecha Instalación", comp["fecha_instalacion"]),
+              _infoSub("Fecha Retiro", comp["fecha_retiro"]),
+            ],
+          ),
         ),
       ),
     );

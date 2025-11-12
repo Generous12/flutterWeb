@@ -336,7 +336,6 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: 4,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    //ESTILO Y FORMA DE LOS CARD QUE CONTIENEN LOS DATOS
                     crossAxisCount: 2,
                     mainAxisSpacing: 8,
                     crossAxisSpacing: 8,
@@ -587,6 +586,285 @@ class _ComponenteDetailState extends State<ComponenteDetail> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class ComponenteDetailAsignacion extends StatefulWidget {
+  final ComponenteUpdate componente;
+
+  const ComponenteDetailAsignacion({Key? key, required this.componente})
+    : super(key: key);
+
+  @override
+  State<ComponenteDetailAsignacion> createState() =>
+      _ComponenteDetailAsignacionState();
+}
+
+class _ComponenteDetailAsignacionState
+    extends State<ComponenteDetailAsignacion> {
+  late TextEditingController nombreController;
+  late TextEditingController codigoController;
+  final List<String> _estados = [
+    "Disponible",
+    "En uso",
+    "Mantenimiento",
+    "Dañado",
+    "Arreglado",
+  ];
+  final List<String> _tipos = ["Componentes", "Periféricos"];
+
+  bool isLoading = false;
+  String? _tipoSeleccionado;
+  String? _estadoSeleccionado;
+
+  @override
+  void initState() {
+    super.initState();
+    nombreController = TextEditingController(
+      text: widget.componente.nombreTipo,
+    );
+    codigoController = TextEditingController(
+      text: widget.componente.codigoInventario,
+    );
+    _tipoSeleccionado = widget.componente.tipoNombre.isNotEmpty
+        ? widget.componente.tipoNombre
+        : null;
+    _estadoSeleccionado = widget.componente.estado.isNotEmpty
+        ? widget.componente.estado
+        : null;
+  }
+
+  @override
+  void dispose() {
+    nombreController.dispose();
+    codigoController.dispose();
+    super.dispose();
+  }
+
+  bool get huboCambio {
+    return nombreController.text != widget.componente.nombreTipo ||
+        codigoController.text != widget.componente.codigoInventario ||
+        _estadoSeleccionado != widget.componente.estado ||
+        _tipoSeleccionado != widget.componente.tipoNombre;
+  }
+
+  Future<bool> _onWillPop() async {
+    if (huboCambio) {
+      final salir = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Cambios sin guardar"),
+          content: const Text(
+            "Tienes cambios sin guardar. ¿Deseas salir de todas formas?",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Cancelar"),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Salir"),
+            ),
+          ],
+        ),
+      );
+      return salir ?? false;
+    }
+    return true;
+  }
+
+  Future<void> _guardarCambios() async {
+    if (!huboCambio) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No hubo cambios para guardar.")),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() => isLoading = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Cambios guardados correctamente ✅")),
+    );
+
+    Navigator.pop(context, true);
+  }
+
+  void _mostrarSelectorEstado() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Seleccionar estado",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const Divider(),
+                ..._estados.map(
+                  (estado) => ListTile(
+                    title: Text(estado),
+                    trailing: _estadoSeleccionado == estado
+                        ? const Icon(Icons.check, color: Colors.green)
+                        : null,
+                    onTap: () {
+                      setState(() => _estadoSeleccionado = estado);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: WillPopScope(
+        onWillPop: _onWillPop,
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            title: const Text("Detalle del Componente"),
+            foregroundColor: Colors.white,
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionTitle("Información básica"),
+                const SizedBox(height: 10),
+
+                _buildTextField(
+                  controller: nombreController,
+                  label: "Nombre del componente",
+                  icon: Iconsax.cpu,
+                ),
+                const SizedBox(height: 16),
+
+                _buildTextField(
+                  controller: codigoController,
+                  label: "Código de inventario",
+                  icon: Iconsax.code,
+                  enabled: false,
+                ),
+                const SizedBox(height: 20),
+
+                _buildSectionTitle("Tipo y estado"),
+                const SizedBox(height: 10),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: _mostrarSelectorEstado,
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade400),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _estadoSeleccionado ?? "Seleccionar estado",
+                                style: TextStyle(
+                                  color: _estadoSeleccionado == null
+                                      ? Colors.grey
+                                      : Colors.black,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const Icon(Icons.arrow_drop_down),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: "Tipo",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        value: _tipoSeleccionado,
+                        items: _tipos
+                            .map(
+                              (t) => DropdownMenuItem(value: t, child: Text(t)),
+                            )
+                            .toList(),
+                        onChanged: (val) =>
+                            setState(() => _tipoSeleccionado = val),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 40),
+
+                Center(
+                  child: LoadingOverlayButtonHabilitar(
+                    text: "Guardar cambios",
+                    enabled: !isLoading,
+                    onPressedLogic: () async {
+                      await _guardarCambios();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool enabled = true,
+  }) {
+    return TextField(
+      controller: controller,
+      enabled: enabled,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.black),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+        filled: true,
+        fillColor: enabled ? Colors.white : Colors.grey.shade100,
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String text) {
+    return Text(
+      text,
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
     );
   }
 }
