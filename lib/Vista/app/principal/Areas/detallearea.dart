@@ -265,7 +265,6 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                       onTap: () async {
                                         if (widget.modoVercases) {
                                           if (!tieneSubSub) {
-                                            // Solo navega si la subárea no tiene sub-subáreas
                                             navegarConSlideDerecha(
                                               context,
                                               CasesDeAreaScreen(
@@ -274,7 +273,6 @@ class _DetalleAreaScreenState extends State<DetalleAreaScreen> {
                                               ),
                                             );
                                           } else {
-                                            // Si tiene sub-subáreas, no navega (solo permiten las internas)
                                             ToastUtil.showInfo(
                                               "Selecciona una sub-subárea dentro de esta subárea.",
                                             );
