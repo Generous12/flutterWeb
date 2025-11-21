@@ -20,23 +20,29 @@ class CustomDrawer extends StatelessWidget {
       context,
       listen: false,
     );
-
     final rolUsuario = usuarioProvider.rol ?? "Sin rol";
-    return Drawer(
-      child: SafeArea(
-        child: Container(
-          color: Colors.white,
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              DrawerHeader(
-                decoration: const BoxDecoration(color: Colors.black),
-                child: Align(
-                  alignment: Alignment.bottomLeft,
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth > 800;
+
+        // ============================
+        //     MODO ESCRITORIO (WEB)
+        // ============================
+        if (isWeb) {
+          return Container(
+            width: 260,
+            color: Colors.white,
+            child: Column(
+              children: [
+                Container(
+                  color: Colors.black,
+                  height: 130,
+                  padding: const EdgeInsets.all(16),
                   child: Row(
                     children: [
                       Consumer<UsuarioProvider>(
-                        builder: (context, usuarioProvider, child) {
+                        builder: (context, usuarioProvider, _) {
                           final id = usuarioProvider.idUsuario ?? "U";
                           final rol = usuarioProvider.rol ?? "Sin rol";
 
@@ -46,7 +52,7 @@ class CustomDrawer extends StatelessWidget {
                                 text: id,
                                 backgroundColor: Colors.white,
                                 style: const TextStyle(color: Colors.black),
-                                size: 40,
+                                size: 45,
                               ),
                               const SizedBox(width: 12),
                               Column(
@@ -57,7 +63,7 @@ class CustomDrawer extends StatelessWidget {
                                     "Menú",
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 24,
+                                      fontSize: 22,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -77,105 +83,238 @@ class CustomDrawer extends StatelessWidget {
                     ],
                   ),
                 ),
-              ),
-              ListTile(
-                leading: const Icon(Iconsax.home, color: Colors.black),
-                title: const Text(
-                  "Inicio",
-                  style: TextStyle(color: Colors.black),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: Icon(
-                  Iconsax.user,
-                  color: rolUsuario == "Practicante"
-                      ? Colors.grey
-                      : Colors.black,
-                ),
-                title: Text(
-                  "Usuarios",
-                  style: TextStyle(
-                    color: rolUsuario == "Practicante"
-                        ? Colors.grey
-                        : Colors.black,
+
+                Expanded(
+                  child: ListView(
+                    children: [
+                      _item(Iconsax.home, "Inicio", () {
+                        Navigator.pop(context);
+                      }),
+
+                      _itemUsuario(
+                        icon: Iconsax.user,
+                        text: "Usuarios",
+                        enabled: rolUsuario != "Practicante",
+                        onTap: () {
+                          navegarConSlideDerecha(context, UsuariosScreen());
+                        },
+                      ),
+
+                      _item(
+                        Iconsax.cpu,
+                        "Componentes",
+                        () => navegarConSlideDerecha(
+                          context,
+                          MenuComponentesScreen(),
+                        ),
+                      ),
+
+                      _item(
+                        Iconsax.setting_2,
+                        "Areas",
+                        () =>
+                            navegarConSlideDerecha(context, ListaAreasScreen()),
+                      ),
+
+                      _item(
+                        Iconsax.archive,
+                        "Historial de acciones",
+                        () =>
+                            navegarConSlideDerecha(context, HistorialScreen()),
+                      ),
+
+                      _item(
+                        Iconsax.archive_1,
+                        "Asignaciones",
+                        () =>
+                            navegarConSlideDerecha(context, AsignacionScreen()),
+                      ),
+
+                      const Divider(),
+
+                      Consumer<UsuarioProvider>(
+                        builder: (context, usuarioProvider, child) {
+                          return ListTile(
+                            leading: const Icon(
+                              Iconsax.logout,
+                              color: Colors.red,
+                            ),
+                            title: const Text(
+                              "Cerrar sesión",
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            onTap: () async {
+                              await usuarioProvider.logout();
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => LoginScreen(),
+                                ),
+                                (route) => false,
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
-                onTap: rolUsuario == "Practicante"
-                    ? null
-                    : () {
-                        navegarConSlideDerecha(context, UsuariosScreen());
+              ],
+            ),
+          );
+        }
+
+        return Drawer(
+          child: SafeArea(
+            child: Container(
+              color: Colors.white,
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  DrawerHeader(
+                    decoration: const BoxDecoration(color: Colors.black),
+                    child: Consumer<UsuarioProvider>(
+                      builder: (context, usuarioProvider, child) {
+                        final id = usuarioProvider.idUsuario ?? "U";
+                        final rol = usuarioProvider.rol ?? "Sin rol";
+
+                        return Row(
+                          children: [
+                            Initicon(
+                              text: id,
+                              backgroundColor: Colors.white,
+                              style: const TextStyle(color: Colors.black),
+                              size: 40,
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  "Menú",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  rol,
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        );
                       },
-              ),
-              ListTile(
-                leading: const Icon(Iconsax.cpu, color: Colors.black),
-                title: const Text(
-                  "Componentes",
-                  style: TextStyle(color: Colors.black),
-                ),
-                onTap: () {
-                  navegarConSlideDerecha(context, MenuComponentesScreen());
-                },
-              ),
-              ListTile(
-                leading: const Icon(Iconsax.setting_2, color: Colors.black),
-                title: const Text(
-                  "Areas",
-                  style: TextStyle(color: Colors.black),
-                ),
-                onTap: () {
-                  navegarConSlideDerecha(context, ListaAreasScreen());
-                },
-              ),
-              ListTile(
-                leading: const Icon(Iconsax.archive, color: Colors.black),
-                title: const Text(
-                  "Historial de acciones",
-                  style: TextStyle(color: Colors.black),
-                ),
-                onTap: () {
-                  navegarConSlideDerecha(context, HistorialScreen());
-                },
-              ),
-              ListTile(
-                leading: const Icon(Iconsax.archive, color: Colors.black),
-                title: const Text(
-                  "Asignaciones",
-                  style: TextStyle(color: Colors.black),
-                ),
-                onTap: () {
-                  navegarConSlideDerecha(context, AsignacionScreen());
-                },
-              ),
-              const Divider(),
-              Consumer<UsuarioProvider>(
-                builder: (context, usuarioProvider, child) {
-                  return ListTile(
-                    leading: const Icon(Iconsax.logout, color: Colors.red),
-                    title: const Text(
-                      "Cerrar sesión",
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
                     ),
-                    onTap: () async {
-                      await usuarioProvider.logout();
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (_) => LoginScreen()),
-                        (route) => false,
+                  ),
+
+                  _item(Iconsax.home, "Inicio", () {
+                    Navigator.pop(context);
+                  }),
+
+                  _itemUsuario(
+                    icon: Iconsax.user,
+                    text: "Usuarios",
+                    enabled: rolUsuario != "Practicante",
+                    onTap: () {
+                      navegarConSlideDerecha(context, UsuariosScreen());
+                    },
+                  ),
+
+                  _item(
+                    Iconsax.cpu,
+                    "Componentes",
+                    () => navegarConSlideDerecha(
+                      context,
+                      MenuComponentesScreen(),
+                    ),
+                  ),
+
+                  _item(
+                    Iconsax.setting_2,
+                    "Areas",
+                    () => navegarConSlideDerecha(context, ListaAreasScreen()),
+                  ),
+
+                  _item(
+                    Iconsax.archive,
+                    "Historial de acciones",
+                    () => navegarConSlideDerecha(context, HistorialScreen()),
+                  ),
+
+                  _item(
+                    Iconsax.archive_1,
+                    "Asignaciones",
+                    () => navegarConSlideDerecha(context, AsignacionScreen()),
+                  ),
+
+                  const Divider(),
+
+                  Consumer<UsuarioProvider>(
+                    builder: (context, usuarioProvider, child) {
+                      return ListTile(
+                        leading: const Icon(Iconsax.logout, color: Colors.red),
+                        title: const Text(
+                          "Cerrar sesión",
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        onTap: () async {
+                          await usuarioProvider.logout();
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (_) => LoginScreen()),
+                            (route) => false,
+                          );
+                        },
                       );
                     },
-                  );
-                },
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        );
+      },
+    );
+  }
+
+  // -------------------------
+  //     Helpers
+  // -------------------------
+
+  Widget _item(IconData icon, String text, Function() onTap) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.black),
+      title: Text(text, style: const TextStyle(color: Colors.black)),
+      onTap: onTap,
+    );
+  }
+
+  Widget _itemUsuario({
+    required IconData icon,
+    required String text,
+    required bool enabled,
+    required Function() onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: enabled ? Colors.black : Colors.grey),
+      title: Text(
+        text,
+        style: TextStyle(color: enabled ? Colors.black : Colors.grey),
       ),
+      onTap: enabled ? onTap : null,
     );
   }
 }

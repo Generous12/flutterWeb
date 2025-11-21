@@ -34,7 +34,6 @@ class ToastUtil {
     _showToast(message, Colors.blueAccent.shade700, Icons.info_outline);
   }
 
-  /// ⚙️ Método privado reutilizable
   static void _showToast(String message, Color bgColor, IconData icon) {
     Fluttertoast.showToast(
       msg: "  ${String.fromCharCode(0x2022)}  $message",

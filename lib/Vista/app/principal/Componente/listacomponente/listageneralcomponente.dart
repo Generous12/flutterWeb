@@ -8,6 +8,7 @@ import 'package:proyecto_web/Controlador/Componentes/eliminar_componente.dart';
 import 'package:proyecto_web/Controlador/Componentes/list_Update_Component.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/listacomponente/detallecomponente.dart';
 import 'package:proyecto_web/Widgets/dialogalert.dart';
+import 'package:proyecto_web/Widgets/estadoscard.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
 
 class ComponentesList extends StatefulWidget {
@@ -317,7 +318,6 @@ class _ComponentesListState extends State<ComponentesList> {
                                                   filtroTipo = "Componentes";
                                                   offset = 0;
                                                   allLoaded = false;
-
                                                   fetchComponentes(reset: true);
                                                 }
                                               },
@@ -350,40 +350,6 @@ class _ComponentesListState extends State<ComponentesList> {
                       itemBuilder: (context, index) {
                         if (index < componentes.length) {
                           final c = componentes[index];
-                          Color stockColor;
-                          String stockTexto;
-
-                          switch (c.estado) {
-                            case "Mantenimiento":
-                              stockColor = const Color(0xFFFF6B6B);
-                              stockTexto = 'En Mantenimiento';
-                              break;
-
-                            case "En uso":
-                              stockColor = const Color(0xFFFFC107);
-                              stockTexto = 'En Uso';
-                              break;
-
-                            case "Dañado":
-                              stockColor = const Color(0xFFB71C1C);
-                              stockTexto = 'Dañado';
-                              break;
-
-                            case "Arreglado":
-                              stockColor = const Color(0xFF42A5F5);
-                              stockTexto = 'Arreglado';
-                              break;
-
-                            case "Pendiente":
-                              stockColor = const Color(0xFF9C27B0);
-                              stockTexto = 'Pendiente de revisión';
-                              break;
-
-                            default:
-                              stockColor = const Color(0xFF2ECC71);
-                              stockTexto = 'Disponible';
-                          }
-
                           return Card(
                             key: ValueKey(c.id),
                             shape: RoundedRectangleBorder(
@@ -439,7 +405,6 @@ class _ComponentesListState extends State<ComponentesList> {
                                             key: ValueKey("img-${c.id}"),
                                             c: c,
                                           ),
-
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Column(
@@ -462,28 +427,7 @@ class _ComponentesListState extends State<ComponentesList> {
                                             ),
                                           ),
                                           const SizedBox(height: 6),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 4,
-                                              horizontal: 8,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: stockColor,
-                                              borderRadius:
-                                                  BorderRadius.circular(90),
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                stockTexto,
-                                                textAlign: TextAlign.center,
-                                                style: const TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
+                                          estadoChip(c.estado),
                                         ],
                                       ),
                                     ),

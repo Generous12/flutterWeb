@@ -8,6 +8,7 @@ class RegistrarAsignacionService {
   final String baseUrlA =
       "http://192.168.8.25/proyecto_web/backend/asignacionesproAlm/listarcases.php";
   Future<Map<String, dynamic>> registrarAsignacion({
+    required int idCaseAsignado, // 🔥 AÑADIDO
     required int idCase,
     required int idArea,
     required List<Map<String, dynamic>> componentes,
@@ -17,6 +18,7 @@ class RegistrarAsignacionService {
         Uri.parse(baseUrl),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
+          "id_case_asignado": idCaseAsignado, // 🔥 AÑADIDO
           "id_case": idCase,
           "id_area": idArea,
           "componentes": componentes,

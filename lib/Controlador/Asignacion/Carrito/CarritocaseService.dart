@@ -9,11 +9,26 @@ import 'package:shared_preferences/shared_preferences.dart';
 class CaseProvider extends ChangeNotifier {
   List<ComponenteUpdate> _componentesSeleccionados = [];
   Map<String, dynamic>? _areaSeleccionada;
+  int? _numeroSerie;
+  int? get numeroSerie => _numeroSerie;
 
   List<ComponenteUpdate> get componentesSeleccionados =>
       _componentesSeleccionados;
   Map<String, dynamic>? get areaSeleccionada => _areaSeleccionada;
+  //GENERADOR DE NUMERO DE SERIE UNICO PARA CADA CASE
+  Future<void> generarYGuardarNumeroSerie() async {
+    final prefs = await SharedPreferences.getInstance();
 
+    if (_numeroSerie != null) return;
+
+    _numeroSerie = DateTime.now().microsecondsSinceEpoch % 2147483647;
+
+    await prefs.setInt('numeroSerie', _numeroSerie!);
+
+    notifyListeners();
+  }
+
+  //INICIALIZAR LOS DATOS  PERSISTENTES EN LA APP
   Future<void> cargarEstado() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -28,6 +43,7 @@ class CaseProvider extends ChangeNotifier {
     if (areaStr != null) {
       _areaSeleccionada = json.decode(areaStr);
     }
+    _numeroSerie = prefs.getInt('numeroSerie');
 
     notifyListeners();
   }
@@ -129,6 +145,8 @@ class CaseProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('componentesSeleccionados');
     await prefs.remove('areaSeleccionada');
+    await prefs.remove('numeroSerie');
+    _numeroSerie = null;
     notifyListeners();
 
     ToastUtil.showSuccess("Carrito y área limpiados con éxito");

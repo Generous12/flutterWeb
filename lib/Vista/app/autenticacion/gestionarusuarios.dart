@@ -32,7 +32,6 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
   String busqueda = '';
   String estadoFiltro = '';
   final ScrollController _scrollController = ScrollController();
-
   final List<String> roles = ['Admin', 'Practicante'];
   final List<String> estados = ['Activo', 'Inactivo'];
 
@@ -360,6 +359,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                             usuario['id_usuario']?.toString() ?? '';
 
                         return Card(
+                          color: Color(0xFFFFFFFF),
                           margin: const EdgeInsets.symmetric(vertical: 2),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -382,7 +382,9 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                                     } else {
                                       showBarModalBottomSheet(
                                         context: context,
-                                        backgroundColor: Colors.white,
+                                        backgroundColor: const Color(
+                                          0xFFFFFFFF,
+                                        ),
                                         shape: const RoundedRectangleBorder(
                                           borderRadius: BorderRadius.vertical(
                                             top: Radius.circular(20),
@@ -584,7 +586,11 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
           onPressed: () {
             navegarConSlideDerecha(context, RegistroUsuarioScreen());
           },
-          child: const Icon(Iconsax.add, color: Colors.white, size: 28),
+          child: const Icon(
+            Iconsax.add,
+            color: Color.fromARGB(255, 255, 255, 255),
+            size: 28,
+          ),
         ),
       ),
     );

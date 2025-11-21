@@ -21,6 +21,14 @@ class AsignacionScreen extends StatefulWidget {
 }
 
 class _AsignacionScreenState extends State<AsignacionScreen> {
+  int numeroSerie = 0;
+  @override
+  void initState() {
+    super.initState();
+    final caseProv = Provider.of<CaseProvider>(context, listen: false);
+    caseProv.generarYGuardarNumeroSerie();
+  }
+
   Future<void> _confirmarAsignacion(
     BuildContext context,
     CaseProvider caseProv,
@@ -50,11 +58,12 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
     try {
       final casePrincipal = caseProv.componentesSeleccionados.first;
 
-      // ✅ Construir el JSON correcto según tu nueva estructura
+      //  Construir el JSON correcto según tu nueva estructura
       final jsonAsignacion = caseProv.construirJsonAsignacion(casePrincipal.id);
 
       final service = RegistrarAsignacionService();
       final result = await service.registrarAsignacion(
+        idCaseAsignado: numeroSerie,
         idCase: jsonAsignacion["id_componente_case"],
         idArea: jsonAsignacion["id_area"],
         componentes: jsonAsignacion["componentes"],
@@ -92,25 +101,43 @@ class _AsignacionScreenState extends State<AsignacionScreen> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Asignación de Case'),
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,
+          toolbarHeight: 60,
+          titleSpacing: 0,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Case',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                caseProv.numeroSerie?.toString() ?? '---',
+                style: const TextStyle(fontSize: 13, color: Colors.white70),
+              ),
+            ],
+          ),
           actions: [
-            IconButton(
-              icon: const Icon(Iconsax.buildings),
-              tooltip: 'Ir a Áreas',
-              onPressed: () {
-                navegarConSlideDerecha(
-                  context,
-                  const AreasCarrito(),
-                  onVolver: () {
-                    setState(() {});
-                  },
-                );
-              },
+            Center(
+              child: IconButton(
+                icon: const Icon(Iconsax.buildings),
+                tooltip: 'Ir a Áreas',
+                onPressed: () {
+                  navegarConSlideDerecha(
+                    context,
+                    const AreasCarrito(),
+                    onVolver: () {
+                      setState(() {});
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),
+
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.black,
           shape: const CircleBorder(),

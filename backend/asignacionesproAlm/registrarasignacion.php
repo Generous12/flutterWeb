@@ -16,17 +16,20 @@ $response = ["success" => false];
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
+        $id_case_asignado = $data["id_case_asignado"] ?? null;  
         $id_case = $data["id_case"] ?? null;
         $id_area = $data["id_area"] ?? null;
         $componentes = $data["componentes"] ?? [];
 
-        if (!$id_case || !$id_area) {
-            throw new Exception("Faltan parámetros obligatorios (id_case, id_area).");
+        if (!$id_case_asignado || !$id_case || !$id_area) {
+            throw new Exception("Faltan parámetros obligatorios (id_case_asignado, id_case, id_area).");
         }
+
         $componentes_json = json_encode($componentes, JSON_UNESCAPED_UNICODE);
 
-        $stmt = $conn->prepare("CALL RegistrarAsignacion(?, ?, ?)");
-        $stmt->bind_param("iis", $id_case, $id_area, $componentes_json);
+        // 🔥 AÑADIDO: el SP ahora tiene 4 parámetros
+        $stmt = $conn->prepare("CALL RegistrarAsignacion(?, ?, ?, ?)");
+        $stmt->bind_param("iiis", $id_case_asignado, $id_case, $id_area, $componentes_json);
         $stmt->execute();
 
         $result = $stmt->get_result();

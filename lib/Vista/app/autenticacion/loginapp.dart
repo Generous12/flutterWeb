@@ -19,16 +19,11 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
   bool isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
   Future<void> _login() async {
-    final nombre = emailController.text.trim();
+    final correo = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    if (nombre.isEmpty || password.isEmpty) {
+    if (correo.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Por favor ingresa correo y contraseña")),
       );
@@ -40,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final apiService = ApiService();
       final respuesta = await apiService.loginUsuario(
-        nombre: nombre,
+        nombre: correo,
         password: password,
       );
 
@@ -49,18 +44,18 @@ class _LoginScreenState extends State<LoginScreen> {
           context,
           listen: false,
         );
+
         await usuarioProvider.setUsuario(
           respuesta["id_usuario"],
           respuesta["rol"],
         );
 
-        navegarYRemoverConSlideDerecha(context, InicioScreen());
+        navegarYRemoverConSlideDerecha(context, const InicioScreen());
       } else {
         SnackBarUtil.mostrarSnackBarPersonalizado(
           context: context,
           mensaje: respuesta["message"] ?? "Error en login",
           icono: Iconsax.alarm,
-          duracion: const Duration(seconds: 2),
         );
       }
     } catch (e) {
@@ -75,83 +70,95 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-      },
-      behavior: HitTestBehavior.translucent,
-      child: SafeArea(
-        child: Scaffold(
-          backgroundColor: theme.scaffoldBackgroundColor,
-          body: Stack(
-            children: [
-              SafeArea(
-                child: SingleChildScrollView(
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth > 800;
+
+        double cardWidth = isWeb ? 450 : constraints.maxWidth;
+        double horizontalPadding = isWeb ? 40 : 20;
+
+        return Stack(
+          children: [
+            Scaffold(
+              backgroundColor: theme.scaffoldBackgroundColor,
+              body: Center(
+                child: Container(
+                  width: cardWidth,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
+                    vertical: isWeb ? 40 : 20,
+                  ),
+                  decoration: isWeb
+                      ? BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 15,
+                              color: Colors.black12,
+                              offset: Offset(0, 8),
+                            ),
+                          ],
+                        )
+                      : null,
                   child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(30.0),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 20.0),
-                          Image.asset(
-                            'assets/images/logo.png',
-                            height: 230.0,
-                            fit: BoxFit.fitWidth,
-                          ),
-                          CustomTextField(
-                            controller: emailController,
-                            hintText: "Ingresar correo electrónico",
-                            prefixIcon: Iconsax.sms,
-                            label: "Correo electronico",
-                          ),
-                          const SizedBox(height: 20.0),
-                          CustomTextField(
-                            controller: passwordController,
-                            label: "Contraseña",
-                            prefixIcon: Iconsax.lock,
-                            obscureText: true,
-                          ),
-                          const SizedBox(height: 20.0),
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              LoadingOverlayButton(
-                                text: 'Iniciar Sesión',
-                                onPressedLogic: () async {
-                                  _login();
-                                },
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20.0),
-                          InkWell(
-                            onTap: () {},
-                            child: Text(
-                              '¿Deseas pedir ayuda? Contactanos',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontSize: 14,
-                                color: theme.textTheme.bodyLarge?.color,
-                              ),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        Image.asset(
+                          'assets/images/logo.png',
+                          height: isWeb ? 180 : 220,
+                          fit: BoxFit.contain,
+                        ),
+                        const SizedBox(height: 30),
+                        CustomTextField(
+                          controller: emailController,
+                          hintText: "Ingresar correo electrónico",
+                          prefixIcon: Iconsax.sms,
+                          label: "Correo electrónico",
+                        ),
+                        const SizedBox(height: 20),
+                        CustomTextField(
+                          controller: passwordController,
+                          label: "Contraseña",
+                          prefixIcon: Iconsax.lock,
+                          obscureText: true,
+                        ),
+                        const SizedBox(height: 25),
+                        LoadingOverlayButton(
+                          text: 'Iniciar Sesión',
+                          onPressedLogic: _login,
+                        ),
+                        const SizedBox(height: 20),
+                        InkWell(
+                          onTap: () {},
+                          child: Text(
+                            '¿Deseas pedir ayuda? Contáctanos',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontSize: 14,
+                              color: theme.textTheme.bodyLarge?.color,
                             ),
                           ),
-                          const SizedBox(height: 20.0),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
                     ),
                   ),
                 ),
               ),
-              if (isLoading)
-                Container(
-                  color: Colors.black54,
-                  child: Center(
-                    child: CircularProgressIndicator(color: Colors.white),
-                  ),
+            ),
+
+            if (isLoading)
+              Positioned.fill(
+                child: Container(
+                  color: Colors.black38,
+                  child: const Center(child: CircularProgressIndicator()),
                 ),
-            ],
-          ),
-        ),
-      ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

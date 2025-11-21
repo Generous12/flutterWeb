@@ -5,6 +5,13 @@ class PasswordValidator {
   bool hasLowercase = false;
   bool hasUppercase = false;
   bool hasNumber = false;
+  String generarCodigo(String nombre) {
+    final iniciales = nombre.isNotEmpty
+        ? nombre.trim().split(" ").map((e) => e[0].toUpperCase()).join()
+        : "USR";
+    final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+    return "$iniciales-$timestamp";
+  }
 
   bool arePasswordsEqual(String password, String repeatPassword) {
     return password == repeatPassword;

@@ -63,16 +63,13 @@ class _CustomTextFieldState extends State<CustomTextField> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     final bool isMultiline = widget.maxLines! > 1;
-
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       margin: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        color: isDark ? const Color.fromARGB(255, 20, 20, 20) : Colors.white,
+        color: const Color.fromARGB(255, 255, 255, 255),
       ),
       child: TextField(
         controller: widget.controller,
@@ -94,49 +91,42 @@ class _CustomTextFieldState extends State<CustomTextField> {
           fontWeight: FontWeight.w400,
           color: Colors.black,
         ),
-
         decoration: InputDecoration(
           labelText: widget.label,
-
           labelStyle: TextStyle(
             fontSize: 14,
             color: Colors.black.withOpacity(0.8),
           ),
           floatingLabelStyle: TextStyle(
-            color: Colors.black,
+            color: const Color(0xFF000000),
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
-
           alignLabelWithHint: isMultiline,
           hintText: widget.hintText,
           hintStyle: TextStyle(
             fontSize: 14,
             color: theme.textTheme.bodyMedium?.color?.withOpacity(0.4),
           ),
-
           filled: false,
           contentPadding: const EdgeInsets.symmetric(
             vertical: 18,
             horizontal: 16,
           ),
-
           prefixIcon: widget.prefixIcon != null
               ? Padding(
                   padding: const EdgeInsets.only(left: 12, right: 6),
                   child: Icon(
                     widget.prefixIcon,
                     size: 22,
-                    color: colorScheme.primary,
+                    color: Color(0xFF000000),
                   ),
                 )
               : null,
-
           prefixIconConstraints: const BoxConstraints(
             minWidth: 38,
             minHeight: 38,
           ),
-
           suffixIcon:
               widget.suffixIcon ??
               (widget.obscureText
@@ -152,7 +142,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
                       },
                     )
                   : null),
-
           counterText: widget.showCounter ? null : "",
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
@@ -161,12 +150,10 @@ class _CustomTextFieldState extends State<CustomTextField> {
               width: 1,
             ),
           ),
-
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
             borderSide: BorderSide(color: Colors.black, width: 1.6),
           ),
-
           disabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
             borderSide: BorderSide(

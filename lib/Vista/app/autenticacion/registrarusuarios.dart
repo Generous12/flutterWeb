@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_web/Controlador/Provider/usuarioautenticado.dart';
 import 'package:proyecto_web/Controlador/Usuarios/usuariosservice.dart';
@@ -24,6 +25,7 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
       TextEditingController();
   final PasswordValidator _passwordValidator = PasswordValidator();
   final _api = ApiService();
+  bool arePasswordsEqual = true;
   String? _rolSeleccionado;
 
   @override
@@ -41,6 +43,12 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
           idController.text = "";
         });
       }
+    });
+    repeatPasswordController.addListener(() {
+      setState(() {
+        arePasswordsEqual =
+            passwordController.text == repeatPasswordController.text;
+      });
     });
   }
 
@@ -103,6 +111,16 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
       return;
     }
 
+    if (!arePasswordsEqual) {
+      SnackBarUtil.mostrarSnackBarPersonalizado(
+        context: context,
+        mensaje: "Las contraseñas no coinciden",
+        icono: Icons.error,
+        colorFondo: const Color.fromARGB(255, 255, 17, 0),
+      );
+      return;
+    }
+
     if (_rolSeleccionado == null) {
       SnackBarUtil.mostrarSnackBarPersonalizado(
         context: context,
@@ -122,7 +140,7 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
     );
 
     if (confirmado != true) {
-      print("⏹️ Usuario canceló la acción");
+      print("⏹ Usuario canceló la acción");
       return;
     }
 
@@ -150,7 +168,7 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
       );
 
       if (continuar == true) {
-        print("🔄 Usuario quiere seguir registrando");
+        print(" Usuario quiere seguir registrando");
         idController.clear();
         nombreController.clear();
         passwordController.clear();
@@ -194,12 +212,23 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
       child: SafeArea(
         child: Scaffold(
           appBar: AppBar(
+            leading: IconButton(
+              icon: Icon(Iconsax.arrow_left, size: 25),
+              onPressed: () async {
+                FocusScope.of(context).unfocus();
+                bool salir = await _onWillPop();
+                if (salir) {
+                  Navigator.pop(context);
+                }
+              },
+            ),
+
             toolbarHeight: 48,
             title: const Text(
               "Registrar usuarios",
               style: TextStyle(fontSize: 18),
             ),
-            backgroundColor: Colors.black,
+            backgroundColor: const Color(0xFF000000),
             foregroundColor: Colors.white,
             elevation: 0,
             centerTitle: true,
@@ -211,16 +240,14 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
                 CustomTextField(
                   controller: idController,
                   hintText: "Se genera automáticamente",
-                  label: "Se genera automáticamente el ID",
+                  label: "Codigo",
                   enabled: false,
                 ),
-
                 CustomTextField(
                   controller: nombreController,
                   hintText: "Ingresa tu nombre",
                   label: "Nombre",
                 ),
-
                 CustomTextField(
                   controller: passwordController,
                   label: "Ingrese una contraseña",
@@ -265,6 +292,29 @@ class _RegistroUsuarioScreenState extends State<RegistroUsuarioScreen> {
                     ),
                   ],
                 ),
+                CustomTextField(
+                  controller: repeatPasswordController,
+                  label: "Repita la contraseña",
+                  prefixIcon: Iconsax.lock5,
+                  obscureText: true,
+                ),
+                if (repeatPasswordController.text.isNotEmpty) ...[
+                  const SizedBox(height: 8.0),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      arePasswordsEqual
+                          ? 'Las contraseñas son idénticas'
+                          : 'Las contraseñas no coinciden',
+                      style: TextStyle(
+                        color: arePasswordsEqual
+                            ? const Color.fromARGB(255, 0, 0, 0)
+                            : const Color.fromARGB(255, 255, 17, 0),
+                        fontSize: 12.0,
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 CustomDropdownSelector(
                   labelText: "Rol",
