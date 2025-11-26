@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:proyecto_web/Controlador/Asignacion/registroasignacion.dart';
 import 'package:proyecto_web/Controlador/Componentes/list_Update_Component.dart';
 import 'package:proyecto_web/Vista/app/principal/Componente/listacomponente/detallecomponente.dart';
+import 'package:proyecto_web/Widgets/estadoscard.dart';
 import 'package:proyecto_web/Widgets/navegator.dart';
 
 class DetalleCaseScreen extends StatefulWidget {
@@ -51,7 +53,6 @@ class _DetalleCaseScreenState extends State<DetalleCaseScreen> {
 
     return SafeArea(
       child: Scaffold(
-        backgroundColor: const Color(0xFFF4F5F7),
         appBar: AppBar(
           toolbarHeight: 48,
           backgroundColor: Colors.black,
@@ -62,7 +63,7 @@ class _DetalleCaseScreenState extends State<DetalleCaseScreen> {
           ),
         ),
         body: _cargando
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator(color: Colors.blue))
             : caseData == null
             ? const Center(child: Text("No se encontró información del case."))
             : RefreshIndicator(
@@ -72,15 +73,11 @@ class _DetalleCaseScreenState extends State<DetalleCaseScreen> {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      _buildMainInfoCard(caseData),
+                      buildMainInfoCard(caseData),
                       const SizedBox(height: 20),
-                      _buildSectionTitle("Objetos Asociados", Icons.devices),
-
-                      const SizedBox(height: 10),
-
                       if (_componentes.isEmpty)
                         const Text("No hay periféricos asociados."),
-                      ..._componentes.map((comp) => _buildComponenteCard(comp)),
+                      ..._componentes.map((comp) => buildComponenteCard(comp)),
                     ],
                   ),
                 ),
@@ -89,31 +86,36 @@ class _DetalleCaseScreenState extends State<DetalleCaseScreen> {
     );
   }
 
-  Widget _buildMainInfoCard(Map<String, dynamic> data) {
+  Widget buildMainInfoCard(Map<String, dynamic> data) {
     return Card(
+      color: Colors.white,
       elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shadowColor: Colors.black12,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle("Información General", Icons.info),
-            const SizedBox(height: 12),
+            buildInfoRow("ID Asignación", data["id_case_asignado"]),
+            const Divider(height: 22, color: Colors.black12),
 
-            _infoItem("ID Asignación", data["id_case_asignado"]),
-            _infoItem("Área Asignada", data["nombre_area_asignada"]),
-            _infoItem("Fecha de Asignación", data["fecha_asignacion"]),
-            _infoItem("Estado", data["estado_asignacion"]),
+            buildInfoRow("Área Asignada", data["nombre_area_asignada"]),
+            const Divider(height: 22, color: Colors.black12),
+
+            buildInfoRow("Fecha Asignación", data["fecha_asignacion"]),
+            const Divider(height: 22, color: Colors.black12),
+
+            buildInfoRow("Estado", estadoChip(data["estado_asignacion"])),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildComponenteCard(dynamic comp) {
+  Widget buildComponenteCard(dynamic comp) {
     return InkWell(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(18),
       onTap: () {
         final componente = ComponenteUpdate.fromJson({
           'id_componente': comp['id_componente'],
@@ -132,39 +134,64 @@ class _DetalleCaseScreenState extends State<DetalleCaseScreen> {
       },
       child: Card(
         elevation: 3,
+        shadowColor: Colors.black12,
         margin: const EdgeInsets.symmetric(vertical: 8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  const Icon(Iconsax.cpu, size: 18, color: Colors.blueAccent),
+                  const SizedBox(width: 6),
+
                   Expanded(
                     child: Text(
                       comp["nombre_tipo"] ?? "Sin nombre",
                       style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
                       ),
                     ),
                   ),
+
                   Text(
                     comp["codigo_inventario"] ?? "-",
                     style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
                       color: Colors.blueGrey,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              _infoSub("Estado Asignación", comp["estado_asignacion"]),
-              _infoSub("Fecha Instalación", comp["fecha_instalacion"]),
-              _infoSub("Fecha Retiro", comp["fecha_retiro"]),
+
+              const SizedBox(height: 10),
+              estadoChip(comp["estado"]),
+              const SizedBox(height: 12),
+
+              /// ITEMS REDUCIDOS
+              sectionItem(
+                icon: Iconsax.tag,
+                label: "Estado Asignación",
+                value: comp["estado_asignacion"],
+              ),
+
+              sectionItem(
+                icon: Iconsax.calendar_1,
+                label: "Fecha Instalación",
+                value: comp["fecha_instalacion"],
+              ),
+
+              sectionItem(
+                icon: Iconsax.calendar_remove,
+                label: "Fecha Retiro",
+                value: comp["fecha_retiro"],
+              ),
             ],
           ),
         ),
@@ -172,49 +199,78 @@ class _DetalleCaseScreenState extends State<DetalleCaseScreen> {
     );
   }
 
-  Widget _infoItem(String label, dynamic value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Icon(Icons.circle, size: 10, color: Colors.blueGrey.shade300),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              "$label:",
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+  Widget buildInfoRow(String title, dynamic value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 4,
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
             ),
           ),
-          Text(value?.toString() ?? "-", style: const TextStyle(fontSize: 15)),
-        ],
-      ),
-    );
-  }
-
-  Widget _infoSub(String label, dynamic value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Text(
-        "$label: ${value ?? '-'}",
-        style: const TextStyle(fontSize: 14),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title, IconData icon) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.black87),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-            color: Colors.black87,
-          ),
+        ),
+        Expanded(
+          flex: 2,
+          child: value is Widget
+              ? value
+              : Text(
+                  value?.toString() ?? "-",
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.right,
+                ),
         ),
       ],
+    );
+  }
+
+  Widget sectionItem({
+    required IconData icon,
+    required String label,
+    required dynamic value,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: Colors.blueAccent),
+
+          const SizedBox(width: 10),
+
+          Expanded(
+            flex: 4,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+
+          Expanded(
+            flex: 6,
+            child: Text(
+              value?.toString() ?? "-",
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

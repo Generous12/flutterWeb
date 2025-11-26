@@ -4,23 +4,23 @@ Widget estadoChip(String? estado) {
   Color color = const Color(0xFF2ECC71);
   String texto = "Disponible";
 
-  switch ((estado ?? "").toLowerCase()) {
-    case "mantenimiento":
+  switch ((estado ?? "")) {
+    case "Mantenimiento":
       color = const Color(0xFFFF6B6B);
-      texto = 'En Mantenimiento';
+      texto = 'Mantenimiento';
       break;
 
-    case "en uso":
-      color = const Color(0xFFFFC107);
+    case "En uso":
+      color = const Color.fromARGB(255, 255, 225, 0);
       texto = 'En Uso';
       break;
 
-    case "dañado":
+    case "Dañado":
       color = const Color(0xFFB71C1C);
       texto = 'Dañado';
       break;
 
-    case "arreglado":
+    case "Arreglado":
       color = const Color(0xFF42A5F5);
       texto = 'Arreglado';
       break;
@@ -44,6 +44,15 @@ Widget estadoChip(String? estado) {
       color = const Color(0xFF2ECC71);
       texto = "Completado";
       break;
+    case "asignado":
+      color = const Color(0xFF2980B9);
+      texto = "Asignado";
+      break;
+
+    case "activo":
+      color = const Color(0xFF27AE60);
+      texto = "Activo";
+      break;
   }
 
   return Container(
@@ -53,7 +62,8 @@ Widget estadoChip(String? estado) {
       borderRadius: BorderRadius.circular(90),
     ),
     child: Text(
-      estado?.toLowerCase() == "mantenimiento" ? "" : texto,
+      texto,
+
       style: const TextStyle(
         fontSize: 13,
         color: Colors.white,
